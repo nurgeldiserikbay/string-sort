@@ -1,0 +1,6 @@
+{
+  "appId": "com.nurgeldiserikbay.stringsort",
+  "appName": "String Sort",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
