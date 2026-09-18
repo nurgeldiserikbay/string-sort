@@ -2,6 +2,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { RopeBoard } from './RopeBoard.js'
 import { AudioManager } from './AudioManager.js'
 import { graphicsLabel, nextGraphicsOption } from './PerformanceProfile.js'
+import { exitNativeApp, installNativeBackHandler } from './NativeNavigation.js'
 import { createLevel, findBestSwap, getCrossingCount } from './levels.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
@@ -32,6 +33,9 @@ export class GameApp {
     this.timerStartedAt = 0
     this.timerRaf = 0
     this.screen = 'menu'
+    this.backButtonHandle = null
+    this.pauseOverlay = null
+    this.isCompleting = false
     this.progress = this.loadProgress()
     this.settings = this.loadSettings()
     this.audio = new AudioManager({ enabled: this.settings.sound })
@@ -78,11 +82,40 @@ export class GameApp {
 
   mount() {
     this.showMenu()
+    installNativeBackHandler(() => this.handleNativeBack()).then((handle) => {
+      this.backButtonHandle = handle
+    })
   }
 
   destroy() {
     this.stopTimer()
     this.board?.destroy()
+    this.backButtonHandle?.remove?.()
+    this.backButtonHandle = null
+  }
+
+  async handleNativeBack() {
+    if (this.screen === 'pause') {
+      this.resumeFromPause()
+      return
+    }
+
+    if (this.screen === 'game') {
+      this.showPause()
+      return
+    }
+
+    if (this.screen === 'levels' || this.screen === 'settings') {
+      this.showMenu()
+      return
+    }
+
+    if (this.screen === 'complete') {
+      this.showLevelSelect()
+      return
+    }
+
+    await exitNativeApp()
   }
 
   shell(content) {
@@ -167,6 +200,7 @@ export class GameApp {
     this.history = []
     this.moves = 0
     this.elapsed = 0
+    this.isCompleting = false
     this.screen = 'game'
 
     this.shell(`
@@ -223,7 +257,8 @@ export class GameApp {
     this.haptic()
     this.audio.swap()
 
-    if (getCrossingCount(this.order) === 0) {
+    if (getCrossingCount(this.order) === 0 && !this.isCompleting) {
+      this.isCompleting = true
       this.haptic(ImpactStyle.Medium)
       setTimeout(() => this.completeLevel(), 380)
     }
@@ -287,18 +322,26 @@ export class GameApp {
         <button class="modal-option" data-action="menu">⌂ Main menu</button>
       </section>
     `
+    this.pauseOverlay = overlay
     this.root.appendChild(overlay)
 
-    overlay.querySelectorAll('[data-action="resume"]').forEach(btn => btn.onclick = () => {
-      overlay.remove()
-      this.screen = 'game'
-      this.startTimer()
+    overlay.querySelectorAll('[data-action="resume"]').forEach(btn => {
+      btn.onclick = () => this.resumeFromPause()
     })
     overlay.querySelector('[data-action="restart"]').onclick = () => this.startLevel(this.levelNumber)
     overlay.querySelector('[data-action="menu"]').onclick = () => this.showMenu()
   }
 
+  resumeFromPause() {
+    if (this.screen !== 'pause') return
+    this.pauseOverlay?.remove()
+    this.pauseOverlay = null
+    this.screen = 'game'
+    this.startTimer()
+  }
+
   completeLevel() {
+    if (this.screen === 'complete') return
     this.stopTimer()
     this.screen = 'complete'
 
