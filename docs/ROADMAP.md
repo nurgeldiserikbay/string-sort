@@ -25,14 +25,17 @@
 - Adaptive High / Balanced / Battery graphics profiles with automatic device selection
 - Interaction smoke tests for menu, level start, pause/resume and settings persistence
 - Manual signed AAB GitHub Actions release workflow with secret-based keystore handling
+- Pointer drag/drop, level-completion persistence and Android-style back-navigation smoke coverage
+- Automatic sustained-low-FPS quality downgrade while Auto graphics mode is active
+- Privacy policy and Play Store listing/data-safety drafts for the current offline build
 
 ## Next production phases
 1. Validate and tune the adaptive performance profiles on real low/mid Android hardware.
-2. Expand interaction smoke tests to pointer drag/drop and level completion.
-3. Generate and wire final Android launcher icon and splash assets.
-4. Add ad-safe layout zones without interrupting the puzzle board.
-5. Tune handcrafted onboarding and procedural difficulty from playtesting.
-6. Prepare Play Store icon, screenshots, feature graphic and data-safety/privacy docs.
+2. Generate and wire final Android launcher icon and splash assets.
+3. Add ad-safe layout zones only after the monetization SDK/format is selected.
+4. Tune handcrafted onboarding and procedural difficulty from playtesting.
+5. Prepare final Play Store screenshots and feature graphic from the real build.
+6. Re-check Data safety/privacy after any ads, analytics or crash-reporting SDK is added.
 7. Final device QA and real-device performance profiling.
 
 ## Quality target
