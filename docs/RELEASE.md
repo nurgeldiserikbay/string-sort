@@ -2,7 +2,14 @@
 
 The normal CI workflow builds a debug APK on every pull request and publishes it as a downloadable artifact.
 
-For a Play Store AAB, the repository also contains a manual **Android Release AAB** workflow. It intentionally requires your own signing credentials and never stores the keystore in git.
+The project now uses Capacitor 8 and CI explicitly verifies:
+
+- `compileSdkVersion = 36`
+- `targetSdkVersion = 36`
+
+This matches the Google Play mobile requirement in force from August 31, 2026 for new apps and app updates. Official policy: https://support.google.com/googleplay/android-developer/answer/11926878
+
+For a Play Store AAB, the repository contains a manual **Android Release AAB** workflow. It requires your own signing credentials and never stores the keystore in git.
 
 ## 1. Create or reuse a release keystore
 
@@ -44,26 +51,54 @@ Repository Settings → Secrets and variables → Actions:
 
 Never commit these values or the keystore itself.
 
-## 4. Build the AAB
+## 4. Choose release version
 
 GitHub → Actions → **Android Release AAB** → Run workflow.
 
-The workflow:
-1. runs tests;
-2. builds the Vite application;
-3. generates and syncs the Capacitor Android project;
-4. restores the keystore only inside the temporary CI runner;
-5. injects signing into the generated Gradle project;
-6. runs `bundleRelease`;
-7. uploads `string-sort-release-aab` as a workflow artifact.
+The workflow asks for:
 
-## 5. Play Store
+- `version_code` — positive integer. It must increase for every Play Store release.
+- `version_name` — human-readable version such as `0.1.0`.
+
+Example:
+
+```text
+version_code: 1
+version_name: 0.1.0
+```
+
+Next update:
+
+```text
+version_code: 2
+version_name: 0.1.1
+```
+
+## 5. Build the AAB
+
+The workflow:
+
+1. validates signing secrets;
+2. runs automated tests;
+3. builds the Vite application;
+4. generates the Capacitor 8 Android project;
+5. verifies compile/target SDK 36;
+6. generates Android launcher and splash assets;
+7. applies the selected version code/name;
+8. restores the keystore only inside the temporary CI runner;
+9. injects release signing;
+10. runs `bundleRelease`;
+11. uploads the signed AAB as a workflow artifact.
+
+## 6. Play Store
 
 Upload the generated `app-release.aab` to the desired Play Console track.
 
 Before production release, verify:
+
 - package name is final: `com.nurgeldiserikbay.stringsort`;
-- version code/version name are updated;
-- launcher icon and splash assets are final;
-- privacy policy and Data safety answers match the actual SDKs in the build;
-- any future ads/analytics SDKs are reflected in the policy and Play Console declarations.
+- versionCode is greater than the latest version already uploaded to Play;
+- launcher icon and splash assets look correct on a real device;
+- privacy policy and Data safety answers match the exact production SDK set;
+- any future ads/analytics/crash SDKs are reflected in the policy and Play Console declarations;
+- phone/tablet screenshots match the actual released UI.
