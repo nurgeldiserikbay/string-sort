@@ -13,13 +13,13 @@
     "screenshots:store": "node scripts/capture-store-screenshots.mjs"
   },
   "dependencies": {
-    "@capacitor/android": "^7.4.3",
-    "@capacitor/core": "^7.4.3",
-    "@capacitor/haptics": "^7.0.2",
-    "@capacitor/app": "^7.0.2"
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/app": "^8.0.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.4.3",
+    "@capacitor/cli": "8.5.2",
     "vite": "^7.1.7",
     "vitest": "^3.2.4",
     "happy-dom": "^18.0.1",
