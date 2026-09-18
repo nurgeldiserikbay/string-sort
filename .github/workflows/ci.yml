@@ -78,6 +78,9 @@ jobs:
       - name: Verify Android 16 / API 36 target
         run: node scripts/verify-android-target.mjs
 
+      - name: Configure Android portrait orientation
+        run: node scripts/prepare-android-manifest.mjs
+
       - name: Generate Android launcher and splash assets
         run: npm run assets:android
 
