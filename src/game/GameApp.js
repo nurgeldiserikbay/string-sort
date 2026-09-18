@@ -345,6 +345,8 @@ export class GameApp {
     this.screen = 'pause'
     this.stopTimer()
     this.board?.stop()
+    clearTimeout(this.completionTimer)
+    this.completionTimer = 0
 
     const overlay = document.createElement('div')
     overlay.className = 'modal-layer'
@@ -374,6 +376,12 @@ export class GameApp {
     this.screen = 'game'
     this.board?.start()
     this.startTimer()
+
+    if (this.isCompleting && getCrossingCount(this.order) === 0) {
+      this.completionTimer = setTimeout(() => {
+        if (this.screen === 'game') this.completeLevel()
+      }, 160)
+    }
   }
 
   completeLevel() {
