@@ -37,6 +37,7 @@ export class GameApp {
     this.timerRaf = 0
     this.tutorialHintTimer = 0
     this.completionTimer = 0
+    this.feedbackTimer = 0
     this.screen = 'menu'
     this.backButtonHandle = null
     this.appStateHandle = null
@@ -95,6 +96,7 @@ export class GameApp {
     this.stopTimer()
     clearTimeout(this.tutorialHintTimer)
     clearTimeout(this.completionTimer)
+    clearTimeout(this.feedbackTimer)
     this.board?.destroy()
     this.backButtonHandle?.remove?.()
     this.appStateHandle?.remove?.()
@@ -133,8 +135,10 @@ export class GameApp {
     this.stopTimer()
     clearTimeout(this.tutorialHintTimer)
     clearTimeout(this.completionTimer)
+    clearTimeout(this.feedbackTimer)
     this.tutorialHintTimer = 0
     this.completionTimer = 0
+    this.feedbackTimer = 0
     this.root.innerHTML = content
   }
 
@@ -248,7 +252,7 @@ export class GameApp {
 
         <div class="status-row">
           <div><span>Moves</span><strong data-moves>0</strong></div>
-          <div><span>Crossings</span><strong data-crossings>${getCrossingCount(this.order)}</strong></div>
+          <div data-crossing-card><span>Crossings</span><strong data-crossings>${getCrossingCount(this.order)}</strong></div>
         </div>
 
         <nav class="game-actions">
@@ -290,11 +294,14 @@ export class GameApp {
 
     clearTimeout(this.tutorialHintTimer)
     this.tutorialHintTimer = 0
+    const previousCrossings = getCrossingCount(this.order)
     this.history.push([...this.order])
     ;[this.order[from], this.order[to]] = [this.order[to], this.order[from]]
     this.moves++
     this.board.setOrder(this.order)
+    const currentCrossings = getCrossingCount(this.order)
     this.updateHud()
+    this.showCrossingFeedback(previousCrossings, currentCrossings)
     this.haptic()
     this.audio.swap()
 
@@ -312,6 +319,23 @@ export class GameApp {
     const crossings = this.root.querySelector('[data-crossings]')
     if (moves) moves.textContent = this.moves
     if (crossings) crossings.textContent = getCrossingCount(this.order)
+  }
+
+  showCrossingFeedback(previousCrossings, currentCrossings) {
+    const card = this.root.querySelector('[data-crossing-card]')
+    if (!card || previousCrossings === currentCrossings) return
+
+    clearTimeout(this.feedbackTimer)
+    card.classList.remove('stat-improved', 'stat-worse')
+    void card.offsetWidth
+    card.classList.add(
+      currentCrossings < previousCrossings ? 'stat-improved' : 'stat-worse',
+    )
+
+    this.feedbackTimer = setTimeout(() => {
+      card.classList.remove('stat-improved', 'stat-worse')
+      this.feedbackTimer = 0
+    }, 520)
   }
 
   undo() {
