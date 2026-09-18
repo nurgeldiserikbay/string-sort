@@ -78,16 +78,21 @@ describe('GameApp interaction smoke tests', () => {
     expect(root.querySelector('.tutorial-chip').textContent).toContain('Drag')
   })
 
-  it('can pause and resume a running level', () => {
+  it('can pause and resume a running level while suspending rope simulation', () => {
     root.querySelector('[data-action="play"]').click()
+    const stopSpy = vi.spyOn(app.board, 'stop')
+    const startSpy = vi.spyOn(app.board, 'start')
+
     root.querySelector('[data-action="pause"]').click()
 
     expect(root.querySelector('.modal-card')).not.toBeNull()
     expect(root.textContent).toContain('Paused')
+    expect(stopSpy).toHaveBeenCalled()
 
     root.querySelector('.modal-card [data-action="resume"]').click()
     expect(root.querySelector('.modal-card')).toBeNull()
     expect(app.screen).toBe('game')
+    expect(startSpy).toHaveBeenCalled()
   })
 
   it('maps Android-style back navigation to pause and resume states', async () => {
