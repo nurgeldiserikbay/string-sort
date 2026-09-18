@@ -155,7 +155,8 @@ export class GameApp {
             <span class="mini-rope r4"></span>
           </div>
 
-          <button class="primary-button play-button" data-action="play"><span>▶</span> Play</button>
+          <div class="resume-label">Level ${this.progress.unlocked} of ${TOTAL_LEVELS}</div>
+          <button class="primary-button play-button" data-action="play"><span>▶</span> ${this.progress.unlocked > 1 ? 'Continue' : 'Play'}</button>
           <button class="secondary-link" data-action="levels">Level select</button>
         </section>
 
@@ -175,7 +176,12 @@ export class GameApp {
       const unlocked = n <= this.progress.unlocked
       const stars = this.progress.stars[n] || 0
       return `
-        <button class="level-card ${unlocked ? '' : 'locked'}" data-level="${n}" ${unlocked ? '' : 'disabled'}>
+        <button
+          class="level-card ${unlocked ? '' : 'locked'} ${n === this.progress.unlocked ? 'current' : ''}"
+          data-level="${n}"
+          aria-label="Level ${n}${unlocked ? '' : ', locked'}"
+          ${unlocked ? '' : 'disabled'}
+        >
           <b>${unlocked ? n : '🔒'}</b>
           <span>${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>
         </button>
@@ -185,7 +191,7 @@ export class GameApp {
     this.shell(`
       <main class="screen levels-screen">
         <header class="page-header">
-          <button class="icon-button" data-action="back">‹</button>
+          <button class="icon-button" data-action="back" aria-label="Back">‹</button>
           <h1>Levels</h1>
           <div class="coin-pill"><span>★</span><b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
         </header>
@@ -197,6 +203,14 @@ export class GameApp {
     this.root.querySelectorAll('[data-level]').forEach((button) => {
       button.onclick = () => this.startLevel(Number(button.dataset.level))
     })
+
+    if (this.progress.unlocked > 9) {
+      requestAnimationFrame(() => {
+        this.root
+          .querySelector(`[data-level="${this.progress.unlocked}"]`)
+          ?.scrollIntoView({ block: 'center' })
+      })
+    }
   }
 
   startLevel(levelNumber) {
@@ -213,7 +227,7 @@ export class GameApp {
     this.shell(`
       <main class="screen game-screen">
         <header class="game-header">
-          <button class="icon-button" data-action="pause">Ⅱ</button>
+          <button class="icon-button" data-action="pause" aria-label="Pause">Ⅱ</button>
           <div class="level-pill">Level ${this.levelNumber}</div>
           <div class="coin-pill compact"><span>★</span><b>${this.progress.stars[this.levelNumber] || 0}</b></div>
         </header>
@@ -411,7 +425,7 @@ export class GameApp {
     this.shell(`
       <main class="screen settings-screen">
         <header class="page-header">
-          <button class="icon-button" data-action="back">‹</button>
+          <button class="icon-button" data-action="back" aria-label="Back">‹</button>
           <h1>Settings</h1>
           <span></span>
         </header>
