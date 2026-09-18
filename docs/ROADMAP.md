@@ -28,15 +28,17 @@
 - Pointer drag/drop, level-completion persistence and Android-style back-navigation smoke coverage
 - Automatic sustained-low-FPS quality downgrade while Auto graphics mode is active
 - Privacy policy and Play Store listing/data-safety drafts for the current offline build
+- Branded launcher/splash SVG sources wired through @capacitor/assets
+- Generated 512×512 Play Store icon and 1024×500 feature graphic pipeline
+- Manual Playwright workflow that captures real 1080×1920 menu, levels, gameplay and completion screenshots
 
 ## Next production phases
 1. Validate and tune the adaptive performance profiles on real low/mid Android hardware.
-2. Generate and wire final Android launcher icon and splash assets.
+2. Review the generated launcher/splash/store artwork on a physical Android device and adjust only if needed.
 3. Add ad-safe layout zones only after the monetization SDK/format is selected.
 4. Tune handcrafted onboarding and procedural difficulty from playtesting.
-5. Prepare final Play Store screenshots and feature graphic from the real build.
-6. Re-check Data safety/privacy after any ads, analytics or crash-reporting SDK is added.
-7. Final device QA and real-device performance profiling.
+5. Re-check Data safety/privacy after any ads, analytics or crash-reporting SDK is added.
+6. Final device QA and real-device performance profiling.
 
 ## Quality target
 The final game should feel tactile and readable at 60 FPS on a mid-range Android phone. Physics prioritizes pleasant, predictable interaction over scientific rope simulation.
