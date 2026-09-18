@@ -2,6 +2,15 @@ name: Android Release AAB
 
 on:
   workflow_dispatch:
+    inputs:
+      version_code:
+        description: Play Store versionCode (must increase for every release)
+        required: true
+        default: '1'
+      version_name:
+        description: Human-readable version, for example 0.1.0
+        required: true
+        default: '0.1.0'
 
 permissions:
   contents: read
@@ -14,6 +23,8 @@ jobs:
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       ANDROID_KEYSTORE_FILE: /tmp/string-sort-release.jks
+      RELEASE_VERSION_CODE: ${{ inputs.version_code }}
+      RELEASE_VERSION_NAME: ${{ inputs.version_name }}
 
     steps:
       - name: Checkout
@@ -56,13 +67,16 @@ jobs:
       - name: Generate Capacitor Android project
         run: npx cap add android
 
+      - name: Verify Android 16 / API 36 target
+        run: node scripts/verify-android-target.mjs
+
       - name: Generate Android launcher and splash assets
         run: npm run assets:android
 
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Configure release signing
+      - name: Configure release version and signing
         run: node scripts/prepare-android-signing.mjs
 
       - name: Build signed Android App Bundle
@@ -74,6 +88,6 @@ jobs:
       - name: Upload signed AAB
         uses: actions/upload-artifact@v4
         with:
-          name: string-sort-release-aab
+          name: string-sort-release-${{ inputs.version_name }}-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
