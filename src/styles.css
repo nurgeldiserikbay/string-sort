@@ -469,3 +469,8 @@ button { font: inherit; }
     margin-bottom: 0;
   }
 }
+
+
+.graphics-toggle {
+  min-width: 132px;
+}
