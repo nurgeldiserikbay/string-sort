@@ -34,6 +34,7 @@ export class GameApp {
     this.timerStartedAt = 0
     this.timerRaf = 0
     this.tutorialHintTimer = 0
+    this.completionTimer = 0
     this.screen = 'menu'
     this.backButtonHandle = null
     this.appStateHandle = null
@@ -99,6 +100,7 @@ export class GameApp {
   destroy() {
     this.stopTimer()
     clearTimeout(this.tutorialHintTimer)
+    clearTimeout(this.completionTimer)
     this.board?.destroy()
     this.backButtonHandle?.remove?.()
     this.appStateHandle?.remove?.()
@@ -135,7 +137,9 @@ export class GameApp {
     this.board = null
     this.stopTimer()
     clearTimeout(this.tutorialHintTimer)
+    clearTimeout(this.completionTimer)
     this.tutorialHintTimer = 0
+    this.completionTimer = 0
     this.root.innerHTML = content
   }
 
@@ -286,7 +290,9 @@ export class GameApp {
     if (getCrossingCount(this.order) === 0 && !this.isCompleting) {
       this.isCompleting = true
       this.haptic(ImpactStyle.Medium)
-      setTimeout(() => this.completeLevel(), 380)
+      this.completionTimer = setTimeout(() => {
+        if (this.screen === 'game') this.completeLevel()
+      }, 380)
     }
   }
 
@@ -368,6 +374,8 @@ export class GameApp {
 
   completeLevel() {
     if (this.screen === 'complete') return
+    clearTimeout(this.completionTimer)
+    this.completionTimer = 0
     this.stopTimer()
     this.screen = 'complete'
 
