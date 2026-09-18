@@ -1,6 +1,7 @@
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { RopeBoard } from './RopeBoard.js'
 import { AudioManager } from './AudioManager.js'
+import { graphicsLabel, nextGraphicsOption } from './PerformanceProfile.js'
 import { createLevel, findBestSwap, getCrossingCount } from './levels.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
@@ -59,9 +60,10 @@ export class GameApp {
       return {
         sound: parsed.sound ?? true,
         haptics: parsed.haptics ?? true,
+        graphics: parsed.graphics ?? 'auto',
       }
     } catch {
-      return { sound: true, haptics: true }
+      return { sound: true, haptics: true, graphics: 'auto' }
     }
   }
 
@@ -199,6 +201,7 @@ export class GameApp {
     this.board = new RopeBoard(canvas, {
       onSwap: (from, to) => this.handleSwap(from, to),
       onSolved: () => {},
+      graphics: this.settings.graphics,
     })
     this.board.setOrder(this.order, { animate: false })
     this.board.start()
@@ -350,7 +353,12 @@ export class GameApp {
               ${this.settings.sound ? 'On' : 'Off'}
             </button>
           </div>
-          <div><span>Graphics</span><b>High</b></div>
+          <div>
+            <span>Graphics</span>
+            <button class="setting-toggle graphics-toggle" data-setting="graphics">
+              ${graphicsLabel(this.settings.graphics)}
+            </button>
+          </div>
         </section>
       </main>
     `)
@@ -363,6 +371,15 @@ export class GameApp {
     this.root.querySelectorAll('[data-setting]').forEach((button) => {
       button.onclick = () => {
         const key = button.dataset.setting
+
+        if (key === 'graphics') {
+          this.settings.graphics = nextGraphicsOption(this.settings.graphics)
+          this.saveSettings()
+          button.textContent = graphicsLabel(this.settings.graphics)
+          this.audio.tap()
+          return
+        }
+
         this.settings[key] = !this.settings[key]
         this.saveSettings()
         button.textContent = this.settings[key] ? 'On' : 'Off'
