@@ -5,6 +5,7 @@ import { graphicsLabel, nextGraphicsOption } from './PerformanceProfile.js'
 import { exitNativeApp, installNativeAppStateHandler, installNativeBackHandler } from './NativeNavigation.js'
 import { TOTAL_LEVELS, createLevel, findBestSwap, getCrossingCount } from './levels.js'
 import { createBannerSafeSlot } from './MonetizationLayout.js'
+import { normalizeProgress, normalizeSettings, safeReadJson, safeWriteJson } from './SaveData.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
@@ -46,38 +47,25 @@ export class GameApp {
   }
 
   loadProgress() {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')
-      return {
-        unlocked: Math.min(TOTAL_LEVELS, Math.max(1, parsed.unlocked || 1)),
-        stars: parsed.stars || {},
-        bestTimes: parsed.bestTimes || {},
-      }
-    } catch {
-      return { unlocked: 1, stars: {}, bestTimes: {} }
-    }
+    const parsed = safeReadJson(localStorage, SAVE_KEY, {})
+    return normalizeProgress(parsed, TOTAL_LEVELS)
   }
 
   saveProgress() {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(this.progress))
+    this.progress = normalizeProgress(this.progress, TOTAL_LEVELS)
+    return safeWriteJson(localStorage, SAVE_KEY, this.progress)
   }
 
   loadSettings() {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
-      return {
-        sound: parsed.sound ?? true,
-        haptics: parsed.haptics ?? true,
-        graphics: parsed.graphics ?? 'auto',
-      }
-    } catch {
-      return { sound: true, haptics: true, graphics: 'auto' }
-    }
+    const parsed = safeReadJson(localStorage, SETTINGS_KEY, {})
+    return normalizeSettings(parsed)
   }
 
   saveSettings() {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings))
+    this.settings = normalizeSettings(this.settings)
+    const saved = safeWriteJson(localStorage, SETTINGS_KEY, this.settings)
     this.audio.setEnabled(this.settings.sound)
+    return saved
   }
 
   haptic(style = ImpactStyle.Light) {
