@@ -11,6 +11,17 @@ export async function installNativeBackHandler(callback) {
   }
 }
 
+export async function installNativeAppStateHandler(callback) {
+  if (!Capacitor.isNativePlatform()) return null
+
+  try {
+    const { App } = await import('@capacitor/app')
+    return await App.addListener('appStateChange', callback)
+  } catch {
+    return null
+  }
+}
+
 export async function exitNativeApp() {
   if (!Capacitor.isNativePlatform()) return false
 
