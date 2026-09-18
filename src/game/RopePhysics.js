@@ -1,3 +1,5 @@
+import { detectRopeCrossings } from './RopeTopology.js'
+
 const EPSILON = 0.0001
 
 function distance(a, b) {
@@ -29,11 +31,13 @@ export class RopePhysics {
     this.constraintIterations = constraintIterations
     this.ropes = new Map()
     this.lastTime = 0
+    this.contacts = []
   }
 
   clear() {
     this.ropes.clear()
     this.lastTime = 0
+    this.contacts = []
   }
 
   removeMissing(validIds) {
@@ -145,6 +149,12 @@ export class RopePhysics {
         }
       }
     }
+
+    this.contacts = detectRopeCrossings([...this.ropes.values()], {
+      maxContactsPerPair: 5,
+      dedupeDistance: 12,
+    })
+    this.applyCrossingFriction(this.contacts)
   }
 
   integrate(rope, dt, time) {
@@ -237,6 +247,31 @@ export class RopePhysics {
       point.x = x + (dx / current) * radius
       point.y = y + (dy / current) * radius
     }
+  }
+
+  applyCrossingFriction(contacts) {
+    const dampPoint = (point, retainVelocity = 0.58) => {
+      if (!point || point.pinned) return
+      const velocityX = point.x - point.oldX
+      const velocityY = point.y - point.oldY
+      point.oldX = point.x - velocityX * retainVelocity
+      point.oldY = point.y - velocityY * retainVelocity
+    }
+
+    for (const contact of contacts) {
+      const ropeA = this.ropes.get(contact.aId)
+      const ropeB = this.ropes.get(contact.bId)
+      if (!ropeA || !ropeB) continue
+
+      dampPoint(ropeA.points[contact.aSegment])
+      dampPoint(ropeA.points[contact.aSegment + 1])
+      dampPoint(ropeB.points[contact.bSegment])
+      dampPoint(ropeB.points[contact.bSegment + 1])
+    }
+  }
+
+  getContacts() {
+    return this.contacts
   }
 
   getPoints(id) {
