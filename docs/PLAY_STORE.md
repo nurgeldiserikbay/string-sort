@@ -50,12 +50,25 @@ Before Play Console submission, verify the final binary. For the current reposit
 
 If ads, analytics, crash reporting or cloud saving are added later, reassess the Data safety form and privacy policy against the exact production build.
 
-## Store graphic deliverables still required
+## Store graphics
 
-- 512 × 512 app icon
-- 1024 × 500 feature graphic
-- phone screenshots
-- 7-inch tablet screenshots if tablet support is enabled
-- 10-inch tablet screenshots if tablet support is enabled
+Vector sources are committed for the launcher identity and feature graphic.
 
-Use the final in-game visual style rather than concept art so screenshots accurately represent gameplay.
+Run:
+
+```bash
+npm run assets:store
+```
+
+This generates:
+- `store/generated/app-icon-512.png`
+- `store/generated/feature-graphic-1024x500.png`
+
+CI also publishes these two files as the `string-sort-store-static-assets` artifact.
+
+Still required before the final Play Store submission:
+- phone screenshots captured from the real build;
+- 7-inch tablet screenshots if tablet support is enabled;
+- 10-inch tablet screenshots if tablet support is enabled.
+
+Use the real in-game UI for screenshots so the listing accurately represents gameplay.
