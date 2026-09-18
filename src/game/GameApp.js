@@ -4,6 +4,7 @@ import { AudioManager } from './AudioManager.js'
 import { graphicsLabel, nextGraphicsOption } from './PerformanceProfile.js'
 import { exitNativeApp, installNativeAppStateHandler, installNativeBackHandler } from './NativeNavigation.js'
 import { createLevel, findBestSwap, getCrossingCount } from './levels.js'
+import { createBannerSafeSlot } from './MonetizationLayout.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
@@ -237,6 +238,8 @@ export class GameApp {
           <button class="round-action undo" data-action="undo"><span>↶</span><b>Undo</b></button>
           <button class="round-action restart" data-action="restart"><span>↻</span><b>Restart</b></button>
         </nav>
+
+        ${createBannerSafeSlot()}
       </main>
     `)
 
