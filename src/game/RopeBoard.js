@@ -45,11 +45,11 @@ export class RopeBoard {
   setOrder(order) {
     const topologyChanged = this.order.length !== order.length
     this.order = [...order]
-    this.depthSeed = this.order.reduce(
-      (seed, ropeId, index) => ((seed * 33) ^ ((ropeId + 1) * (index + 17))) >>> 0,
-      0x51f15e,
-    )
-    if (topologyChanged) this.physics.clear()
+
+    if (topologyChanged) {
+      this.depthSeed = (0x51f15e ^ Math.imul(order.length + 1, 0x9e3779b1)) >>> 0
+      this.physics.clear()
+    }
   }
 
   flashHint(from, to) {
@@ -420,6 +420,64 @@ export class RopeBoard {
     ctx.restore()
   }
 
+  drawPegMarker(x, y, radius, ropeId) {
+    const ctx = this.ctx
+    const size = radius * 0.38
+    const variant = ropeId % 8
+
+    ctx.save()
+    ctx.strokeStyle = 'rgba(255,255,255,.9)'
+    ctx.fillStyle = 'rgba(255,255,255,.9)'
+    ctx.lineWidth = Math.max(1.5, radius * 0.11)
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+
+    if (variant === 0) {
+      ctx.beginPath()
+      ctx.arc(x, y, size * 0.33, 0, TAU)
+      ctx.fill()
+    } else if (variant === 1) {
+      ctx.beginPath()
+      ctx.moveTo(x - size, y)
+      ctx.lineTo(x + size, y)
+      ctx.stroke()
+    } else if (variant === 2) {
+      ctx.beginPath()
+      ctx.moveTo(x - size * 0.72, y - size * 0.72)
+      ctx.lineTo(x + size * 0.72, y + size * 0.72)
+      ctx.moveTo(x + size * 0.72, y - size * 0.72)
+      ctx.lineTo(x - size * 0.72, y + size * 0.72)
+      ctx.stroke()
+    } else if (variant === 3) {
+      ctx.beginPath()
+      ctx.moveTo(x - size, y)
+      ctx.lineTo(x + size, y)
+      ctx.moveTo(x, y - size)
+      ctx.lineTo(x, y + size)
+      ctx.stroke()
+    } else if (variant === 4) {
+      ctx.beginPath()
+      ctx.arc(x, y, size * 0.72, 0, TAU)
+      ctx.stroke()
+    } else if (variant === 5) {
+      ctx.beginPath()
+      ctx.moveTo(x, y - size)
+      ctx.lineTo(x + size * 0.9, y + size * 0.72)
+      ctx.lineTo(x - size * 0.9, y + size * 0.72)
+      ctx.closePath()
+      ctx.stroke()
+    } else if (variant === 6) {
+      ctx.strokeRect(x - size * 0.72, y - size * 0.72, size * 1.44, size * 1.44)
+    } else {
+      ctx.beginPath()
+      ctx.arc(x - size * 0.48, y, size * 0.25, 0, TAU)
+      ctx.arc(x + size * 0.48, y, size * 0.25, 0, TAU)
+      ctx.fill()
+    }
+
+    ctx.restore()
+  }
+
   drawPeg(index, time) {
     const g = this.geometry()
     const ctx = this.ctx
@@ -484,8 +542,9 @@ export class RopeBoard {
 
     ctx.fillStyle = 'rgba(24,26,31,.76)'
     ctx.beginPath()
-    ctx.arc(position.x, position.y, radius * 0.255, 0, TAU)
+    ctx.arc(position.x, position.y, radius * 0.31, 0, TAU)
     ctx.fill()
+    this.drawPegMarker(position.x, position.y, radius, ropeId)
     ctx.restore()
   }
 
