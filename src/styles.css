@@ -420,3 +420,52 @@ button { font: inherit; }
   body { background:linear-gradient(135deg,#edd6aa,#f9efd9); }
   .screen { box-shadow:0 0 60px rgba(71,45,25,.18); }
 }
+
+
+.tutorial-chip {
+  position: relative;
+  z-index: 4;
+  width: min(88%, 430px);
+  margin: 0 auto 2px;
+  padding: 8px 14px;
+  border-radius: 16px;
+  background: rgba(255, 252, 242, .9);
+  border: 2px solid rgba(218, 176, 105, .38);
+  box-shadow: 0 5px 12px rgba(90, 58, 28, .1);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #6b4b2d;
+  animation: tutorial-in .38s ease-out both;
+}
+
+.setting-toggle {
+  min-width: 66px;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #e8d9bf;
+  color: #6b5037;
+  font-weight: 900;
+  box-shadow: inset 0 0 0 2px rgba(111, 77, 42, .08);
+}
+
+.setting-toggle[aria-pressed="true"] {
+  background: linear-gradient(#87ec4d, #3fc64d);
+  color: white;
+  text-shadow: 0 1px rgba(0,0,0,.16);
+  box-shadow: 0 4px 0 #239438;
+}
+
+@keyframes tutorial-in {
+  from { transform: translateY(-5px) scale(.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@media (max-height: 760px) {
+  .tutorial-chip {
+    font-size: 11px;
+    padding-block: 6px;
+    margin-bottom: 0;
+  }
+}
