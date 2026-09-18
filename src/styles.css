@@ -1,5 +1,6 @@
 :root {
   font-family: 'Trebuchet MS', system-ui, sans-serif;
+  --banner-safe-height: 0px;
   --font-display: 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif;
   color: #3d2c20;
   background: #f7e8c8;
@@ -473,4 +474,38 @@ button { font: inherit; }
 
 .graphics-toggle {
   min-width: 132px;
+}
+
+
+html[data-banner-mode="preview"] {
+  --banner-safe-height: clamp(52px, 8vh, 72px);
+}
+
+.banner-safe-zone {
+  position: relative;
+  z-index: 5;
+  width: min(100%, 540px);
+  height: var(--banner-safe-height);
+  margin: 0 auto;
+  display: none;
+  place-items: center;
+  background: rgba(255,255,255,.72);
+  border-top: 1px dashed rgba(87,61,36,.28);
+  color: rgba(87,61,36,.58);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+html[data-banner-mode="preview"] .banner-safe-zone {
+  display: grid;
+}
+
+html[data-banner-mode="preview"] .game-screen .board-wrap {
+  height: min(50vh, 460px);
+}
+
+html[data-banner-mode="preview"] .game-actions {
+  padding-bottom: 8px;
 }
