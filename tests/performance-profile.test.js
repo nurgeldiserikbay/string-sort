@@ -19,6 +19,13 @@ describe('performance profiles', () => {
     expect(chooseAutomaticProfile({ hardwareConcurrency: 8, deviceMemory: 8 }).id).toBe('high')
   })
 
+  it('defaults to balanced when WebView hardware hints are unavailable', () => {
+    expect(chooseAutomaticProfile({
+      hardwareConcurrency: undefined,
+      deviceMemory: undefined,
+    }).id).toBe('balanced')
+  })
+
   it('cycles graphics preferences predictably', () => {
     expect(nextGraphicsOption('auto')).toBe('high')
     expect(nextGraphicsOption('battery')).toBe('auto')
