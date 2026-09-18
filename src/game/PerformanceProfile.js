@@ -3,25 +3,25 @@ export const PERFORMANCE_PROFILES = {
     id: 'high',
     label: 'High',
     dprCap: 2,
-    smallSegments: 24,
-    largeSegments: 30,
-    constraintIterations: 8,
+    smallSegments: 23,
+    largeSegments: 28,
+    constraintIterations: 7,
   },
   balanced: {
     id: 'balanced',
     label: 'Balanced',
-    dprCap: 1.6,
-    smallSegments: 20,
-    largeSegments: 25,
-    constraintIterations: 7,
+    dprCap: 1.5,
+    smallSegments: 19,
+    largeSegments: 23,
+    constraintIterations: 6,
   },
   battery: {
     id: 'battery',
     label: 'Battery',
-    dprCap: 1.25,
-    smallSegments: 18,
-    largeSegments: 22,
-    constraintIterations: 5,
+    dprCap: 1.2,
+    smallSegments: 16,
+    largeSegments: 20,
+    constraintIterations: 4,
   },
 }
 
@@ -29,6 +29,10 @@ export function chooseAutomaticProfile({
   hardwareConcurrency = globalThis.navigator?.hardwareConcurrency,
   deviceMemory = globalThis.navigator?.deviceMemory,
 } = {}) {
+  if (!hardwareConcurrency && !deviceMemory) {
+    return PERFORMANCE_PROFILES.balanced
+  }
+
   if ((deviceMemory && deviceMemory <= 3) || (hardwareConcurrency && hardwareConcurrency <= 4)) {
     return PERFORMANCE_PROFILES.battery
   }
