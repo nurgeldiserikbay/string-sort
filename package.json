@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "assets:android": "npx @capacitor/assets generate --android --iconBackgroundColor '#f7dfb9' --iconBackgroundColorDark '#242932' --splashBackgroundColor '#f7dfb9' --splashBackgroundColorDark '#242932'"
+    "assets:android": "npx @capacitor/assets generate --android --iconBackgroundColor '#f7dfb9' --iconBackgroundColorDark '#242932' --splashBackgroundColor '#f7dfb9' --splashBackgroundColorDark '#242932'",
+    "assets:store": "node scripts/build-store-assets.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -21,6 +22,7 @@
     "vite": "^7.1.7",
     "vitest": "^3.2.4",
     "happy-dom": "^18.0.1",
-    "@capacitor/assets": "^3.0.5"
+    "@capacitor/assets": "^3.0.5",
+    "sharp": "^0.34.3"
   }
 }
