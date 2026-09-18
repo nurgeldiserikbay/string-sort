@@ -2,7 +2,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { RopeBoard } from './RopeBoard.js'
 import { AudioManager } from './AudioManager.js'
 import { graphicsLabel, nextGraphicsOption } from './PerformanceProfile.js'
-import { exitNativeApp, installNativeBackHandler } from './NativeNavigation.js'
+import { exitNativeApp, installNativeAppStateHandler, installNativeBackHandler } from './NativeNavigation.js'
 import { createLevel, findBestSwap, getCrossingCount } from './levels.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
@@ -34,6 +34,7 @@ export class GameApp {
     this.timerRaf = 0
     this.screen = 'menu'
     this.backButtonHandle = null
+    this.appStateHandle = null
     this.pauseOverlay = null
     this.isCompleting = false
     this.progress = this.loadProgress()
@@ -85,13 +86,21 @@ export class GameApp {
     installNativeBackHandler(() => this.handleNativeBack()).then((handle) => {
       this.backButtonHandle = handle
     })
+
+    installNativeAppStateHandler(({ isActive }) => {
+      if (!isActive && this.screen === 'game') this.showPause()
+    }).then((handle) => {
+      this.appStateHandle = handle
+    })
   }
 
   destroy() {
     this.stopTimer()
     this.board?.destroy()
     this.backButtonHandle?.remove?.()
+    this.appStateHandle?.remove?.()
     this.backButtonHandle = null
+    this.appStateHandle = null
   }
 
   async handleNativeBack() {
