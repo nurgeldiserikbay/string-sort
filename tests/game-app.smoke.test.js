@@ -66,6 +66,7 @@ describe('GameApp interaction smoke tests', () => {
 
   afterEach(() => {
     app?.destroy()
+    vi.useRealTimers()
     vi.restoreAllMocks()
   })
 
@@ -112,5 +113,25 @@ describe('GameApp interaction smoke tests', () => {
 
     expect(graphicsButton.textContent.trim()).not.toBe(before)
     expect(app.settings.graphics).toBe('high')
+  })
+
+  it('completes a solved board, unlocks the next level and persists progress', () => {
+    vi.useFakeTimers()
+    root.querySelector('[data-action="play"]').click()
+
+    app.order = [0, 1, 0, 1]
+    app.board.setOrder(app.order)
+    app.elapsed = 12
+
+    app.handleSwap(1, 2)
+    vi.advanceTimersByTime(400)
+
+    expect(root.querySelector('.complete-card')).not.toBeNull()
+    expect(root.textContent).toContain('Level 1 Complete!')
+    expect(app.progress.unlocked).toBeGreaterThanOrEqual(2)
+
+    const saved = JSON.parse(localStorage.getItem('string-sort-progress-v1'))
+    expect(saved.unlocked).toBeGreaterThanOrEqual(2)
+    expect(saved.stars['1']).toBeGreaterThanOrEqual(1)
   })
 })
