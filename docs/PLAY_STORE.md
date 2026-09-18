@@ -66,9 +66,16 @@ This generates:
 
 CI also publishes these two files as the `string-sort-store-static-assets` artifact.
 
-Still required before the final Play Store submission:
-- phone screenshots captured from the real build;
-- 7-inch tablet screenshots if tablet support is enabled;
-- 10-inch tablet screenshots if tablet support is enabled.
+A manual GitHub Actions workflow named **Play Store Screenshots** can also build the real app UI and capture a 1080 × 1920 phone set automatically. It currently captures:
+- main menu;
+- level selection;
+- live gameplay;
+- real level-complete state after solving onboarding level 1 through pointer drags.
 
-Use the real in-game UI for screenshots so the listing accurately represents gameplay.
+The workflow packages those screenshots together with the generated 512 × 512 icon and 1024 × 500 feature graphic as `string-sort-play-store-package`.
+
+Still optional depending on the final Play Console device support:
+- 7-inch tablet screenshots;
+- 10-inch tablet screenshots.
+
+All phone screenshots are taken from the actual app UI rather than concept art.
