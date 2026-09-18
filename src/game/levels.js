@@ -1,3 +1,5 @@
+export const TOTAL_LEVELS = 100
+
 export const ROPE_COLORS = [
   '#ff4b4b',
   '#2f9bff',
@@ -15,6 +17,7 @@ const INTRO_LEVELS = {
     parMoves: 1,
     targetTime: 35,
     tutorial: 'Drag one peg onto another peg to swap their positions.',
+    initialHint: { from: 1, to: 2 },
   },
   2: {
     order: [0, 1, 0, 2, 1, 2, 3, 3],
@@ -155,16 +158,29 @@ export function createLevel(levelNumber) {
       parMoves: intro.parMoves,
       targetTime: intro.targetTime,
       tutorial: intro.tutorial,
+      initialHint: intro.initialHint ?? null,
     }
   }
 
-  const ropeCount = Math.min(8, 4 + Math.floor((levelNumber - 1) / 4))
-  const minCrossings = Math.min(
-    Math.floor((ropeCount * (ropeCount - 1)) / 2),
-    2 + Math.floor(levelNumber * 0.7),
-  )
+  let ropeCount
+  let minCrossings
+
+  if (levelNumber <= 24) {
+    ropeCount = 6
+    minCrossings = 8 + Math.floor((levelNumber - 9) / 3)
+  } else if (levelNumber <= 49) {
+    ropeCount = 7
+    minCrossings = 10 + Math.floor((levelNumber - 25) / 4)
+  } else {
+    ropeCount = 8
+    minCrossings = 12 + Math.floor((levelNumber - 50) / 5)
+  }
+
+  const maxCrossings = Math.floor((ropeCount * (ropeCount - 1)) / 2)
+  minCrossings = Math.min(maxCrossings, Math.max(1, minCrossings))
 
   const order = shuffleForLevel(ropeCount, 9001 + levelNumber * 7919, minCrossings)
+  const actualCrossings = countCrossings(order)
 
   return {
     id: levelNumber,
@@ -172,7 +188,7 @@ export function createLevel(levelNumber) {
     socketCount: ropeCount * 2,
     order,
     parMoves: Math.max(3, getGuaranteedSolveMoves(order).length),
-    targetTime: 28 + ropeCount * 7 + levelNumber * 1.5,
+    targetTime: Math.min(130, 30 + ropeCount * 5 + actualCrossings * 3),
   }
 }
 
