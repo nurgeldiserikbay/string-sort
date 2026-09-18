@@ -36,6 +36,8 @@ npm run build
 - Vitest coverage for level/crossing logic, rope endpoint stability, topology, adaptive performance, pointer drag/drop, level completion and basic UI interactions
 - GitHub Actions test + web build + generated Android debug APK verification
 - Manual signed Android AAB release workflow using repository secrets
+- Branded launcher/splash asset sources and automated Play Store icon/feature-graphic generation
+- Manual real-build Playwright screenshot workflow for Play Store phone screenshots
 
 ## Android
 
