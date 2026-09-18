@@ -342,6 +342,7 @@ export class GameApp {
     if (this.screen !== 'game') return
     this.screen = 'pause'
     this.stopTimer()
+    this.board?.stop()
 
     const overlay = document.createElement('div')
     overlay.className = 'modal-layer'
@@ -369,6 +370,7 @@ export class GameApp {
     this.pauseOverlay?.remove()
     this.pauseOverlay = null
     this.screen = 'game'
+    this.board?.start()
     this.startTimer()
   }
 
@@ -377,6 +379,7 @@ export class GameApp {
     clearTimeout(this.completionTimer)
     this.completionTimer = 0
     this.stopTimer()
+    this.board?.stop()
     this.screen = 'complete'
 
     const timeScore = this.elapsed <= this.level.targetTime ? 1 : 0
