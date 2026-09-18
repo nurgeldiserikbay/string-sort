@@ -519,3 +519,34 @@ html[data-banner-mode="preview"] .game-actions {
     transition-duration: 0.001ms !important;
   }
 }
+
+
+.resume-label {
+  margin: 0 0 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.58);
+  color: #755236;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.level-card.current {
+  outline: 4px solid rgba(62, 171, 255, .45);
+  outline-offset: 3px;
+  transform: translateY(-2px);
+}
+
+.level-card.current::after {
+  content: 'PLAY';
+  margin-top: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #39a5ff;
+  color: white;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
