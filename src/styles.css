@@ -1,7 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap');
-
 :root {
-  font-family: 'Nunito', system-ui, sans-serif;
+  font-family: 'Trebuchet MS', system-ui, sans-serif;
+  --font-display: 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif;
   color: #3d2c20;
   background: #f7e8c8;
   font-synthesis: none;
@@ -63,7 +62,7 @@ button { font: inherit; }
 .page-header h1 {
   margin: 0;
   text-align: center;
-  font-family: 'Baloo 2', cursive;
+  font-family: var(--font-display);
   font-size: 28px;
 }
 
@@ -102,7 +101,7 @@ button { font: inherit; }
 .level-pill {
   justify-self: center;
   padding: 8px 20px;
-  font-family: 'Baloo 2', cursive;
+  font-family: var(--font-display);
   font-size: 22px;
 }
 
@@ -118,7 +117,7 @@ button { font: inherit; }
 
 .logo {
   text-align: center;
-  font-family: 'Baloo 2', cursive;
+  font-family: var(--font-display);
   font-weight: 800;
   line-height: .78;
   letter-spacing: -3px;
@@ -176,7 +175,7 @@ button { font: inherit; }
   padding: 8px 28px;
   background: linear-gradient(#88ee4d, #2ebf43);
   color: white;
-  font-family: 'Baloo 2', cursive;
+  font-family: var(--font-display);
   font-size: 28px;
   font-weight: 800;
   text-shadow: 0 2px 0 rgba(0,0,0,.18);
@@ -307,7 +306,7 @@ button { font: inherit; }
   justify-content:center;
   color:#543923;
 }
-.level-card b { font-family:'Baloo 2'; font-size:30px; }
+.level-card b { font-family:var(--font-display); font-size:30px; }
 .level-card span { color:#ffb400; letter-spacing:1px; font-size:12px; }
 .level-card.locked { filter:saturate(.25); opacity:.58; }
 
@@ -333,7 +332,7 @@ button { font: inherit; }
 }
 
 .modal-card h2, .complete-card h2 {
-  font-family:'Baloo 2';
+  font-family:var(--font-display);
   font-size:30px;
   margin:5px 0 18px;
 }
@@ -362,7 +361,7 @@ button { font: inherit; }
   padding:10px;
   background:linear-gradient(#75df44,#30b63d);
   color:white;
-  font-family:'Baloo 2';
+  font-family:var(--font-display);
   font-size:38px;
   font-weight:800;
   text-shadow:0 2px rgba(0,0,0,.15);
