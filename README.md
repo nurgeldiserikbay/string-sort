@@ -24,14 +24,14 @@ npm run build
 - Peg collision and circular board constraints
 - Layered cord rendering with highlights, shadows and moving fiber detail
 - Draggable rope endpoints with tactile follow-through
-- Handcrafted onboarding levels followed by deterministic procedural levels
+- 8 handcrafted onboarding levels followed by 100 deterministic launch levels with solvability checks
 - Crossing-based win condition
 - Hint, Undo and Restart
 - Timer, move counter and 1–3 star result
 - Saved progression and saved sound/haptics settings
 - Offline synthesized sound effects
 - Capacitor haptic feedback
-- Main menu, level select, pause, result and settings screens
+- Main menu, 100-level select, pause, result, settings and About/privacy screens
 - Fully offline runtime UI (no font/CDN dependency)
 - Vitest coverage for level/crossing logic, rope endpoint stability, topology, adaptive performance, pointer drag/drop, level completion and basic UI interactions
 - GitHub Actions test + web build + generated Android debug APK verification
@@ -45,4 +45,4 @@ See [docs/ANDROID.md](docs/ANDROID.md) for local Android builds and [docs/RELEAS
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the remaining production work, including stable rope-over-rope tangle constraints, Android device tuning, release assets and final QA.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the remaining manual/external release validation, mainly physical Android device QA, final signing secrets and any future monetization SDK selection.
