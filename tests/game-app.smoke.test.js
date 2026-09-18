@@ -107,6 +107,24 @@ describe('GameApp interaction smoke tests', () => {
     expect(root.querySelector('.modal-card')).toBeNull()
   })
 
+  it('pauses when the document becomes hidden', () => {
+    root.querySelector('[data-action="play"]').click()
+
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: true,
+    })
+    app.onVisibilityChange()
+
+    expect(app.screen).toBe('pause')
+    expect(root.querySelector('.modal-card')).not.toBeNull()
+
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: false,
+    })
+  })
+
   it('persists the sound setting', () => {
     root.querySelector('[data-action="settings"]').click()
     const soundButton = root.querySelector('[data-setting="sound"]')
