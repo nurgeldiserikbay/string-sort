@@ -25,10 +25,23 @@ export const PERFORMANCE_PROFILES = {
   },
 }
 
-export function chooseAutomaticProfile({
-  hardwareConcurrency = globalThis.navigator?.hardwareConcurrency,
-  deviceMemory = globalThis.navigator?.deviceMemory,
-} = {}) {
+export function chooseAutomaticProfile(capabilities = {}) {
+  const hasHardwareConcurrency = Object.prototype.hasOwnProperty.call(
+    capabilities,
+    'hardwareConcurrency',
+  )
+  const hasDeviceMemory = Object.prototype.hasOwnProperty.call(
+    capabilities,
+    'deviceMemory',
+  )
+
+  const hardwareConcurrency = hasHardwareConcurrency
+    ? capabilities.hardwareConcurrency
+    : globalThis.navigator?.hardwareConcurrency
+  const deviceMemory = hasDeviceMemory
+    ? capabilities.deviceMemory
+    : globalThis.navigator?.deviceMemory
+
   if (!hardwareConcurrency && !deviceMemory) {
     return PERFORMANCE_PROFILES.balanced
   }
