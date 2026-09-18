@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createLevel, findBestSwap, getCrossingCount, getGuaranteedSolveMoves } from '../src/game/levels.js'
+import { TOTAL_LEVELS, createLevel, findBestSwap, getCrossingCount, getGuaranteedSolveMoves } from '../src/game/levels.js'
 
 describe('level geometry', () => {
   it('counts alternating chord endpoints as a crossing', () => {
@@ -46,5 +46,39 @@ describe('level geometry', () => {
 
     const unsolved = createLevel(12).order
     expect(findBestSwap(unsolved)).not.toBeNull()
+  })
+
+  it('ramps the handcrafted onboarding levels in controlled steps', () => {
+    const values = Array.from({ length: 8 }, (_, index) =>
+      getCrossingCount(createLevel(index + 1).order),
+    )
+
+    expect(values).toEqual([1, 2, 3, 6, 7, 9, 10, 12])
+  })
+
+  it('keeps all 100 launch levels valid, non-trivial and solvable', () => {
+    for (let levelNumber = 1; levelNumber <= TOTAL_LEVELS; levelNumber++) {
+      const level = createLevel(levelNumber)
+      const working = [...level.order]
+
+      expect(level.order).toHaveLength(level.ropeCount * 2)
+      expect(getCrossingCount(level.order)).toBeGreaterThan(0)
+      expect(level.targetTime).toBeGreaterThan(0)
+      expect(level.targetTime).toBeLessThanOrEqual(130)
+
+      for (let ropeId = 0; ropeId < level.ropeCount; ropeId++) {
+        expect(level.order.filter((id) => id === ropeId)).toHaveLength(2)
+      }
+
+      const moves = getGuaranteedSolveMoves(working)
+      for (const move of moves) {
+        ;[working[move.from], working[move.to]] = [
+          working[move.to],
+          working[move.from],
+        ]
+      }
+
+      expect(getCrossingCount(working)).toBe(0)
+    }
   })
 })
