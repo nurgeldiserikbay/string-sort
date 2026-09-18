@@ -1,8 +1,10 @@
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { RopeBoard } from './RopeBoard.js'
+import { AudioManager } from './AudioManager.js'
 import { createLevel, findBestSwap, getCrossingCount } from './levels.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
+const SETTINGS_KEY = 'string-sort-settings-v1'
 
 function formatTime(seconds) {
   const whole = Math.max(0, Math.floor(seconds))
@@ -11,7 +13,8 @@ function formatTime(seconds) {
   return `${minutes}:${secs}`
 }
 
-function safeHaptic(style = ImpactStyle.Light) {
+function safeHaptic(enabled, style = ImpactStyle.Light) {
+  if (!enabled) return
   Haptics.impact({ style }).catch(() => {})
 }
 
@@ -29,6 +32,8 @@ export class GameApp {
     this.timerRaf = 0
     this.screen = 'menu'
     this.progress = this.loadProgress()
+    this.settings = this.loadSettings()
+    this.audio = new AudioManager({ enabled: this.settings.sound })
   }
 
   loadProgress() {
@@ -46,6 +51,27 @@ export class GameApp {
 
   saveProgress() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(this.progress))
+  }
+
+  loadSettings() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')
+      return {
+        sound: parsed.sound ?? true,
+        haptics: parsed.haptics ?? true,
+      }
+    } catch {
+      return { sound: true, haptics: true }
+    }
+  }
+
+  saveSettings() {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings))
+    this.audio.setEnabled(this.settings.sound)
+  }
+
+  haptic(style = ImpactStyle.Light) {
+    safeHaptic(this.settings.haptics, style)
   }
 
   mount() {
@@ -150,6 +176,7 @@ export class GameApp {
         </header>
 
         <div class="timer-pill">⏱ <strong data-timer>00:00</strong></div>
+        ${this.level.tutorial ? `<div class="tutorial-chip">${this.level.tutorial}</div>` : ''}
 
         <section class="board-wrap">
           <canvas id="game-board" aria-label="String Sort game board"></canvas>
@@ -190,10 +217,11 @@ export class GameApp {
     this.moves++
     this.board.setOrder(this.order)
     this.updateHud()
-    safeHaptic()
+    this.haptic()
+    this.audio.swap()
 
     if (getCrossingCount(this.order) === 0) {
-      safeHaptic(ImpactStyle.Medium)
+      this.haptic(ImpactStyle.Medium)
       setTimeout(() => this.completeLevel(), 380)
     }
   }
@@ -212,14 +240,16 @@ export class GameApp {
     this.moves = Math.max(0, this.moves - 1)
     this.board.setOrder(this.order)
     this.updateHud()
-    safeHaptic()
+    this.haptic()
+    this.audio.undo()
   }
 
   useHint() {
     const best = findBestSwap(this.order)
     if (!best) return
     this.board.flashHint(best.from, best.to)
-    safeHaptic(ImpactStyle.Medium)
+    this.haptic(ImpactStyle.Medium)
+    this.audio.hint()
   }
 
   startTimer() {
@@ -278,6 +308,7 @@ export class GameApp {
     if (!currentBest || this.elapsed < currentBest) this.progress.bestTimes[this.levelNumber] = this.elapsed
     this.progress.unlocked = Math.max(this.progress.unlocked, this.levelNumber + 1)
     this.saveProgress()
+    this.audio.win()
 
     const overlay = document.createElement('div')
     overlay.className = 'complete-layer'
@@ -307,12 +338,38 @@ export class GameApp {
           <span></span>
         </header>
         <section class="settings-card">
-          <div><span>Haptics</span><b>On</b></div>
-          <div><span>Sound</span><b>Coming next</b></div>
+          <div>
+            <span>Haptics</span>
+            <button class="setting-toggle" data-setting="haptics" aria-pressed="${this.settings.haptics}">
+              ${this.settings.haptics ? 'On' : 'Off'}
+            </button>
+          </div>
+          <div>
+            <span>Sound</span>
+            <button class="setting-toggle" data-setting="sound" aria-pressed="${this.settings.sound}">
+              ${this.settings.sound ? 'On' : 'Off'}
+            </button>
+          </div>
           <div><span>Graphics</span><b>High</b></div>
         </section>
       </main>
     `)
-    this.root.querySelector('[data-action="back"]').onclick = () => this.showMenu()
+
+    this.root.querySelector('[data-action="back"]').onclick = () => {
+      this.audio.tap()
+      this.showMenu()
+    }
+
+    this.root.querySelectorAll('[data-setting]').forEach((button) => {
+      button.onclick = () => {
+        const key = button.dataset.setting
+        this.settings[key] = !this.settings[key]
+        this.saveSettings()
+        button.textContent = this.settings[key] ? 'On' : 'Off'
+        button.setAttribute('aria-pressed', String(this.settings[key]))
+        if (key === 'sound' && this.settings.sound) this.audio.tap()
+        if (key === 'haptics' && this.settings.haptics) this.haptic()
+      }
+    })
   }
 }
