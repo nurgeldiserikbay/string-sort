@@ -25,6 +25,15 @@ export class RopeBoard {
     this.running = false
     this.raf = 0
     this.depthSeed = 0x51f15e
+    this.debugEnabled = (() => {
+      try {
+        return new URLSearchParams(globalThis.location?.search || '').get('debug') === '1'
+      } catch {
+        return false
+      }
+    })()
+    this.debugFrameTimes = []
+    this.debugFps = 0
     this.graphicsPreference = graphics
     this.performanceProfile = resolvePerformanceProfile(graphics)
     this.frameGovernor = graphics === 'auto'
@@ -70,6 +79,8 @@ export class RopeBoard {
 
     const tick = (time) => {
       if (!this.running) return
+
+      this.updateDiagnostics(time)
 
       const recommendation = this.frameGovernor?.pushFrame(time)
       if (recommendation && recommendation.id !== this.performanceProfile.id) {
@@ -611,6 +622,60 @@ export class RopeBoard {
     ctx.restore()
   }
 
+  updateDiagnostics(time) {
+    if (!this.debugEnabled || !Number.isFinite(time)) return
+
+    const previous = this.debugFrameTimes.at(-1)
+    this.debugFrameTimes.push(time)
+    if (this.debugFrameTimes.length > 31) this.debugFrameTimes.shift()
+
+    if (previous == null || this.debugFrameTimes.length < 12) return
+
+    const first = this.debugFrameTimes[0]
+    const last = this.debugFrameTimes.at(-1)
+    const frameCount = this.debugFrameTimes.length - 1
+    const elapsed = last - first
+    if (elapsed > 0) this.debugFps = Math.round((frameCount * 1000) / elapsed)
+  }
+
+  drawDiagnostics(g) {
+    if (!this.debugEnabled) return
+
+    const ctx = this.ctx
+    const contacts = this.physics.getContacts().length
+    const ropes = new Set(this.order).size
+    const lines = [
+      `FPS ${this.debugFps || '--'}`,
+      `Profile ${this.performanceProfile.id}`,
+      `Ropes ${ropes} · Contacts ${contacts}`,
+      `DPR cap ${this.performanceProfile.dprCap}`,
+    ]
+
+    ctx.save()
+    ctx.font = '700 11px monospace'
+    ctx.textBaseline = 'top'
+
+    const width = 154
+    const height = 14 + lines.length * 15
+    const x = 8
+    const y = 8
+
+    ctx.fillStyle = 'rgba(15,18,22,.78)'
+    ctx.beginPath()
+    if (ctx.roundRect) {
+      ctx.roundRect(x, y, width, height, 10)
+    } else {
+      ctx.rect(x, y, width, height)
+    }
+    ctx.fill()
+
+    ctx.fillStyle = 'rgba(255,255,255,.92)'
+    lines.forEach((line, index) => {
+      ctx.fillText(line, x + 10, y + 8 + index * 15)
+    })
+    ctx.restore()
+  }
+
   draw(time = 0) {
     const ctx = this.ctx
     const g = this.geometry()
@@ -629,6 +694,7 @@ export class RopeBoard {
 
     this.order.forEach((_, index) => this.drawPeg(index, time))
     this.drawCenterHub(g, time)
+    this.drawDiagnostics(g)
 
     if (this.hint && performance.now() > this.hintUntil) this.hint = null
   }
