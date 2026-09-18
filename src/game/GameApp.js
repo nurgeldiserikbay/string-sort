@@ -42,6 +42,9 @@ export class GameApp {
     this.appStateHandle = null
     this.pauseOverlay = null
     this.isCompleting = false
+    this.onVisibilityChange = () => {
+      if (document.hidden && this.screen === 'game') this.showPause()
+    }
     this.progress = this.loadProgress()
     this.settings = this.loadSettings()
     this.audio = new AudioManager({ enabled: this.settings.sound })
@@ -84,6 +87,8 @@ export class GameApp {
     }).then((handle) => {
       this.appStateHandle = handle
     })
+
+    document.addEventListener('visibilitychange', this.onVisibilityChange)
   }
 
   destroy() {
@@ -93,6 +98,7 @@ export class GameApp {
     this.board?.destroy()
     this.backButtonHandle?.remove?.()
     this.appStateHandle?.remove?.()
+    document.removeEventListener('visibilitychange', this.onVisibilityChange)
     this.backButtonHandle = null
     this.appStateHandle = null
   }
