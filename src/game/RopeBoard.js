@@ -2,6 +2,7 @@ import { ROPE_COLORS, getCrossingCount } from './levels.js'
 import { RopePhysics } from './RopePhysics.js'
 import { stableDepthOrder, topRopeAtContact } from './RopeTopology.js'
 import { resolvePerformanceProfile } from './PerformanceProfile.js'
+import { FrameGovernor } from './FrameGovernor.js'
 
 const TAU = Math.PI * 2
 
@@ -24,7 +25,11 @@ export class RopeBoard {
     this.running = false
     this.raf = 0
     this.depthSeed = 0x51f15e
+    this.graphicsPreference = graphics
     this.performanceProfile = resolvePerformanceProfile(graphics)
+    this.frameGovernor = graphics === 'auto'
+      ? new FrameGovernor({ profileId: this.performanceProfile.id })
+      : null
     this.physics = new RopePhysics({
       damping: 0.982,
       gravity: 24,
@@ -65,6 +70,15 @@ export class RopeBoard {
 
     const tick = (time) => {
       if (!this.running) return
+
+      const recommendation = this.frameGovernor?.pushFrame(time)
+      if (recommendation && recommendation.id !== this.performanceProfile.id) {
+        this.performanceProfile = recommendation
+        this.physics.constraintIterations = recommendation.constraintIterations
+        this.resize()
+        this.frameGovernor.reset(time)
+      }
+
       this.draw(time)
       this.raf = requestAnimationFrame(tick)
     }
