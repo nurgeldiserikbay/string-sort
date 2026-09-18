@@ -22,9 +22,10 @@
 - Automated unit tests and GitHub Actions build/test workflow
 - Capacitor Android smoke build in CI
 - Downloadable debug APK artifact from successful CI runs
+- Adaptive High / Balanced / Battery graphics profiles with automatic device selection
 
 ## Next production phases
-1. Tune rope physics on real low/mid Android hardware (segment count, iterations, DPR).
+1. Validate and tune the adaptive performance profiles on real low/mid Android hardware.
 2. Add interaction smoke tests around drag/drop, pause/resume and level completion.
 3. Generate and wire final Android launcher icon and splash assets.
 4. Add production Android release signing documentation/workflow.
