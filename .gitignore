@@ -6,3 +6,4 @@ android/app/build/
 .vscode/
 .DS_Store
 *.log
+store/generated/
