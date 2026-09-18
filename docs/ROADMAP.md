@@ -23,16 +23,17 @@
 - Capacitor Android smoke build in CI
 - Downloadable debug APK artifact from successful CI runs
 - Adaptive High / Balanced / Battery graphics profiles with automatic device selection
+- Interaction smoke tests for menu, level start, pause/resume and settings persistence
+- Manual signed AAB GitHub Actions release workflow with secret-based keystore handling
 
 ## Next production phases
 1. Validate and tune the adaptive performance profiles on real low/mid Android hardware.
-2. Add interaction smoke tests around drag/drop, pause/resume and level completion.
+2. Expand interaction smoke tests to pointer drag/drop and level completion.
 3. Generate and wire final Android launcher icon and splash assets.
-4. Add production Android release signing documentation/workflow.
-5. Add ad-safe layout zones without interrupting the puzzle board.
-6. Tune handcrafted onboarding and procedural difficulty from playtesting.
-7. Prepare Play Store icon, screenshots, feature graphic and data-safety/privacy docs.
-8. Final device QA, performance profiling and release build instructions.
+4. Add ad-safe layout zones without interrupting the puzzle board.
+5. Tune handcrafted onboarding and procedural difficulty from playtesting.
+6. Prepare Play Store icon, screenshots, feature graphic and data-safety/privacy docs.
+7. Final device QA and real-device performance profiling.
 
 ## Quality target
 The final game should feel tactile and readable at 60 FPS on a mid-range Android phone. Physics prioritizes pleasant, predictable interaction over scientific rope simulation.
