@@ -3,7 +3,7 @@ import { RopeBoard } from './RopeBoard.js'
 import { AudioManager } from './AudioManager.js'
 import { graphicsLabel, nextGraphicsOption } from './PerformanceProfile.js'
 import { exitNativeApp, installNativeAppStateHandler, installNativeBackHandler } from './NativeNavigation.js'
-import { createLevel, findBestSwap, getCrossingCount } from './levels.js'
+import { TOTAL_LEVELS, createLevel, findBestSwap, getCrossingCount } from './levels.js'
 import { createBannerSafeSlot } from './MonetizationLayout.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
@@ -33,6 +33,7 @@ export class GameApp {
     this.elapsed = 0
     this.timerStartedAt = 0
     this.timerRaf = 0
+    this.tutorialHintTimer = 0
     this.screen = 'menu'
     this.backButtonHandle = null
     this.appStateHandle = null
@@ -47,7 +48,7 @@ export class GameApp {
     try {
       const parsed = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')
       return {
-        unlocked: Math.max(1, parsed.unlocked || 1),
+        unlocked: Math.min(TOTAL_LEVELS, Math.max(1, parsed.unlocked || 1)),
         stars: parsed.stars || {},
         bestTimes: parsed.bestTimes || {},
       }
@@ -97,6 +98,7 @@ export class GameApp {
 
   destroy() {
     this.stopTimer()
+    clearTimeout(this.tutorialHintTimer)
     this.board?.destroy()
     this.backButtonHandle?.remove?.()
     this.appStateHandle?.remove?.()
@@ -132,6 +134,8 @@ export class GameApp {
     this.board?.destroy()
     this.board = null
     this.stopTimer()
+    clearTimeout(this.tutorialHintTimer)
+    this.tutorialHintTimer = 0
     this.root.innerHTML = content
   }
 
@@ -174,7 +178,7 @@ export class GameApp {
 
   showLevelSelect() {
     this.screen = 'levels'
-    const cards = Array.from({ length: 30 }, (_, index) => {
+    const cards = Array.from({ length: TOTAL_LEVELS }, (_, index) => {
       const n = index + 1
       const unlocked = n <= this.progress.unlocked
       const stars = this.progress.stars[n] || 0
@@ -204,8 +208,9 @@ export class GameApp {
   }
 
   startLevel(levelNumber) {
-    this.levelNumber = levelNumber
-    this.level = createLevel(levelNumber)
+    const normalizedLevel = Math.min(TOTAL_LEVELS, Math.max(1, levelNumber))
+    this.levelNumber = normalizedLevel
+    this.level = createLevel(normalizedLevel)
     this.order = [...this.level.order]
     this.history = []
     this.moves = 0
@@ -217,8 +222,8 @@ export class GameApp {
       <main class="screen game-screen">
         <header class="game-header">
           <button class="icon-button" data-action="pause">Ⅱ</button>
-          <div class="level-pill">Level ${levelNumber}</div>
-          <div class="coin-pill compact"><span>★</span><b>${this.progress.stars[levelNumber] || 0}</b></div>
+          <div class="level-pill">Level ${this.levelNumber}</div>
+          <div class="coin-pill compact"><span>★</span><b>${this.progress.stars[this.levelNumber] || 0}</b></div>
         </header>
 
         <div class="timer-pill">⏱ <strong data-timer>00:00</strong></div>
@@ -258,9 +263,18 @@ export class GameApp {
     this.root.querySelector('[data-action="restart"]').onclick = () => this.startLevel(this.levelNumber)
 
     this.startTimer()
+
+    if (this.level.initialHint) {
+      this.tutorialHintTimer = setTimeout(() => {
+        if (this.screen !== 'game' || this.moves !== 0 || !this.board) return
+        this.board.flashHint(this.level.initialHint.from, this.level.initialHint.to)
+      }, 650)
+    }
   }
 
   handleSwap(from, to) {
+    clearTimeout(this.tutorialHintTimer)
+    this.tutorialHintTimer = 0
     this.history.push([...this.order])
     ;[this.order[from], this.order[to]] = [this.order[to], this.order[from]]
     this.moves++
@@ -364,10 +378,14 @@ export class GameApp {
     this.progress.stars[this.levelNumber] = Math.max(this.progress.stars[this.levelNumber] || 0, stars)
     const currentBest = this.progress.bestTimes[this.levelNumber]
     if (!currentBest || this.elapsed < currentBest) this.progress.bestTimes[this.levelNumber] = this.elapsed
-    this.progress.unlocked = Math.max(this.progress.unlocked, this.levelNumber + 1)
+    this.progress.unlocked = Math.min(
+      TOTAL_LEVELS,
+      Math.max(this.progress.unlocked, this.levelNumber + 1),
+    )
     this.saveProgress()
     this.audio.win()
 
+    const hasNextLevel = this.levelNumber < TOTAL_LEVELS
     const overlay = document.createElement('div')
     overlay.className = 'complete-layer'
     overlay.innerHTML = `
@@ -377,13 +395,16 @@ export class GameApp {
         <div class="ribbon">Great!</div>
         <h2>Level ${this.levelNumber} Complete!</h2>
         <p>${formatTime(this.elapsed)} · ${this.moves} moves</p>
-        <button class="primary-button" data-action="next">▶ Next</button>
+        <button class="primary-button" data-action="next">${hasNextLevel ? '▶ Next' : '✓ Levels'}</button>
         <button class="secondary-link" data-action="levels">Levels</button>
       </section>
     `
     this.root.appendChild(overlay)
 
-    overlay.querySelector('[data-action="next"]').onclick = () => this.startLevel(this.levelNumber + 1)
+    overlay.querySelector('[data-action="next"]').onclick = () => {
+      if (hasNextLevel) this.startLevel(this.levelNumber + 1)
+      else this.showLevelSelect()
+    }
     overlay.querySelector('[data-action="levels"]').onclick = () => this.showLevelSelect()
   }
 
