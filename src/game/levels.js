@@ -9,6 +9,27 @@ export const ROPE_COLORS = [
   '#ff5eaa',
 ]
 
+const INTRO_LEVELS = {
+  1: {
+    order: [0, 1, 0, 2, 1, 3, 2, 3],
+    parMoves: 2,
+    targetTime: 55,
+    tutorial: 'Drag one colored peg onto another peg to swap them.',
+  },
+  2: {
+    order: [0, 1, 2, 0, 3, 2, 1, 3],
+    parMoves: 1,
+    targetTime: 48,
+    tutorial: 'Try to reduce the crossing counter with every move.',
+  },
+  3: {
+    order: [0, 1, 2, 3, 0, 1, 2, 3],
+    parMoves: 2,
+    targetTime: 52,
+    tutorial: 'No crossings left means the level is solved.',
+  },
+}
+
 function seededRandom(seed) {
   let value = seed >>> 0
   return () => {
@@ -68,6 +89,20 @@ function shuffleForLevel(ropeCount, seed, minCrossings) {
 }
 
 export function createLevel(levelNumber) {
+  const intro = INTRO_LEVELS[levelNumber]
+  if (intro) {
+    const ropeCount = new Set(intro.order).size
+    return {
+      id: levelNumber,
+      ropeCount,
+      socketCount: intro.order.length,
+      order: [...intro.order],
+      parMoves: intro.parMoves,
+      targetTime: intro.targetTime,
+      tutorial: intro.tutorial,
+    }
+  }
+
   const ropeCount = Math.min(8, 4 + Math.floor((levelNumber - 1) / 4))
   const minCrossings = Math.min(
     Math.floor((ropeCount * (ropeCount - 1)) / 2),
