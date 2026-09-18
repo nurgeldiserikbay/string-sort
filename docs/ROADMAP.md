@@ -1,28 +1,33 @@
 # String Sort production roadmap
 
-## Current playable foundation
-- Vite + JavaScript
+## Implemented
+- Vite + JavaScript + Capacitor foundation
+- Responsive toy-like mobile UI with no runtime font/CDN dependency
 - Canvas 2D board renderer
+- Segmented Verlet rope simulation with damping and substeps
+- Rope slack/tension, drag follow-through and animated settling
+- Peg collision and circular board boundary constraints
+- Layered rope shading/texture for a tactile cord look
 - Draggable rope endpoints
 - Deterministic puzzle generation
-- Crossing counter
+- Crossing counter and crossing-based win condition
 - Hint / Undo / Restart
-- Timer, moves, stars, local progress
-- Main menu, level select, pause, results, settings
-- Capacitor config and haptic feedback
-- Responsive toy-like UI
+- Timer, moves, stars and local progress
+- Main menu, level select, pause, results and settings
+- Haptic feedback
+- Automated unit tests and GitHub Actions build/test workflow
 
 ## Next production phases
-1. Replace simplified center-crossing ropes with segmented Verlet ropes.
-2. Add peg collision, rope slack/tension, drag inertia and friction.
-3. Add rope-over-rope visual ordering and stable tangle constraints.
-4. Add native/local audio assets and sound settings.
-5. Add handcrafted onboarding levels, then tune generator difficulty.
-6. Add accessibility and color-blind-safe secondary rope markers.
-7. Add Android project, launcher/splash assets, release signing guide.
-8. Add automated tests for generator, crossing detection and save data.
-9. Profile on low/mid Android hardware and tune DPR/segment count.
-10. Prepare Play Store screenshots, feature graphic, privacy/data-safety docs.
+1. Add explicit rope-over-rope crossing constraints so visual over/under state stays stable during aggressive dragging.
+2. Tune rope physics on real low/mid Android hardware (segment count, iterations, DPR).
+3. Add local sound effects, music ambience and real settings toggles.
+4. Add handcrafted onboarding levels before procedural difficulty takes over.
+5. Add accessibility and color-blind-safe secondary rope markers.
+6. Generate Android project, launcher/splash assets and release configuration.
+7. Add save-data migration tests and interaction smoke tests.
+8. Add ad-safe layout zones without interrupting the puzzle board.
+9. Prepare Play Store icon, screenshots, feature graphic and data-safety/privacy docs.
+10. Final device QA, performance profiling and release build instructions.
 
 ## Quality target
-The final game should feel tactile and readable at 60 FPS on a mid-range Android phone. Physics should prioritize pleasant, predictable interactions over scientific rope simulation.
+The final game should feel tactile and readable at 60 FPS on a mid-range Android phone. Physics prioritizes pleasant, predictable interaction over scientific rope simulation.
