@@ -17,17 +17,26 @@ export function normalizeProgress(raw, totalLevels) {
   const bestTimes = {}
 
   for (const [key, value] of Object.entries(asObject(source.stars))) {
-    const level = clampInteger(key, 1, maxLevel, 0)
-    if (!level) continue
+    const numericLevel = Number(key)
+    if (!Number.isInteger(numericLevel) || numericLevel < 1 || numericLevel > maxLevel) continue
     const score = clampInteger(value, 0, 3, 0)
-    if (score > 0) stars[level] = score
+    if (score > 0) stars[numericLevel] = score
   }
 
   for (const [key, value] of Object.entries(asObject(source.bestTimes))) {
-    const level = clampInteger(key, 1, maxLevel, 0)
+    const numericLevel = Number(key)
     const seconds = Number(value)
-    if (!level || !Number.isFinite(seconds) || seconds <= 0 || seconds > 86400) continue
-    bestTimes[level] = seconds
+    if (
+      !Number.isInteger(numericLevel)
+      || numericLevel < 1
+      || numericLevel > maxLevel
+      || !Number.isFinite(seconds)
+      || seconds <= 0
+      || seconds > 86400
+    ) {
+      continue
+    }
+    bestTimes[numericLevel] = seconds
   }
 
   return {
