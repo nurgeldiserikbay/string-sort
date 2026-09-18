@@ -90,6 +90,18 @@ describe('GameApp interaction smoke tests', () => {
     expect(app.screen).toBe('game')
   })
 
+  it('maps Android-style back navigation to pause and resume states', async () => {
+    root.querySelector('[data-action="play"]').click()
+
+    await app.handleNativeBack()
+    expect(app.screen).toBe('pause')
+    expect(root.querySelector('.modal-card')).not.toBeNull()
+
+    await app.handleNativeBack()
+    expect(app.screen).toBe('game')
+    expect(root.querySelector('.modal-card')).toBeNull()
+  })
+
   it('persists the sound setting', () => {
     root.querySelector('[data-action="settings"]').click()
     const soundButton = root.querySelector('[data-setting="sound"]')
@@ -133,5 +145,8 @@ describe('GameApp interaction smoke tests', () => {
     const saved = JSON.parse(localStorage.getItem('string-sort-progress-v1'))
     expect(saved.unlocked).toBeGreaterThanOrEqual(2)
     expect(saved.stars['1']).toBeGreaterThanOrEqual(1)
+
+    app.completeLevel()
+    expect(root.querySelectorAll('.complete-card')).toHaveLength(1)
   })
 })
