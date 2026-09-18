@@ -45,4 +45,4 @@ See [docs/ANDROID.md](docs/ANDROID.md) for local Android builds and [docs/RELEAS
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the remaining manual/external release validation, mainly physical Android device QA, final signing secrets and any future monetization SDK selection.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the remaining manual/external validation. The exact owner-only steps are collected in [docs/FINAL_RELEASE_HANDOFF.md](docs/FINAL_RELEASE_HANDOFF.md).
