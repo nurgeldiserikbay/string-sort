@@ -6,6 +6,7 @@ import { exitNativeApp, installNativeAppStateHandler, installNativeBackHandler }
 import { TOTAL_LEVELS, createLevel, findBestSwap, getCrossingCount } from './levels.js'
 import { createBannerSafeSlot } from './MonetizationLayout.js'
 import { normalizeProgress, normalizeSettings, safeReadJson, safeWriteJson } from './SaveData.js'
+import { APP_VERSION, privacySummary } from './AppInfo.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
@@ -472,6 +473,14 @@ export class GameApp {
               ${graphicsLabel(this.settings.graphics)}
             </button>
           </div>
+          <div>
+            <span>About</span>
+            <button class="setting-toggle neutral-toggle" data-action="about">Open</button>
+          </div>
+          <div>
+            <span>Progress</span>
+            <button class="setting-toggle danger-toggle" data-action="reset-progress">Reset</button>
+          </div>
         </section>
       </main>
     `)
@@ -501,5 +510,58 @@ export class GameApp {
         if (key === 'haptics' && this.settings.haptics) this.haptic()
       }
     })
+
+    this.root.querySelector('[data-action="about"]').onclick = () => this.showAbout()
+    this.root.querySelector('[data-action="reset-progress"]').onclick = () => this.confirmResetProgress()
+  }
+
+  showAbout() {
+    const overlay = document.createElement('div')
+    overlay.className = 'modal-layer'
+    overlay.innerHTML = `
+      <section class="modal-card about-card">
+        <button class="modal-close" data-action="close" aria-label="Close">×</button>
+        <h2>String Sort</h2>
+        <p class="version-label">Version ${APP_VERSION}</p>
+        <div class="privacy-summary">
+          ${privacySummary().map((line) => `<p>• ${line}</p>`).join('')}
+        </div>
+        <button class="modal-option" data-action="privacy">Privacy details</button>
+        <button class="primary-button" data-action="close">Done</button>
+      </section>
+    `
+
+    this.root.appendChild(overlay)
+
+    overlay.querySelectorAll('[data-action="close"]').forEach((button) => {
+      button.onclick = () => overlay.remove()
+    })
+
+    overlay.querySelector('[data-action="privacy"]').onclick = () => {
+      window.open('/privacy.html', '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  confirmResetProgress() {
+    const overlay = document.createElement('div')
+    overlay.className = 'modal-layer'
+    overlay.innerHTML = `
+      <section class="modal-card">
+        <h2>Reset progress?</h2>
+        <p class="modal-copy">Stars, best times and unlocked levels on this device will be cleared.</p>
+        <button class="modal-option danger-option" data-action="confirm">Reset progress</button>
+        <button class="primary-button" data-action="cancel">Keep progress</button>
+      </section>
+    `
+
+    this.root.appendChild(overlay)
+    overlay.querySelector('[data-action="cancel"]').onclick = () => overlay.remove()
+    overlay.querySelector('[data-action="confirm"]').onclick = () => {
+      this.progress = normalizeProgress({}, TOTAL_LEVELS)
+      this.saveProgress()
+      this.haptic(ImpactStyle.Medium)
+      overlay.remove()
+      this.showSettings()
+    }
   }
 }
