@@ -132,6 +132,37 @@ describe('GameApp interaction smoke tests', () => {
     expect(app.settings.graphics).toBe('high')
   })
 
+  it('opens the about dialog from settings', () => {
+    root.querySelector('[data-action="settings"]').click()
+    root.querySelector('[data-action="about"]').click()
+
+    expect(root.querySelector('.about-card')).not.toBeNull()
+    expect(root.textContent).toContain('Version 0.1.0')
+    expect(root.textContent).toContain('works offline')
+  })
+
+  it('resets local progress only after confirmation', () => {
+    app.progress = {
+      unlocked: 12,
+      stars: { 1: 3, 2: 2 },
+      bestTimes: { 1: 12.4 },
+    }
+    app.saveProgress()
+
+    root.querySelector('[data-action="settings"]').click()
+    root.querySelector('[data-action="reset-progress"]').click()
+
+    expect(root.textContent).toContain('Reset progress?')
+    root.querySelector('[data-action="confirm"]').click()
+
+    expect(app.progress.unlocked).toBe(1)
+    expect(app.progress.stars).toEqual({})
+    expect(app.progress.bestTimes).toEqual({})
+
+    const saved = JSON.parse(localStorage.getItem('string-sort-progress-v1'))
+    expect(saved.unlocked).toBe(1)
+  })
+
   it('completes a solved board, unlocks the next level and persists progress', () => {
     vi.useFakeTimers()
     root.querySelector('[data-action="play"]').click()
