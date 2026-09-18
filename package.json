@@ -17,6 +17,7 @@
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",
     "vite": "^7.1.7",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "happy-dom": "^18.0.1"
   }
 }
