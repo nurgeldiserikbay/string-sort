@@ -279,6 +279,8 @@ export class GameApp {
   }
 
   handleSwap(from, to) {
+    if (this.isCompleting) return
+
     clearTimeout(this.tutorialHintTimer)
     this.tutorialHintTimer = 0
     this.history.push([...this.order])
@@ -306,6 +308,12 @@ export class GameApp {
   }
 
   undo() {
+    if (this.isCompleting) {
+      clearTimeout(this.completionTimer)
+      this.completionTimer = 0
+      this.isCompleting = false
+    }
+
     const previous = this.history.pop()
     if (!previous) return
     this.order = previous
@@ -317,6 +325,7 @@ export class GameApp {
   }
 
   useHint() {
+    if (this.isCompleting) return
     const best = findBestSwap(this.order)
     if (!best) return
     this.board.flashHint(best.from, best.to)
@@ -386,8 +395,15 @@ export class GameApp {
 
   completeLevel() {
     if (this.screen === 'complete') return
+
     clearTimeout(this.completionTimer)
     this.completionTimer = 0
+
+    if (getCrossingCount(this.order) !== 0) {
+      this.isCompleting = false
+      return
+    }
+
     this.stopTimer()
     this.board?.stop()
     this.screen = 'complete'
