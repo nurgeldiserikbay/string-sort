@@ -66,6 +66,8 @@ jobs:
         run: npm test
 
       - name: Build web app
+        env:
+          VITE_APP_VERSION: ${{ inputs.version_name }}
         run: npm run build
 
       - name: Generate Capacitor Android project
