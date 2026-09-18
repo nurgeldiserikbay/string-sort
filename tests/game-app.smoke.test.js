@@ -154,4 +154,24 @@ describe('GameApp interaction smoke tests', () => {
     app.completeLevel()
     expect(root.querySelectorAll('.complete-card')).toHaveLength(1)
   })
+
+  it('still completes a solved level after pausing during the completion delay', () => {
+    vi.useFakeTimers()
+    root.querySelector('[data-action="play"]').click()
+
+    app.order = [0, 1, 0, 1]
+    app.board.setOrder(app.order)
+
+    app.handleSwap(1, 2)
+    app.showPause()
+
+    vi.advanceTimersByTime(500)
+    expect(root.querySelector('.complete-card')).toBeNull()
+
+    app.resumeFromPause()
+    vi.advanceTimersByTime(200)
+
+    expect(root.querySelector('.complete-card')).not.toBeNull()
+    expect(app.screen).toBe('complete')
+  })
 })
