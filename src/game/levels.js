@@ -11,22 +11,48 @@ export const ROPE_COLORS = [
 
 const INTRO_LEVELS = {
   1: {
-    order: [0, 1, 0, 2, 1, 3, 2, 3],
-    parMoves: 2,
-    targetTime: 55,
-    tutorial: 'Drag one colored peg onto another peg to swap them.',
+    order: [0, 1, 0, 1, 2, 2],
+    parMoves: 1,
+    targetTime: 35,
+    tutorial: 'Drag one peg onto another peg to swap their positions.',
   },
   2: {
-    order: [0, 1, 2, 0, 3, 2, 1, 3],
-    parMoves: 1,
-    targetTime: 48,
-    tutorial: 'Try to reduce the crossing counter with every move.',
+    order: [0, 1, 0, 2, 1, 2, 3, 3],
+    parMoves: 2,
+    targetTime: 40,
+    tutorial: 'Watch the Crossings counter. Lower is better.',
   },
   3: {
+    order: [0, 1, 2, 0, 1, 2, 3, 3],
+    parMoves: 2,
+    targetTime: 42,
+    tutorial: 'Stuck? Hint highlights a swap that improves the board.',
+  },
+  4: {
     order: [0, 1, 2, 3, 0, 1, 2, 3],
     parMoves: 2,
-    targetTime: 52,
-    tutorial: 'No crossings left means the level is solved.',
+    targetTime: 48,
+    tutorial: 'Reach zero crossings to finish the level.',
+  },
+  5: {
+    order: [0, 1, 2, 0, 3, 1, 4, 2, 3, 4],
+    parMoves: 4,
+    targetTime: 58,
+  },
+  6: {
+    order: [0, 1, 2, 3, 0, 4, 1, 2, 3, 4],
+    parMoves: 4,
+    targetTime: 62,
+  },
+  7: {
+    order: [0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+    parMoves: 4,
+    targetTime: 68,
+  },
+  8: {
+    order: [5, 3, 0, 4, 1, 2, 5, 4, 3, 0, 2, 1],
+    parMoves: 4,
+    targetTime: 78,
   },
 }
 
