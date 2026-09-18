@@ -11,7 +11,8 @@
     "assets:android": "npx @capacitor/assets generate --android --iconBackgroundColor '#f7dfb9' --iconBackgroundColorDark '#242932' --splashBackgroundColor '#f7dfb9' --splashBackgroundColorDark '#242932'",
     "assets:store": "node scripts/build-store-assets.mjs",
     "screenshots:store": "node scripts/capture-store-screenshots.mjs",
-    "verify": "npm test && npm run build"
+    "verify": "npm test && npm run build && npm run verify:release",
+    "verify:release": "node scripts/verify-release-readiness.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.2",
