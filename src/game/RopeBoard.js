@@ -1,6 +1,7 @@
 import { ROPE_COLORS, getCrossingCount } from './levels.js'
 import { RopePhysics } from './RopePhysics.js'
 import { stableDepthOrder, topRopeAtContact } from './RopeTopology.js'
+import { resolvePerformanceProfile } from './PerformanceProfile.js'
 
 const TAU = Math.PI * 2
 
@@ -9,7 +10,7 @@ function clamp(value, min, max) {
 }
 
 export class RopeBoard {
-  constructor(canvas, { onSwap, onSolved }) {
+  constructor(canvas, { onSwap, onSolved, graphics = 'auto' }) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d', { alpha: true })
     this.onSwap = onSwap
@@ -23,10 +24,11 @@ export class RopeBoard {
     this.running = false
     this.raf = 0
     this.depthSeed = 0x51f15e
+    this.performanceProfile = resolvePerformanceProfile(graphics)
     this.physics = new RopePhysics({
       damping: 0.982,
       gravity: 24,
-      constraintIterations: 8,
+      constraintIterations: this.performanceProfile.constraintIterations,
     })
 
     this.onPointerDown = this.onPointerDown.bind(this)
@@ -86,7 +88,10 @@ export class RopeBoard {
 
   resize() {
     const rect = this.canvas.getBoundingClientRect()
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const dpr = Math.min(
+      window.devicePixelRatio || 1,
+      this.performanceProfile.dprCap,
+    )
     this.canvas.width = Math.round(rect.width * dpr)
     this.canvas.height = Math.round(rect.height * dpr)
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -211,7 +216,9 @@ export class RopeBoard {
         endpoints[0].position,
         endpoints[1].position,
         {
-          segmentCount: g.size < 360 ? 22 : 28,
+          segmentCount: g.size < 360
+            ? this.performanceProfile.smallSegments
+            : this.performanceProfile.largeSegments,
           slack: 1.115,
           retargetLength: draggedRopeId !== ropeId,
         },
