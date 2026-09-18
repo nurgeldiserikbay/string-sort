@@ -33,12 +33,13 @@ npm run build
 - Capacitor haptic feedback
 - Main menu, level select, pause, result and settings screens
 - Fully offline runtime UI (no font/CDN dependency)
-- Vitest coverage for level/crossing logic and rope endpoint stability
-- GitHub Actions test + production build verification
+- Vitest coverage for level/crossing logic, rope endpoint stability, topology, adaptive performance, and basic UI interactions
+- GitHub Actions test + web build + generated Android debug APK verification
+- Manual signed Android AAB release workflow using repository secrets
 
 ## Android
 
-See [docs/ANDROID.md](docs/ANDROID.md).
+See [docs/ANDROID.md](docs/ANDROID.md) for local Android builds and [docs/RELEASE.md](docs/RELEASE.md) for signed Play Store AAB builds.
 
 ## Roadmap
 
