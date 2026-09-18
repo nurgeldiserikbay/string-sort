@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 'gpt/**'
   pull_request:
     branches:
       - main
