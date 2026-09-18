@@ -75,10 +75,9 @@ try {
   await capture('03-gameplay')
 
   // Handcrafted level 1 starts as:
-  // [0, 1, 0, 2, 1, 3, 2, 3]
-  // These two swaps deterministically produce zero crossings.
-  await dragSocket(0, 3, 8)
-  await dragSocket(0, 5, 8)
+  // [0, 1, 0, 1, 2, 2]
+  // One swap teaches the core mechanic and solves the board.
+  await dragSocket(1, 2, 6)
 
   await page.waitForSelector('.complete-card', { timeout: 5000 })
   await page.waitForTimeout(450)
