@@ -1,5 +1,6 @@
 import { ROPE_COLORS, getCrossingCount } from './levels.js'
 import { RopePhysics } from './RopePhysics.js'
+import { stableDepthOrder, topRopeAtContact } from './RopeTopology.js'
 
 const TAU = Math.PI * 2
 
@@ -21,6 +22,7 @@ export class RopeBoard {
     this.hintUntil = 0
     this.running = false
     this.raf = 0
+    this.depthSeed = 0x51f15e
     this.physics = new RopePhysics({
       damping: 0.982,
       gravity: 24,
@@ -43,6 +45,10 @@ export class RopeBoard {
   setOrder(order) {
     const topologyChanged = this.order.length !== order.length
     this.order = [...order]
+    this.depthSeed = this.order.reduce(
+      (seed, ropeId, index) => ((seed * 33) ^ ((ropeId + 1) * (index + 17))) >>> 0,
+      0x51f15e,
+    )
     if (topologyChanged) this.physics.clear()
   }
 
@@ -348,6 +354,72 @@ export class RopeBoard {
     ctx.restore()
   }
 
+  drawCrossingBridge(contact, depthOrder, time) {
+    const topRopeId = topRopeAtContact(contact, depthOrder)
+    const segmentIndex = topRopeId === contact.aId
+      ? contact.aSegment
+      : contact.bSegment
+    const points = this.physics.getPoints(topRopeId)
+    const start = points[segmentIndex]
+    const end = points[segmentIndex + 1]
+    if (!start || !end) return
+
+    const g = this.geometry()
+    const ctx = this.ctx
+    const color = ROPE_COLORS[topRopeId % ROPE_COLORS.length]
+    const tension = clamp(this.physics.getTension(topRopeId), 0, 0.32)
+    const baseWidth = clamp(g.size * 0.0175, 6.4, 11.5) * (1 - tension * 0.18)
+
+    const dx = end.x - start.x
+    const dy = end.y - start.y
+    const length = Math.max(0.001, Math.hypot(dx, dy))
+    const ux = dx / length
+    const uy = dy / length
+    const halfBridge = Math.max(10, baseWidth * 1.6)
+    const ax = contact.x - ux * halfBridge
+    const ay = contact.y - uy * halfBridge
+    const bx = contact.x + ux * halfBridge
+    const by = contact.y + uy * halfBridge
+
+    ctx.save()
+    ctx.lineCap = 'round'
+
+    ctx.beginPath()
+    ctx.moveTo(ax, ay)
+    ctx.lineTo(bx, by)
+    ctx.strokeStyle = 'rgba(0,0,0,.42)'
+    ctx.lineWidth = baseWidth + 5
+    ctx.shadowColor = 'rgba(0,0,0,.4)'
+    ctx.shadowBlur = 6
+    ctx.shadowOffsetY = 3
+    ctx.stroke()
+
+    ctx.shadowColor = 'transparent'
+    ctx.beginPath()
+    ctx.moveTo(ax, ay)
+    ctx.lineTo(bx, by)
+    ctx.strokeStyle = color
+    ctx.lineWidth = baseWidth
+    ctx.stroke()
+
+    ctx.beginPath()
+    ctx.moveTo(
+      contact.x - ux * halfBridge * 0.75,
+      contact.y - uy * halfBridge * 0.75,
+    )
+    ctx.lineTo(
+      contact.x + ux * halfBridge * 0.75,
+      contact.y + uy * halfBridge * 0.75,
+    )
+    ctx.strokeStyle = 'rgba(255,255,255,.34)'
+    ctx.lineWidth = Math.max(1.2, baseWidth * 0.21)
+    ctx.setLineDash([3, 5])
+    ctx.lineDashOffset = -time * 0.012
+    ctx.stroke()
+
+    ctx.restore()
+  }
+
   drawPeg(index, time) {
     const g = this.geometry()
     const ctx = this.ctx
@@ -468,7 +540,13 @@ export class RopeBoard {
     this.syncPhysics(time, g)
 
     const ropeIds = [...new Set(this.order)]
-    ropeIds.forEach((ropeId) => this.drawRope(ropeId, time))
+    const depthOrder = stableDepthOrder(ropeIds, this.depthSeed)
+    depthOrder.forEach((ropeId) => this.drawRope(ropeId, time))
+
+    for (const contact of this.physics.getContacts()) {
+      this.drawCrossingBridge(contact, depthOrder, time)
+    }
+
     this.order.forEach((_, index) => this.drawPeg(index, time))
     this.drawCenterHub(g, time)
 
