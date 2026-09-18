@@ -550,3 +550,48 @@ html[data-banner-mode="preview"] .game-actions {
   font-weight: 900;
   letter-spacing: .08em;
 }
+
+
+.neutral-toggle {
+  min-width: 72px;
+}
+
+.danger-toggle,
+.danger-option {
+  color: #a3313f;
+  background: #f8dddd;
+}
+
+.about-card {
+  text-align: left;
+}
+
+.about-card h2,
+.about-card .version-label {
+  text-align: center;
+}
+
+.version-label {
+  margin-top: -12px;
+  color: rgba(81,56,35,.66);
+  font-weight: 800;
+}
+
+.privacy-summary {
+  margin: 18px 0;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.66);
+  text-align: left;
+}
+
+.privacy-summary p {
+  margin: 8px 0;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.modal-copy {
+  line-height: 1.5;
+  color: rgba(81,56,35,.76);
+}
