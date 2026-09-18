@@ -88,6 +88,35 @@ function shuffleForLevel(ropeCount, seed, minCrossings) {
   return best
 }
 
+
+export function getGuaranteedSolveMoves(order) {
+  const working = [...order]
+  const moves = []
+
+  for (let index = 0; index < working.length; index += 2) {
+    if (working[index] === working[index + 1]) continue
+
+    const matchIndex = working.findIndex(
+      (ropeId, candidateIndex) =>
+        candidateIndex > index + 1 && ropeId === working[index],
+    )
+
+    if (matchIndex === -1) continue
+
+    ;[working[index + 1], working[matchIndex]] = [
+      working[matchIndex],
+      working[index + 1],
+    ]
+    moves.push({
+      from: index + 1,
+      to: matchIndex,
+      crossings: countCrossings(working),
+    })
+  }
+
+  return moves
+}
+
 export function createLevel(levelNumber) {
   const intro = INTRO_LEVELS[levelNumber]
   if (intro) {
@@ -116,7 +145,7 @@ export function createLevel(levelNumber) {
     ropeCount,
     socketCount: ropeCount * 2,
     order,
-    parMoves: Math.max(3, Math.ceil(countCrossings(order) * 0.7)),
+    parMoves: Math.max(3, getGuaranteedSolveMoves(order).length),
     targetTime: 28 + ropeCount * 7 + levelNumber * 1.5,
   }
 }
@@ -141,5 +170,8 @@ export function findBestSwap(order) {
     }
   }
 
-  return best && best.crossings < current ? best : null
+  if (best && best.crossings < current) return best
+
+  const fallback = getGuaranteedSolveMoves(order)[0]
+  return fallback ? { ...fallback, fallback: true } : null
 }
