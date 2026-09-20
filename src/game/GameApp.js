@@ -290,7 +290,13 @@ export class GameApp {
   }
 
   handleSwap(from, to) {
-    if (this.isCompleting) return
+    if (
+      this.isCompleting
+      || this.order[from] == null
+      || this.order[to] != null
+    ) {
+      return
+    }
 
     clearTimeout(this.tutorialHintTimer)
     this.tutorialHintTimer = 0
