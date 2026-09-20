@@ -85,4 +85,30 @@ describe('RopeBoard pointer interaction', () => {
 
     expect(onSwap).not.toHaveBeenCalled()
   })
+
+  it('renders each rope only once even when ropes cross', () => {
+    board = new RopeBoard(canvas, {
+      onSwap: vi.fn(),
+      onSolved: vi.fn(),
+      graphics: 'battery',
+    })
+    board.setOrder([0, 1, 0, 1])
+
+    vi.spyOn(board, 'syncPhysics').mockImplementation(() => {})
+    vi.spyOn(board, 'drawBoard').mockImplementation(() => {})
+    vi.spyOn(board, 'drawPeg').mockImplementation(() => {})
+    vi.spyOn(board, 'drawCenterHub').mockImplementation(() => {})
+    vi.spyOn(board, 'drawDiagnostics').mockImplementation(() => {})
+    const drawRope = vi.spyOn(board, 'drawRope').mockImplementation(() => {})
+
+    vi.spyOn(board.physics, 'getContacts').mockReturnValue([
+      { aId: 0, bId: 1, x: 180, y: 240, aSegment: 5, bSegment: 7 },
+    ])
+
+    board.draw(100)
+
+    expect(drawRope).toHaveBeenCalledTimes(2)
+    expect(drawRope.mock.calls.map(([ropeId]) => ropeId).sort()).toEqual([0, 1])
+    expect(board.drawCrossingBridge).toBeUndefined()
+  })
 })
