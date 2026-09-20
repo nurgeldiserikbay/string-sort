@@ -75,7 +75,7 @@ describe('GameApp interaction smoke tests', () => {
 
     expect(root.querySelector('#game-board')).not.toBeNull()
     expect(root.querySelector('.level-pill').textContent).toContain('Level 1')
-    expect(root.querySelector('.tutorial-chip').textContent).toContain('Drag')
+    expect(root.querySelector('.tutorial-chip').textContent).toContain('empty socket')
   })
 
   it('can pause and resume a running level while suspending rope simulation', () => {
@@ -181,15 +181,25 @@ describe('GameApp interaction smoke tests', () => {
     expect(saved.unlocked).toBe(1)
   })
 
+  it('rejects an occupied-to-occupied move', () => {
+    root.querySelector('[data-action="play"]').click()
+
+    const before = [...app.order]
+    app.handleSwap(0, 1)
+
+    expect(app.order).toEqual(before)
+    expect(app.moves).toBe(0)
+  })
+
   it('completes a solved board, unlocks the next level and persists progress', () => {
     vi.useFakeTimers()
     root.querySelector('[data-action="play"]').click()
 
-    app.order = [0, 1, 0, 1]
+    app.order = [0, 1, 0, 1, null]
     app.board.setOrder(app.order)
     app.elapsed = 12
 
-    app.handleSwap(1, 2)
+    app.handleSwap(1, 4)
     vi.advanceTimersByTime(400)
 
     expect(root.querySelector('.complete-card')).not.toBeNull()
@@ -208,10 +218,10 @@ describe('GameApp interaction smoke tests', () => {
     vi.useFakeTimers()
     root.querySelector('[data-action="play"]').click()
 
-    app.order = [0, 1, 0, 1]
+    app.order = [0, 1, 0, 1, null]
     app.board.setOrder(app.order)
 
-    app.handleSwap(1, 2)
+    app.handleSwap(1, 4)
     app.showPause()
 
     vi.advanceTimersByTime(500)
