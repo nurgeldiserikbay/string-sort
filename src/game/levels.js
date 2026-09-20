@@ -16,7 +16,7 @@ const INTRO_LEVELS = {
     order: [0, 1, 0, 1, 2, 2, null],
     parMoves: 1,
     targetTime: 35,
-    tutorial: 'Drag one peg onto another peg to swap their positions.',
+    tutorial: 'Move a peg into the empty socket. The old spot becomes empty.',
     initialHint: { from: 1, to: 6 },
   },
   2: {
