@@ -394,11 +394,18 @@ export class RopeBoard {
     const ctx = this.ctx
     const position = this.socketPosition(index)
     const isEmpty = this.order[index] == null
-    const radius = g.socketRadius * 0.82
+    const isDropTarget = isEmpty
+      && this.dragIndex >= 0
+      && this.hoverIndex === index
+    const radius = g.socketRadius * (isDropTarget ? 0.94 : 0.82)
 
     ctx.save()
-    ctx.shadowColor = isEmpty ? 'rgba(0,0,0,.36)' : 'rgba(0,0,0,.18)'
-    ctx.shadowBlur = isEmpty ? 7 : 4
+    ctx.shadowColor = isDropTarget
+      ? 'rgba(255, 205, 79, .72)'
+      : isEmpty
+        ? 'rgba(0,0,0,.36)'
+        : 'rgba(0,0,0,.18)'
+    ctx.shadowBlur = isDropTarget ? 16 : isEmpty ? 7 : 4
     ctx.shadowOffsetY = 3
 
     const rim = ctx.createRadialGradient(
@@ -425,7 +432,9 @@ export class RopeBoard {
     ctx.fill()
 
     if (isEmpty) {
-      ctx.strokeStyle = 'rgba(255,255,255,.18)'
+      ctx.strokeStyle = isDropTarget
+        ? 'rgba(255, 223, 120, .95)'
+        : 'rgba(255,255,255,.18)'
       ctx.lineWidth = 2
       ctx.beginPath()
       ctx.arc(position.x, position.y, radius * 0.66, Math.PI * 1.08, Math.PI * 1.82)
