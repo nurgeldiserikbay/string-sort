@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8e7"/>
+      <stop offset="1" stop-color="#efcf96"/>
+    </linearGradient>
+    <radialGradient id="disc" cx="32%" cy="26%" r="82%">
+      <stop offset="0" stop-color="#4f5660"/>
+      <stop offset=".56" stop-color="#313740"/>
+      <stop offset="1" stop-color="#1d2229"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="13" flood-color="#67451f" flood-opacity=".28"/>
+    </filter>
+    <filter id="ropeShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".4"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="500" rx="38" fill="url(#bg)"/>
+  <circle cx="110" cy="70" r="150" fill="#fff" opacity=".38"/>
+  <ellipse cx="925" cy="430" rx="190" ry="130" fill="#7fbc77" opacity=".12"/>
+
+  <g transform="translate(730 250)" filter="url(#shadow)">
+    <circle r="195" fill="url(#disc)"/>
+    <circle r="174" fill="none" stroke="#fff" stroke-opacity=".06" stroke-width="6"/>
+
+    <g fill="none" stroke-linecap="round" stroke-width="20" filter="url(#ropeShadow)">
+      <path d="M-126 -120 C-36 -45 58 112 136 136" stroke="#ff4f5e"/>
+      <path d="M128 -118 C56 -48 -48 100 -132 132" stroke="#36a6ff"/>
+      <path d="M-154 2 C-58 -75 62 -72 155 7" stroke="#45cb6c"/>
+      <path d="M0 -158 C64 -67 61 67 0 164" stroke="#ffc53a"/>
+    </g>
+
+    <g fill="#fff" opacity=".3">
+      <circle cx="-126" cy="-120" r="5"/>
+      <circle cx="136" cy="136" r="5"/>
+      <circle cx="128" cy="-118" r="5"/>
+      <circle cx="-132" cy="132" r="5"/>
+    </g>
+
+    <circle r="35" fill="#fff2d5" stroke="#ae946c" stroke-width="7"/>
+    <circle r="11" fill="#45413d"/>
+  </g>
+
+  <g transform="translate(88 102)">
+    <text x="0" y="96" font-family="Arial Rounded MT Bold, Trebuchet MS, sans-serif" font-size="112" font-weight="900" fill="#ffb51f" stroke="#8c5015" stroke-width="6" paint-order="stroke">STRING</text>
+    <text x="0" y="192" font-family="Arial Rounded MT Bold, Trebuchet MS, sans-serif" font-size="120" font-weight="900" fill="#3ba6ff" stroke="#155e9d" stroke-width="6" paint-order="stroke">SORT</text>
+
+    <rect x="2" y="232" width="355" height="66" rx="33" fill="#fff" opacity=".72"/>
+    <text x="179" y="275" text-anchor="middle" font-family="Trebuchet MS, sans-serif" font-size="30" font-weight="800" fill="#65462c">UNTANGLE · RELAX · SOLVE</text>
+  </g>
+
+  <g transform="translate(92 425)" font-family="Trebuchet MS, sans-serif" font-weight="800" font-size="24" fill="#6c4b2f">
+    <text x="0" y="0">Tactile rope puzzles · Offline play</text>
+  </g>
+</svg>
