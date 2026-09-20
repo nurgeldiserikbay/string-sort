@@ -12,7 +12,8 @@ describe('level geometry', () => {
     const second = createLevel(8)
 
     expect(first.order).toEqual(second.order)
-    expect(first.order).toHaveLength(first.ropeCount * 2)
+    expect(first.order).toHaveLength(first.ropeCount * 2 + 1)
+    expect(first.order.filter((value) => value == null)).toHaveLength(1)
 
     for (let ropeId = 0; ropeId < first.ropeCount; ropeId++) {
       expect(first.order.filter((id) => id === ropeId)).toHaveLength(2)
@@ -20,10 +21,11 @@ describe('level geometry', () => {
   })
 
   it('finds a swap that reduces crossings when one is available', () => {
-    const order = [0, 1, 0, 1]
+    const order = [0, 1, 0, 1, null]
     const hint = findBestSwap(order)
 
     expect(hint).not.toBeNull()
+    expect(hint.to).toBe(order.indexOf(null))
     expect(hint.crossings).toBeLessThan(getCrossingCount(order))
   })
 
@@ -33,15 +35,17 @@ describe('level geometry', () => {
     const moves = getGuaranteedSolveMoves(working)
 
     for (const move of moves) {
+      expect(working[move.from]).not.toBeNull()
+      expect(working[move.to]).toBeNull()
       ;[working[move.from], working[move.to]] = [working[move.to], working[move.from]]
     }
 
     expect(getCrossingCount(working)).toBe(0)
-    expect(moves.length).toBeLessThanOrEqual(createLevel(24).ropeCount - 1)
+    expect(working.filter((value) => value == null)).toHaveLength(1)
   })
 
   it('uses a guaranteed fallback hint when no strictly better swap is selected', () => {
-    const solved = [0, 0, 1, 1]
+    const solved = [0, 0, 1, 1, null]
     expect(findBestSwap(solved)).toBeNull()
 
     const unsolved = createLevel(12).order
@@ -61,7 +65,8 @@ describe('level geometry', () => {
       const level = createLevel(levelNumber)
       const working = [...level.order]
 
-      expect(level.order).toHaveLength(level.ropeCount * 2)
+      expect(level.order).toHaveLength(level.ropeCount * 2 + 1)
+      expect(level.order.filter((value) => value == null)).toHaveLength(1)
       expect(getCrossingCount(level.order)).toBeGreaterThan(0)
       expect(level.targetTime).toBeGreaterThan(0)
       expect(level.targetTime).toBeLessThanOrEqual(130)
@@ -72,6 +77,8 @@ describe('level geometry', () => {
 
       const moves = getGuaranteedSolveMoves(working)
       for (const move of moves) {
+        expect(working[move.from]).not.toBeNull()
+        expect(working[move.to]).toBeNull()
         ;[working[move.from], working[move.to]] = [
           working[move.to],
           working[move.from],
