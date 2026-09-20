@@ -13,47 +13,47 @@ export const ROPE_COLORS = [
 
 const INTRO_LEVELS = {
   1: {
-    order: [0, 1, 0, 1, 2, 2],
+    order: [0, 1, 0, 1, 2, 2, null],
     parMoves: 1,
     targetTime: 35,
     tutorial: 'Drag one peg onto another peg to swap their positions.',
-    initialHint: { from: 1, to: 2 },
+    initialHint: { from: 1, to: 6 },
   },
   2: {
-    order: [0, 1, 0, 2, 1, 2, 3, 3],
+    order: [0, 1, 0, 2, 1, 2, 3, 3, null],
     parMoves: 2,
     targetTime: 40,
     tutorial: 'Watch the Crossings counter. Lower is better.',
   },
   3: {
-    order: [0, 1, 2, 0, 1, 2, 3, 3],
+    order: [0, 1, 2, 0, 1, 2, 3, 3, null],
     parMoves: 2,
     targetTime: 42,
     tutorial: 'Stuck? Hint highlights a swap that improves the board.',
   },
   4: {
-    order: [0, 1, 2, 3, 0, 1, 2, 3],
+    order: [0, 1, 2, 3, 0, 1, 2, 3, null],
     parMoves: 2,
     targetTime: 48,
     tutorial: 'Reach zero crossings to finish the level.',
   },
   5: {
-    order: [0, 1, 2, 0, 3, 1, 4, 2, 3, 4],
+    order: [0, 1, 2, 0, 3, 1, 4, 2, 3, 4, null],
     parMoves: 4,
     targetTime: 58,
   },
   6: {
-    order: [0, 1, 2, 3, 0, 4, 1, 2, 3, 4],
+    order: [0, 1, 2, 3, 0, 4, 1, 2, 3, 4, null],
     parMoves: 4,
     targetTime: 62,
   },
   7: {
-    order: [0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+    order: [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null],
     parMoves: 4,
     targetTime: 68,
   },
   8: {
-    order: [5, 3, 0, 4, 1, 2, 5, 4, 3, 0, 2, 1],
+    order: [5, 3, 0, 4, 1, 2, 5, 4, 3, 0, 2, 1, null],
     parMoves: 4,
     targetTime: 78,
   },
@@ -70,6 +70,7 @@ function seededRandom(seed) {
 function countCrossings(order) {
   const positionsByRope = new Map()
   order.forEach((ropeId, index) => {
+    if (ropeId == null) return
     const list = positionsByRope.get(ropeId) ?? []
     list.push(index)
     positionsByRope.set(ropeId, list)
@@ -90,7 +91,10 @@ function countCrossings(order) {
 }
 
 function makeSolvedOrder(ropeCount) {
-  return Array.from({ length: ropeCount }, (_, id) => [id, id]).flat()
+  return [
+    ...Array.from({ length: ropeCount }, (_, id) => [id, id]).flat(),
+    null,
+  ]
 }
 
 function shuffleForLevel(ropeCount, seed, minCrossings) {
@@ -120,25 +124,49 @@ function shuffleForLevel(ropeCount, seed, minCrossings) {
 
 export function getGuaranteedSolveMoves(order) {
   const working = [...order]
+  const ropeIds = [...new Set(working.filter((ropeId) => ropeId != null))]
+    .sort((a, b) => a - b)
+  const target = [
+    ...ropeIds.flatMap((ropeId) => [ropeId, ropeId]),
+    null,
+  ]
   const moves = []
+  const maxMoves = working.length * working.length
 
-  for (let index = 0; index < working.length; index += 2) {
-    if (working[index] === working[index + 1]) continue
+  for (let step = 0; step < maxMoves; step++) {
+    if (working.every((value, index) => value === target[index])) break
 
-    const matchIndex = working.findIndex(
-      (ropeId, candidateIndex) =>
-        candidateIndex > index + 1 && ropeId === working[index],
-    )
+    const emptyIndex = working.indexOf(null)
+    if (emptyIndex < 0) break
 
-    if (matchIndex === -1) continue
+    const desired = target[emptyIndex]
+    let fromIndex = -1
 
-    ;[working[index + 1], working[matchIndex]] = [
-      working[matchIndex],
-      working[index + 1],
+    if (desired == null) {
+      fromIndex = working.findIndex(
+        (value, index) => index !== emptyIndex && value !== target[index],
+      )
+    } else {
+      const candidates = []
+      working.forEach((value, index) => {
+        if (index !== emptyIndex && value === desired) candidates.push(index)
+      })
+
+      fromIndex = candidates.find((index) => working[index] !== target[index])
+        ?? candidates[0]
+        ?? -1
+    }
+
+    if (fromIndex < 0) break
+
+    ;[working[emptyIndex], working[fromIndex]] = [
+      working[fromIndex],
+      working[emptyIndex],
     ]
+
     moves.push({
-      from: index + 1,
-      to: matchIndex,
+      from: fromIndex,
+      to: emptyIndex,
       crossings: countCrossings(working),
     })
   }
@@ -185,7 +213,7 @@ export function createLevel(levelNumber) {
   return {
     id: levelNumber,
     ropeCount,
-    socketCount: ropeCount * 2,
+    socketCount: order.length,
     order,
     parMoves: Math.max(3, getGuaranteedSolveMoves(order).length),
     targetTime: Math.min(130, 30 + ropeCount * 5 + actualCrossings * 3),
@@ -198,17 +226,23 @@ export function getCrossingCount(order) {
 
 export function findBestSwap(order) {
   const current = countCrossings(order)
+  const emptyIndex = order.indexOf(null)
+  if (emptyIndex < 0) return null
+
   let best = null
 
-  for (let i = 0; i < order.length; i++) {
-    for (let j = i + 1; j < order.length; j++) {
-      if (order[i] === order[j]) continue
-      const candidate = [...order]
-      ;[candidate[i], candidate[j]] = [candidate[j], candidate[i]]
-      const crossings = countCrossings(candidate)
-      if (!best || crossings < best.crossings) {
-        best = { from: i, to: j, crossings }
-      }
+  for (let from = 0; from < order.length; from++) {
+    if (from === emptyIndex || order[from] == null) continue
+
+    const candidate = [...order]
+    ;[candidate[from], candidate[emptyIndex]] = [
+      candidate[emptyIndex],
+      candidate[from],
+    ]
+    const crossings = countCrossings(candidate)
+
+    if (!best || crossings < best.crossings) {
+      best = { from, to: emptyIndex, crossings }
     }
   }
 
