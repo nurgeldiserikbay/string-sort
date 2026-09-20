@@ -55,27 +55,27 @@ describe('RopeBoard pointer interaction', () => {
     vi.restoreAllMocks()
   })
 
-  it('swaps two sockets after dragging one peg onto the other', () => {
+  it('moves a peg into the one empty socket', () => {
     const onSwap = vi.fn()
     board = new RopeBoard(canvas, { onSwap, onSolved: vi.fn(), graphics: 'battery' })
-    board.setOrder([0, 1, 0, 1])
+    board.setOrder([0, 1, 0, 1, null])
 
-    const from = board.socketPosition(0)
-    const to = board.socketPosition(1)
+    const from = board.socketPosition(1)
+    const to = board.socketPosition(4)
 
     board.onPointerDown({ clientX: from.x, clientY: from.y, pointerId: 1 })
     board.onPointerMove({ clientX: to.x, clientY: to.y, pointerId: 1 })
     board.onPointerUp({ clientX: to.x, clientY: to.y, pointerId: 1 })
 
     expect(canvas.setPointerCapture).toHaveBeenCalledWith(1)
-    expect(onSwap).toHaveBeenCalledWith(0, 1)
+    expect(onSwap).toHaveBeenCalledWith(1, 4)
     expect(board.dragIndex).toBe(-1)
   })
 
   it('does not swap when a peg is released away from every socket', () => {
     const onSwap = vi.fn()
     board = new RopeBoard(canvas, { onSwap, onSolved: vi.fn(), graphics: 'battery' })
-    board.setOrder([0, 1, 0, 1])
+    board.setOrder([0, 1, 0, 1, null])
 
     const from = board.socketPosition(0)
 
@@ -92,7 +92,7 @@ describe('RopeBoard pointer interaction', () => {
       onSolved: vi.fn(),
       graphics: 'battery',
     })
-    board.setOrder([0, 1, 0, 1])
+    board.setOrder([0, 1, 0, 1, null])
 
     vi.spyOn(board, 'syncPhysics').mockImplementation(() => {})
     vi.spyOn(board, 'drawBoard').mockImplementation(() => {})
