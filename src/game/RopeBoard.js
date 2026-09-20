@@ -180,7 +180,7 @@ export class RopeBoard {
   onPointerDown(event) {
     const point = this.eventPoint(event)
     const index = this.findSocket(point.x, point.y)
-    if (index < 0) return
+    if (index < 0 || this.order[index] == null) return
 
     this.dragIndex = index
     this.dragPoint = point
@@ -206,7 +206,7 @@ export class RopeBoard {
     this.dragPoint = null
     this.hoverIndex = -1
 
-    if (to >= 0 && to !== from) {
+    if (to >= 0 && to !== from && this.order[to] == null) {
       this.onSwap?.(from, to)
       if (getCrossingCount(this.order) === 0) this.onSolved?.()
     }
@@ -227,7 +227,7 @@ export class RopeBoard {
   }
 
   syncPhysics(time, g) {
-    const ropeIds = [...new Set(this.order)]
+    const ropeIds = [...new Set(this.order.filter((ropeId) => ropeId != null))]
     const draggedRopeId = this.dragIndex >= 0 ? this.order[this.dragIndex] : null
 
     this.physics.removeMissing(ropeIds)
@@ -250,15 +250,18 @@ export class RopeBoard {
       )
     }
 
-    const pegs = this.order.map((ropeId, index) => {
-      const position = this.socketPosition(index)
-      return {
-        x: position.x,
-        y: position.y,
-        radius: g.socketRadius * 1.08,
-        ropeId,
-      }
-    })
+    const pegs = this.order
+      .map((ropeId, index) => {
+        if (ropeId == null) return null
+        const position = this.socketPosition(index)
+        return {
+          x: position.x,
+          y: position.y,
+          radius: g.socketRadius * 1.08,
+          ropeId,
+        }
+      })
+      .filter(Boolean)
 
     this.physics.update(time, {
       pegs,
@@ -386,6 +389,52 @@ export class RopeBoard {
     ctx.restore()
   }
 
+  drawSocket(index) {
+    const g = this.geometry()
+    const ctx = this.ctx
+    const position = this.socketPosition(index)
+    const isEmpty = this.order[index] == null
+    const radius = g.socketRadius * 0.82
+
+    ctx.save()
+    ctx.shadowColor = isEmpty ? 'rgba(0,0,0,.36)' : 'rgba(0,0,0,.18)'
+    ctx.shadowBlur = isEmpty ? 7 : 4
+    ctx.shadowOffsetY = 3
+
+    const rim = ctx.createRadialGradient(
+      position.x - radius * 0.28,
+      position.y - radius * 0.32,
+      radius * 0.08,
+      position.x,
+      position.y,
+      radius,
+    )
+    rim.addColorStop(0, '#fff8df')
+    rim.addColorStop(0.48, '#d9bd84')
+    rim.addColorStop(1, '#8b6c43')
+
+    ctx.fillStyle = rim
+    ctx.beginPath()
+    ctx.arc(position.x, position.y, radius, 0, TAU)
+    ctx.fill()
+
+    ctx.shadowColor = 'transparent'
+    ctx.fillStyle = isEmpty ? '#171b21' : '#2b3038'
+    ctx.beginPath()
+    ctx.arc(position.x, position.y, radius * 0.5, 0, TAU)
+    ctx.fill()
+
+    if (isEmpty) {
+      ctx.strokeStyle = 'rgba(255,255,255,.18)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(position.x, position.y, radius * 0.66, Math.PI * 1.08, Math.PI * 1.82)
+      ctx.stroke()
+    }
+
+    ctx.restore()
+  }
+
   drawPegMarker(x, y, radius, ropeId) {
     const ctx = this.ctx
     const size = radius * 0.38
@@ -451,6 +500,7 @@ export class RopeBoard {
       ? this.dragPoint
       : this.socketPosition(index)
     const ropeId = this.order[index]
+    if (ropeId == null) return
     const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
 
     let scale = index === this.dragIndex ? 1.15 : 1
@@ -461,7 +511,11 @@ export class RopeBoard {
       }
     }
 
-    if (index === this.hoverIndex && this.dragIndex >= 0) scale += 0.08
+    if (
+      index === this.hoverIndex
+      && this.dragIndex >= 0
+      && this.order[index] == null
+    ) scale += 0.08
 
     const radius = g.socketRadius * scale
 
@@ -616,9 +670,10 @@ export class RopeBoard {
     ctx.clearRect(0, 0, g.width, g.height)
 
     this.drawBoard(g)
+    this.order.forEach((_, index) => this.drawSocket(index))
     this.syncPhysics(time, g)
 
-    const ropeIds = [...new Set(this.order)]
+    const ropeIds = [...new Set(this.order.filter((ropeId) => ropeId != null))]
     const depthOrder = stableDepthOrder(ropeIds, this.depthSeed)
 
     // Each rope is rendered once, back-to-front. The rope's own shadow
@@ -627,7 +682,9 @@ export class RopeBoard {
     // visible capsule/bulge and a discontinuous moving highlight.
     depthOrder.forEach((ropeId) => this.drawRope(ropeId, time))
 
-    this.order.forEach((_, index) => this.drawPeg(index, time))
+    this.order.forEach((ropeId, index) => {
+      if (ropeId != null) this.drawPeg(index, time)
+    })
     this.drawCenterHub(g, time)
     this.drawDiagnostics(g)
 
