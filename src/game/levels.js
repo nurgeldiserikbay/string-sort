@@ -33,13 +33,13 @@ const INTRO_LEVELS = {
   },
   4: {
     order: [0, 1, 2, 3, 0, 1, 2, 3, null],
-    parMoves: 2,
+    parMoves: 3,
     targetTime: 48,
     tutorial: 'Reach zero crossings to finish the level.',
   },
   5: {
     order: [0, 1, 2, 0, 3, 1, 4, 2, 3, 4, null],
-    parMoves: 4,
+    parMoves: 3,
     targetTime: 58,
   },
   6: {
