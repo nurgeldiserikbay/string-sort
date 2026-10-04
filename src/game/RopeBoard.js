@@ -12,11 +12,17 @@ function clamp(value, min, max) {
 }
 
 export class RopeBoard {
-  constructor(canvas, { onSwap, onSolved, graphics = 'auto' }) {
+  constructor(canvas, {
+    onSwap,
+    onSolved,
+    graphics = 'auto',
+    pegMarkers = false,
+  }) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d', { alpha: true })
     this.onSwap = onSwap
     this.onSolved = onSolved
+    this.pegMarkers = pegMarkers
     this.order = []
     this.dragIndex = -1
     this.dragPoint = null
@@ -878,7 +884,9 @@ export class RopeBoard {
     ctx.arc(position.x, position.y, radius * 0.39, 0, TAU)
     ctx.stroke()
 
-    this.drawPegMarker(position.x, position.y, radius, ropeId)
+    if (this.pegMarkers) {
+      this.drawPegMarker(position.x, position.y, radius, ropeId)
+    }
     ctx.restore()
   }
 
