@@ -60,7 +60,7 @@ export class RopeTangle {
         index * goldenAngle
         + ((hash & 1023) / 1023) * 0.62
       ) % TAU
-      const radialBand = 0.055 + (((hash >>> 10) & 255) / 255) * 0.19
+      const radialBand = 0.09 + (((hash >>> 10) & 255) / 255) * 0.27
       const radius = geometry.boardRadius * radialBand
 
       const knot = {
@@ -72,8 +72,8 @@ export class RopeTangle {
           ?? (((hash >>> 18) & 1023) / 1023) * Math.PI,
         wraps: prior?.wraps
           ?? (sortedPairs.length >= 4 && index % 3 === 0 ? 2 : 1),
-        x: geometry.cx + Math.cos(angle) * radius,
-        y: geometry.cy + Math.sin(angle) * radius,
+        x: prior?.x ?? geometry.cx + Math.cos(angle) * radius,
+        y: prior?.y ?? geometry.cy + Math.sin(angle) * radius,
         aT: prior?.aT ?? 0.5,
         bT: prior?.bT ?? 0.5,
         stiffness: 0.2,
@@ -108,7 +108,96 @@ export class RopeTangle {
 
     this.knotMap = nextMap
     this.knots = [...nextMap.values()]
+    this.relaxCenters(geometry)
     return this.knots
+  }
+
+  relaxCenters(geometry) {
+    const maxRadius = geometry.boardRadius * 0.4
+    const minDistance = Math.max(16, geometry.boardRadius * 0.075)
+
+    for (let iteration = 0; iteration < 4; iteration++) {
+      for (let i = 0; i < this.knots.length; i++) {
+        const a = this.knots[i]
+
+        for (let j = i + 1; j < this.knots.length; j++) {
+          const b = this.knots[j]
+          let dx = b.x - a.x
+          let dy = b.y - a.y
+          let distance = Math.hypot(dx, dy)
+
+          if (distance >= minDistance) continue
+
+          if (distance < 0.001) {
+            const angle = ((i + 1) * 2.399963229728653) % TAU
+            dx = Math.cos(angle)
+            dy = Math.sin(angle)
+            distance = 1
+          }
+
+          const push = (minDistance - distance) * 0.24
+          const nx = dx / distance
+          const ny = dy / distance
+
+          a.x -= nx * push
+          a.y -= ny * push
+          b.x += nx * push
+          b.y += ny * push
+        }
+      }
+
+      for (const knot of this.knots) {
+        const dx = knot.x - geometry.cx
+        const dy = knot.y - geometry.cy
+        const distance = Math.hypot(dx, dy)
+
+        if (distance > maxRadius) {
+          const scale = maxRadius / distance
+          knot.x = geometry.cx + dx * scale
+          knot.y = geometry.cy + dy * scale
+        }
+      }
+    }
+  }
+
+  followPhysics(physics, geometry) {
+    const maxRadius = geometry.boardRadius * 0.43
+
+    for (const knot of this.knots) {
+      const ropeA = physics.getPoints(knot.aId)
+      const ropeB = physics.getPoints(knot.bId)
+      if (ropeA.length < 5 || ropeB.length < 5) continue
+
+      const aIndex = clamp(
+        Math.round((ropeA.length - 1) * knot.aT),
+        2,
+        ropeA.length - 3,
+      )
+      const bIndex = clamp(
+        Math.round((ropeB.length - 1) * knot.bT),
+        2,
+        ropeB.length - 3,
+      )
+
+      const a = ropeA[aIndex]
+      const b = ropeB[bIndex]
+      const targetX = (a.x + b.x) / 2
+      const targetY = (a.y + b.y) / 2
+      const follow = 0.13
+
+      knot.x += (targetX - knot.x) * follow
+      knot.y += (targetY - knot.y) * follow
+
+      const dx = knot.x - geometry.cx
+      const dy = knot.y - geometry.cy
+      const distance = Math.hypot(dx, dy)
+
+      if (distance > maxRadius) {
+        const scale = maxRadius / distance
+        knot.x = geometry.cx + dx * scale
+        knot.y = geometry.cy + dy * scale
+      }
+    }
   }
 
   getKnots() {
