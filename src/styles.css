@@ -1418,3 +1418,259 @@ html[data-banner-mode="preview"] .game-actions {
 .level-card.locked .level-stars {
   opacity: .38;
 }
+
+
+/* Unified rounded vector icon pass */
+.ui-svg {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -0.14em;
+  overflow: visible;
+}
+
+.ui-svg [fill="currentColor"] {
+  fill: currentColor;
+  stroke: none;
+}
+
+.soft-icon {
+  border: 2px solid rgba(255,255,255,.82);
+  border-bottom-color: rgba(155,118,73,.25);
+  background: linear-gradient(180deg, #fffefb 0%, #f5e7cd 100%);
+  color: #4f5664;
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.8),
+    0 5px 0 #d7bd92,
+    0 10px 16px rgba(78,54,31,.13);
+}
+
+.soft-icon .ui-svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.15;
+}
+
+.coin-star {
+  width: 22px;
+  height: 22px;
+  color: #ffb400;
+  stroke: none;
+  filter: drop-shadow(0 2px 0 rgba(174,111,0,.45));
+}
+
+.menu-action-icon {
+  border: 2px solid rgba(255,255,255,.72);
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.55),
+    0 3px 0 rgba(95,72,44,.12);
+}
+
+.menu-action-icon .ui-svg {
+  width: 27px;
+  height: 27px;
+  stroke-width: 2.1;
+}
+
+.levels-icon {
+  color: #e9a600;
+  background: linear-gradient(180deg, #fff7bd, #ffe880);
+}
+
+.settings-icon {
+  color: #65728a;
+  background: linear-gradient(180deg, #f3f5fa, #dfe4ed);
+}
+
+.hint-icon {
+  color: #e29a00;
+  background: linear-gradient(180deg, #fff7c7, #ffe58b);
+}
+
+.video-actions .round-action span {
+  position: relative;
+  overflow: hidden;
+}
+
+.video-actions .round-action span::before {
+  content: '';
+  position: absolute;
+  inset: 2px 4px auto;
+  height: 42%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,0));
+  pointer-events: none;
+}
+
+.video-actions .round-action span .ui-svg {
+  position: relative;
+  z-index: 1;
+  width: 27px;
+  height: 27px;
+  stroke-width: 2.25;
+}
+
+.round-action.hint span {
+  color: #fff9dc;
+  background: linear-gradient(180deg, #ffdc55 0%, #f7ae19 100%);
+}
+
+.round-action.undo span {
+  color: #fff;
+  background: linear-gradient(180deg, #66c8ff 0%, #2589e6 100%);
+}
+
+.round-action.restart span {
+  color: #fff;
+  background: linear-gradient(180deg, #ff8494 0%, #ea3f5c 100%);
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.primary-button .ui-svg {
+  flex: 0 0 auto;
+  margin-right: 0;
+  stroke-width: 2.15;
+}
+
+.modal-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modal-option .ui-svg {
+  flex: 0 0 auto;
+  margin-right: 0;
+  stroke-width: 2.05;
+}
+
+.modal-close {
+  display: grid;
+  place-items: center;
+  color: #6b5947;
+  border: 2px solid rgba(255,255,255,.65);
+  box-shadow: inset 0 1px rgba(255,255,255,.7);
+}
+
+.modal-close .ui-svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 2.35;
+}
+
+.settings-card > div {
+  min-height: 68px;
+  align-items: center;
+}
+
+.setting-label {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 11px;
+  padding: 0 !important;
+  border: 0 !important;
+  font-weight: 900;
+  color: #4f4033;
+}
+
+.setting-icon {
+  width: 40px;
+  height: 40px;
+  display: grid !important;
+  place-items: center;
+  flex: 0 0 40px;
+  padding: 0 !important;
+  border: 2px solid rgba(255,255,255,.66) !important;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.55),
+    0 3px 0 rgba(81,61,42,.1);
+}
+
+.setting-icon .ui-svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.05;
+}
+
+.haptics-setting {
+  color: #7958c7;
+  background: #eee6ff;
+}
+
+.sound-setting {
+  color: #3188d4;
+  background: #e2f2ff;
+}
+
+.graphics-setting {
+  color: #2d9b65;
+  background: #e2f7e9;
+}
+
+.markers-setting {
+  color: #cc8121;
+  background: #fff0d7;
+}
+
+.info-setting {
+  color: #65728a;
+  background: #e9edf3;
+}
+
+.reset-setting {
+  color: #c44958;
+  background: #fde7ea;
+}
+
+.setting-toggle {
+  min-height: 38px;
+  border: 2px solid rgba(255,255,255,.5);
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.6),
+    0 3px 0 rgba(104,78,48,.12);
+}
+
+.setting-toggle[aria-pressed="true"] {
+  border-color: rgba(255,255,255,.55);
+  box-shadow:
+    inset 0 2px rgba(255,255,255,.25),
+    0 4px 0 #239438;
+}
+
+.how-step-icon .ui-svg {
+  width: 25px;
+  height: 25px;
+  stroke-width: 2.1;
+}
+
+.status-icon .ui-svg {
+  stroke-width: 2.1;
+}
+
+@media (max-width: 360px) {
+  .setting-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 12px;
+  }
+
+  .setting-label {
+    gap: 8px;
+    font-size: 14px;
+  }
+}

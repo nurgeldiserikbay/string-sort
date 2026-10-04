@@ -168,7 +168,7 @@ export class GameApp {
           <button class="icon-button soft-icon" data-action="settings" aria-label="Settings">
             ${uiIcon('settings')}
           </button>
-          <div class="coin-pill">${uiIcon('levels', 'ui-svg coin-star')}<b>${totalStars}</b></div>
+          <div class="coin-pill">${uiIcon('star', 'ui-svg coin-star')}<b>${totalStars}</b></div>
         </div>
 
         <section class="hero-card">
@@ -293,7 +293,7 @@ export class GameApp {
             <h1>Levels</h1>
             <p>${chapter.subtitle}</p>
           </div>
-          <div class="coin-pill">${uiIcon('levels', 'ui-svg coin-star')}<b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
+          <div class="coin-pill">${uiIcon('star', 'ui-svg coin-star')}<b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
         </header>
 
         <nav class="chapter-tabs" aria-label="Level chapters">${tabs}</nav>
@@ -537,7 +537,7 @@ export class GameApp {
     overlay.className = 'modal-layer'
     overlay.innerHTML = `
       <section class="modal-card">
-        <button class="modal-close" data-action="resume">×</button>
+        <button class="modal-close" data-action="resume" aria-label="Resume">${uiIcon('close')}</button>
         <h2>Paused</h2>
         <button class="primary-button" data-action="resume">${uiIcon('play')} Resume</button>
         <button class="modal-option" data-action="restart">${uiIcon('restart')} Restart</button>
@@ -629,7 +629,7 @@ export class GameApp {
     overlay.className = 'modal-layer'
     overlay.innerHTML = `
       <section class="modal-card how-to-card">
-        <button class="modal-close" data-action="close" aria-label="Close">×</button>
+        <button class="modal-close" data-action="close" aria-label="Close">${uiIcon('close')}</button>
         <h2>How to Play</h2>
         <div class="how-to-steps">
           <div>
@@ -644,7 +644,7 @@ export class GameApp {
           </div>
           <div>
             <span class="how-step-icon">${uiIcon('levels')}</span>
-            <b>Clear every crossing</b>
+            <b>Release every knot</b>
             <p>Move the free peg until every physical knot releases.</p>
           </div>
         </div>
@@ -667,35 +667,35 @@ export class GameApp {
         </header>
         <section class="settings-card">
           <div>
-            <span>Haptics</span>
+            <span class="setting-label"><span class="setting-icon haptics-setting">${uiIcon('haptics')}</span><span>Haptics</span></span>
             <button class="setting-toggle" data-setting="haptics" aria-pressed="${this.settings.haptics}">
               ${this.settings.haptics ? 'On' : 'Off'}
             </button>
           </div>
           <div>
-            <span>Sound</span>
+            <span class="setting-label"><span class="setting-icon sound-setting">${uiIcon('sound')}</span><span>Sound</span></span>
             <button class="setting-toggle" data-setting="sound" aria-pressed="${this.settings.sound}">
               ${this.settings.sound ? 'On' : 'Off'}
             </button>
           </div>
           <div>
-            <span>Graphics</span>
+            <span class="setting-label"><span class="setting-icon graphics-setting">${uiIcon('graphics')}</span><span>Graphics</span></span>
             <button class="setting-toggle graphics-toggle" data-setting="graphics">
               ${graphicsLabel(this.settings.graphics)}
             </button>
           </div>
           <div>
-            <span>Peg markers</span>
+            <span class="setting-label"><span class="setting-icon markers-setting">${uiIcon('markers')}</span><span>Peg markers</span></span>
             <button class="setting-toggle" data-setting="pegMarkers" aria-pressed="${this.settings.pegMarkers}">
               ${this.settings.pegMarkers ? 'On' : 'Off'}
             </button>
           </div>
           <div>
-            <span>About</span>
+            <span class="setting-label"><span class="setting-icon info-setting">${uiIcon('info')}</span><span>About</span></span>
             <button class="setting-toggle neutral-toggle" data-action="about">Open</button>
           </div>
           <div>
-            <span>Progress</span>
+            <span class="setting-label"><span class="setting-icon reset-setting">${uiIcon('reset')}</span><span>Progress</span></span>
             <button class="setting-toggle danger-toggle" data-action="reset-progress">Reset</button>
           </div>
         </section>

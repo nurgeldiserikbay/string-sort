@@ -24,10 +24,12 @@ export class RopePhysics {
   constructor({
     damping = 0.985,
     gravity = 22,
+    ambientMotion = 1.2,
     constraintIterations = 8,
   } = {}) {
     this.damping = damping
     this.gravity = gravity
+    this.ambientMotion = ambientMotion
     this.constraintIterations = constraintIterations
     this.ropes = new Map()
     this.lastTime = 0
@@ -245,7 +247,10 @@ export class RopePhysics {
 
   integrate(rope, dt, time) {
     const dtSquared = dt * dt
-    const wind = Math.sin(time * 0.0018 + rope.id * 1.31) * 8
+    const wind = (
+      Math.sin(time * 0.0012 + rope.id * 1.31)
+      * this.ambientMotion
+    )
 
     for (let index = 1; index < rope.points.length - 1; index++) {
       const point = rope.points[index]
