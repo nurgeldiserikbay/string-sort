@@ -523,6 +523,7 @@ export class GameApp {
     if (this.screen !== 'game') return
     this.screen = 'pause'
     this.stopTimer()
+    this.board?.cancelDrag?.()
     this.board?.stop()
     clearTimeout(this.completionTimer)
     this.completionTimer = 0
