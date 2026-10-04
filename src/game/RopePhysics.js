@@ -196,7 +196,16 @@ export class RopePhysics {
       maxContactsPerPair: 5,
       dedupeDistance: 12,
     })
-    this.applyCrossingFriction(this.contacts)
+
+    const activePairs = new Set(
+      knots.map((knot) => (
+        knot.aId < knot.bId
+          ? `${knot.aId}:${knot.bId}`
+          : `${knot.bId}:${knot.aId}`
+      )),
+    )
+    const boundContacts = this.contacts.filter((contact) => activePairs.has(contact.pair))
+    this.applyCrossingFriction(boundContacts)
   }
 
   integrate(rope, dt, time) {
