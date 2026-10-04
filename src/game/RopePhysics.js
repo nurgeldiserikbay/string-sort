@@ -150,7 +150,7 @@ export class RopePhysics {
       place(ropeA, knot.aIndex, knot.x, knot.y)
       place(ropeB, knot.bIndex, knot.x, knot.y)
 
-      const shoulder = 9
+      const shoulder = 8
       const angle = knot.twistAngle ?? 0
       const ax = Math.cos(angle)
       const ay = Math.sin(angle)
@@ -328,7 +328,7 @@ export class RopePhysics {
 
       const midpointX = (a.x + b.x) / 2
       const midpointY = (a.y + b.y) / 2
-      const anchorStrength = 0.22
+      const anchorStrength = knot.anchorStrength ?? 0.72
       const targetX = midpointX + (knot.x - midpointX) * anchorStrength
       const targetY = midpointY + (knot.y - midpointY) * anchorStrength
       const stiffness = knot.stiffness ?? 0.18
