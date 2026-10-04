@@ -279,7 +279,10 @@ export class GameApp {
           ${unlocked ? '' : 'disabled'}
           aria-label="${item.title}${unlocked ? '' : ', locked'}"
         >
-          <span>${index + 1}</span>
+          <span class="chapter-tab-icon">
+            ${uiIcon('levels')}
+            <small>${index + 1}</small>
+          </span>
           <b>${item.title}</b>
         </button>
       `
@@ -737,14 +740,14 @@ export class GameApp {
     overlay.className = 'modal-layer'
     overlay.innerHTML = `
       <section class="modal-card about-card">
-        <button class="modal-close" data-action="close" aria-label="Close">×</button>
+        <button class="modal-close" data-action="close" aria-label="Close">${uiIcon('close')}</button>
         <h2>String Sort</h2>
         <p class="version-label">Version ${APP_VERSION}</p>
         <div class="privacy-summary">
           ${privacySummary().map((line) => `<p>• ${line}</p>`).join('')}
         </div>
-        <button class="modal-option" data-action="privacy">Privacy details</button>
-        <button class="primary-button" data-action="close">Done</button>
+        <button class="modal-option" data-action="privacy">${uiIcon('info')} Privacy details</button>
+        <button class="primary-button" data-action="close">${uiIcon('check')} Done</button>
       </section>
     `
 
@@ -766,8 +769,8 @@ export class GameApp {
       <section class="modal-card">
         <h2>Reset progress?</h2>
         <p class="modal-copy">Stars, best times and unlocked levels on this device will be cleared.</p>
-        <button class="modal-option danger-option" data-action="confirm">Reset progress</button>
-        <button class="primary-button" data-action="cancel">Keep progress</button>
+        <button class="modal-option danger-option" data-action="confirm">${uiIcon('reset')} Reset progress</button>
+        <button class="primary-button" data-action="cancel">${uiIcon('check')} Keep progress</button>
       </section>
     `
 
