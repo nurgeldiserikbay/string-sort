@@ -135,7 +135,7 @@ describe('RopeTangle', () => {
       },
     }
 
-    tangle.followPhysics(physics, geometry)
+    tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
 
     const centerMove = Math.hypot(
       knot.x - before.x,
@@ -143,10 +143,34 @@ describe('RopeTangle', () => {
     )
 
     expect(centerMove).toBeLessThanOrEqual(
-      geometry.boardRadius * 0.0035 + 0.01,
+      geometry.boardRadius * 0.0012 + 0.01,
     )
-    expect(Math.abs(knot.aT - before.aT)).toBeLessThanOrEqual(0.00141)
-    expect(Math.abs(knot.bT - before.bT)).toBeLessThanOrEqual(0.00141)
+    expect(Math.abs(knot.aT - before.aT)).toBeLessThanOrEqual(0.00071)
+    expect(Math.abs(knot.bT - before.bT)).toBeLessThanOrEqual(0.00071)
+  })
+
+  it('keeps idle knot centers fixed while rope particles settle', () => {
+    const tangle = new RopeTangle(744)
+    const [knot] = tangle.update([0, 1, 0, 1, null], geometry)
+    const before = { x: knot.x, y: knot.y, aT: knot.aT, bT: knot.bT }
+
+    const physics = {
+      getPoints() {
+        return Array.from({ length: 15 }, (_, index) => ({
+          x: 500 + index * 7,
+          y: 500 + index * 4,
+        }))
+      },
+    }
+
+    for (let frame = 0; frame < 60; frame++) {
+      tangle.followPhysics(physics, geometry)
+    }
+
+    expect(knot.x).toBe(before.x)
+    expect(knot.y).toBe(before.y)
+    expect(knot.aT).toBe(before.aT)
+    expect(knot.bT).toBe(before.bT)
   })
 
   it('lets persistent knot centers follow the physical rope bundle', () => {
@@ -167,7 +191,7 @@ describe('RopeTangle', () => {
       },
     }
 
-    tangle.followPhysics(physics, geometry)
+    tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
 
     expect(knot.x).toBeGreaterThan(before.x)
     expect(knot.y).toBeGreaterThan(before.y)
@@ -197,7 +221,7 @@ describe('RopeTangle', () => {
       },
     }
 
-    tangle.followPhysics(physics, geometry)
+    tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
 
     expect(knot.aT).toBeLessThan(beforeAT)
     expect(knot.bT).toBeLessThan(beforeBT)
