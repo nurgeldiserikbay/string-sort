@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { TOTAL_LEVELS, createLevel, findBestSwap, getCrossingCount, getGuaranteedSolveMoves } from '../src/game/levels.js'
+import { TOTAL_LEVELS, createLevel, findBestSwap, getCrossingCount, getGuaranteedSolveMoves, getKnotGraphStats } from '../src/game/levels.js'
 
 describe('level geometry', () => {
   it('counts alternating chord endpoints as a crossing', () => {
@@ -73,6 +73,16 @@ describe('level geometry', () => {
 
       for (let ropeId = 0; ropeId < level.ropeCount; ropeId++) {
         expect(level.order.filter((id) => id === ropeId)).toHaveLength(2)
+      }
+
+      const stats = getKnotGraphStats(level.order)
+
+      if (levelNumber > 16) {
+        expect(stats.involvedRopes).toBe(level.ropeCount)
+      }
+
+      if (levelNumber >= 25) {
+        expect(stats.connected).toBe(true)
       }
 
       const moves = getGuaranteedSolveMoves(working)
