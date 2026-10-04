@@ -76,11 +76,15 @@ The **Play Store Screenshots** workflow captures the real application UI for thr
 Each profile includes:
 - main menu;
 - level selection;
+- Settings;
+- About/privacy summary;
+- How to Play;
 - live gameplay;
+- Pause;
 - solved/completion state;
-- a dense late-game tangle.
+- a readable dense late-game tangle.
 
-The workflow verifies that all 15 screenshots exist at the expected pixel dimensions, then packages them together with the generated app icon and feature graphic.
+The workflow verifies that all 27 screenshots exist at the expected pixel dimensions, then packages them together with the generated app icon and feature graphic. The extra non-store UI captures are kept as visual QA evidence; only the strongest screenshots need to be uploaded to the public listing.
 
 All screenshots are captured from the actual app UI, not concept art.
 
