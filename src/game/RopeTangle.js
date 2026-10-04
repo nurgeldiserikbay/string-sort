@@ -25,11 +25,13 @@ export class RopeTangle {
     this.seed = seed >>> 0
     this.knots = []
     this.knotMap = new Map()
+    this.released = []
   }
 
   clear() {
     this.knots = []
     this.knotMap.clear()
+    this.released = []
   }
 
   update(order, geometry) {
@@ -103,6 +105,19 @@ export class RopeTangle {
 
         if (knot.aId === ropeId) knot.aT = spread
         if (knot.bId === ropeId) knot.bT = 1 - spread
+      })
+    }
+
+    this.released = []
+
+    for (const [key, knot] of previous) {
+      if (nextMap.has(key)) continue
+      this.released.push({
+        key,
+        x: knot.x,
+        y: knot.y,
+        aId: knot.aId,
+        bId: knot.bId,
       })
     }
 
@@ -202,6 +217,12 @@ export class RopeTangle {
 
   getKnots() {
     return this.knots
+  }
+
+  consumeReleased() {
+    const released = this.released
+    this.released = []
+    return released
   }
 
   buildConstraints(segmentCounts) {
