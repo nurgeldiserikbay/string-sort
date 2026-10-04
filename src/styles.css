@@ -1355,3 +1355,14 @@ html[data-banner-mode="preview"] .game-actions {
     padding-inline: 11px;
   }
 }
+
+
+.tutorial-chip {
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.tutorial-chip.is-dismissed {
+  opacity: 0;
+  transform: translateY(-6px) scale(.98);
+  pointer-events: none;
+}
