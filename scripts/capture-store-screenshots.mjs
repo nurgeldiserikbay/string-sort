@@ -93,6 +93,8 @@ try {
   })
   await page.reload({ waitUntil: 'networkidle' })
   await page.click('[data-action="levels"]')
+  await page.waitForSelector('[data-chapter="3"]')
+  await page.click('[data-chapter="3"]')
   await page.waitForSelector('[data-level="80"]')
   await page.locator('[data-level="80"]').scrollIntoViewIfNeeded()
   await page.click('[data-level="80"]')
