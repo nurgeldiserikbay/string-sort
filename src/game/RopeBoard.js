@@ -256,16 +256,23 @@ export class RopeBoard {
   }
 
   syncPhysics(time, g) {
+    const draggedRopeId = this.dragIndex >= 0 ? this.order[this.dragIndex] : null
+
     if (this.dragIndex >= 0 && this.dragPoint) {
       if (!this.dragVisualPoint) this.dragVisualPoint = { ...this.dragPoint }
 
-      const follow = 0.42
+      const boundKnots = draggedRopeId == null
+        ? 0
+        : this.tangle.getKnots().filter(
+          (knot) => knot.aId === draggedRopeId || knot.bId === draggedRopeId,
+        ).length
+      const follow = clamp(0.46 - boundKnots * 0.035, 0.19, 0.42)
+
       this.dragVisualPoint.x += (this.dragPoint.x - this.dragVisualPoint.x) * follow
       this.dragVisualPoint.y += (this.dragPoint.y - this.dragVisualPoint.y) * follow
     }
 
     const ropeIds = [...new Set(this.order.filter((ropeId) => ropeId != null))]
-    const draggedRopeId = this.dragIndex >= 0 ? this.order[this.dragIndex] : null
     const logicalKnotCount = getCrossingCount(this.order)
     const ropeSlack = clamp(1.072 + logicalKnotCount * 0.0025, 1.075, 1.14)
     const segmentCounts = new Map()
