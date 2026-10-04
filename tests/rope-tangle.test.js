@@ -95,7 +95,7 @@ describe('RopeTangle', () => {
   it('lets persistent knot centers follow the physical rope bundle', () => {
     const tangle = new RopeTangle(789)
     const [knot] = tangle.update([0, 1, 0, 1, null], geometry)
-    const before = { x: knot.x, y: knot.y }
+    const before = { x: knot.x, y: knot.y, aT: knot.aT, bT: knot.bT }
 
     const makePoints = (x, y) => Array.from({ length: 13 }, (_, index) => ({
       x: x + index,
@@ -114,5 +114,11 @@ describe('RopeTangle', () => {
 
     expect(knot.x).toBeGreaterThan(before.x)
     expect(knot.y).toBeGreaterThan(before.y)
+    expect(knot.aT).not.toBe(before.aT)
+    expect(knot.bT).not.toBe(before.bT)
+    expect(knot.aT).toBeGreaterThanOrEqual(0.12)
+    expect(knot.aT).toBeLessThanOrEqual(0.88)
+    expect(knot.bT).toBeGreaterThanOrEqual(0.12)
+    expect(knot.bT).toBeLessThanOrEqual(0.88)
   })
 })
