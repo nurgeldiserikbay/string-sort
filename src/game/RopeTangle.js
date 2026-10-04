@@ -178,10 +178,38 @@ export class RopeTangle {
   followPhysics(physics, geometry) {
     const maxRadius = geometry.boardRadius * 0.43
 
+    const nearestT = (points, x, y, currentT) => {
+      const last = points.length - 1
+      const currentIndex = clamp(Math.round(last * currentT), 2, last - 2)
+      let bestIndex = currentIndex
+      let bestScore = Infinity
+
+      for (let index = 2; index <= last - 2; index++) {
+        const point = points[index]
+        const distance = Math.hypot(point.x - x, point.y - y)
+        const travelPenalty = Math.abs(index - currentIndex) * 2.2
+        const score = distance + travelPenalty
+
+        if (score < bestScore) {
+          bestScore = score
+          bestIndex = index
+        }
+      }
+
+      return clamp(bestIndex / last, 0.12, 0.88)
+    }
+
     for (const knot of this.knots) {
       const ropeA = physics.getPoints(knot.aId)
       const ropeB = physics.getPoints(knot.bId)
       if (ropeA.length < 5 || ropeB.length < 5) continue
+
+      const nextAT = nearestT(ropeA, knot.x, knot.y, knot.aT)
+      const nextBT = nearestT(ropeB, knot.x, knot.y, knot.bT)
+      const slide = 0.055
+
+      knot.aT += (nextAT - knot.aT) * slide
+      knot.bT += (nextBT - knot.bT) * slide
 
       const aIndex = clamp(
         Math.round((ropeA.length - 1) * knot.aT),
