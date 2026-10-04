@@ -36,30 +36,30 @@ const INTRO_LEVELS = {
     tutorial: 'Stuck? Hint shows a move that loosens the tangle.',
   },
   4: {
-    order: [0, 1, 2, 3, 0, 1, 2, 3, null],
+    order: [2, 3, 1, null, 0, 2, 1, 0, 3],
     parMoves: 3,
     targetTime: 48,
     tutorial: 'No knots left means the level is complete.',
   },
   5: {
-    order: [0, 1, 2, 0, 3, 1, 4, 2, 3, 4, null],
+    order: [0, 1, null, 2, 4, 0, 1, 4, 3, 2, 3],
     parMoves: 3,
-    targetTime: 58,
+    targetTime: 56,
   },
   6: {
-    order: [0, 1, 2, 3, 0, 4, 1, 2, 3, 4, null],
+    order: [null, 3, 0, 2, 3, 1, 4, 0, 1, 2, 4],
     parMoves: 4,
-    targetTime: 62,
+    targetTime: 60,
   },
   7: {
-    order: [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null],
+    order: [3, 1, 0, 2, 4, 3, 2, null, 1, 0, 4],
     parMoves: 4,
-    targetTime: 68,
+    targetTime: 66,
   },
   8: {
-    order: [5, 3, 0, 4, 1, 2, 5, 4, 3, 0, 2, 1, null],
+    order: [3, 1, null, 5, 2, 3, 4, 0, 1, 0, 5, 4, 2],
     parMoves: 4,
-    targetTime: 78,
+    targetTime: 74,
   },
 }
 
