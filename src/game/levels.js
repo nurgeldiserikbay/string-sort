@@ -27,7 +27,7 @@ const INTRO_LEVELS = {
     order: [0, 1, 0, 2, 1, 2, 3, 3, null],
     parMoves: 2,
     targetTime: 40,
-    tutorial: 'Watch the Crossings counter. Lower is better.',
+    tutorial: 'Watch the Knots counter. Every move should loosen the tangle.',
   },
   3: {
     order: [0, 1, 2, 0, 1, 2, 3, 3, null],
@@ -39,7 +39,7 @@ const INTRO_LEVELS = {
     order: [0, 1, 2, 3, 0, 1, 2, 3, null],
     parMoves: 3,
     targetTime: 48,
-    tutorial: 'Reach zero crossings to finish the level.',
+    tutorial: 'Release every knot to finish the level.',
   },
   5: {
     order: [0, 1, 2, 0, 3, 1, 4, 2, 3, 4, null],
