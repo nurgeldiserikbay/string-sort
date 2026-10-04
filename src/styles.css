@@ -1366,3 +1366,11 @@ html[data-banner-mode="preview"] .game-actions {
   transform: translateY(-6px) scale(.98);
   pointer-events: none;
 }
+
+
+.secondary-link .ui-svg {
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
+  vertical-align: -0.2em;
+}
