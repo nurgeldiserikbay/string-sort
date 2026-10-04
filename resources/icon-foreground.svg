@@ -1,15 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 432 432">
   <defs>
-    <filter id="s" x="-40%" y="-40%" width="180%" height="180%">
-      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#000" flood-opacity=".32"/>
+    <radialGradient id="board" cx="34%" cy="28%" r="80%">
+      <stop offset="0" stop-color="#696c75"/>
+      <stop offset=".55" stop-color="#51545d"/>
+      <stop offset="1" stop-color="#3d4049"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#11151b" flood-opacity=".38"/>
     </filter>
   </defs>
-  <circle cx="216" cy="220" r="132" fill="#2d333d" stroke="#1b2027" stroke-width="10"/>
-  <g fill="none" stroke-linecap="round" stroke-width="15" filter="url(#s)">
-    <path d="M132 142 C198 190 243 270 306 292" stroke="#ff4f5e"/>
-    <path d="M302 144 C247 183 192 260 136 287" stroke="#36a6ff"/>
-    <path d="M118 220 C181 170 252 172 312 226" stroke="#45cb6c"/>
-    <path d="M214 108 C258 169 259 245 216 326" stroke="#ffc53a"/>
+
+  <path d="M216 57
+    C260 54 294 65 325 84
+    C359 105 380 136 391 173
+    C403 211 401 250 390 285
+    C378 325 354 354 321 376
+    C287 399 251 405 211 405
+    C169 405 133 396 102 374
+    C70 352 49 324 39 286
+    C29 249 31 211 42 176
+    C54 137 76 108 109 86
+    C141 65 176 58 216 57Z" fill="url(#board)" stroke="#2f333b" stroke-width="8"/>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#shadow)" stroke-width="13">
+    <path d="M120 112 C183 151 177 220 244 244 C293 263 298 318 325 337" stroke="#ff4f60"/>
+    <path d="M321 110 C261 150 276 205 212 229 C159 249 153 307 112 329" stroke="#2f93ff"/>
+    <path d="M72 219 C139 171 184 198 215 260 C241 311 301 279 363 238" stroke="#35ca70"/>
+    <path d="M214 72 C255 134 228 181 185 221 C148 254 179 315 214 363" stroke="#ffd33f"/>
+    <path d="M355 167 C300 174 270 148 228 165 C176 186 145 154 91 143" stroke="#9b5de5"/>
   </g>
-  <circle cx="216" cy="220" r="25" fill="#fff4d8" stroke="#aa8d64" stroke-width="6"/>
+
+  <g stroke="#242831" stroke-width="5">
+    <circle cx="120" cy="112" r="17" fill="#ff4f60"/>
+    <circle cx="325" cy="337" r="17" fill="#ff4f60"/>
+    <circle cx="321" cy="110" r="17" fill="#2f93ff"/>
+    <circle cx="112" cy="329" r="17" fill="#2f93ff"/>
+    <circle cx="72" cy="219" r="17" fill="#35ca70"/>
+    <circle cx="363" cy="238" r="17" fill="#35ca70"/>
+    <circle cx="214" cy="72" r="17" fill="#ffd33f"/>
+    <circle cx="214" cy="363" r="17" fill="#ffd33f"/>
+    <circle cx="355" cy="167" r="17" fill="#9b5de5"/>
+    <circle cx="91" cy="143" r="17" fill="#9b5de5"/>
+  </g>
+
+  <g>
+    <circle cx="373" cy="290" r="15" fill="#6f737d" stroke="#31343b" stroke-width="4"/>
+    <circle cx="373" cy="290" r="8" fill="#2d3037"/>
+  </g>
 </svg>
