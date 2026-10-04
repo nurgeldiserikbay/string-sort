@@ -77,6 +77,24 @@ describe('RopeTangle', () => {
     }
   })
 
+  it('keeps dense knot centers out of a tiny central pile', () => {
+    const tangle = new RopeTangle(2468)
+    const knots = tangle.update(
+      [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, null],
+      geometry,
+    )
+
+    const radii = knots.map((knot) => Math.hypot(
+      knot.x - geometry.cx,
+      knot.y - geometry.cy,
+    ))
+
+    expect(knots.length).toBeGreaterThan(8)
+    expect(Math.max(...radii)).toBeGreaterThan(geometry.boardRadius * 0.34)
+    expect(radii.filter((radius) => radius < geometry.boardRadius * 0.12).length)
+      .toBeLessThanOrEqual(1)
+  })
+
   it('spreads dense knot centers instead of stacking every knot at the exact middle', () => {
     const tangle = new RopeTangle(456)
     const knots = tangle.update(
