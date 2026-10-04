@@ -192,11 +192,9 @@ export class RopeTangle {
     }
   }
 
-  followPhysics(physics, geometry) {
+  followPhysics(physics, geometry, { activeRopeId = null } = {}) {
     const maxRadius = geometry.boardRadius * 0.46
-    const maxCenterStep = Math.max(0.45, geometry.boardRadius * 0.0035)
     const centerDeadZone = Math.max(1.15, geometry.boardRadius * 0.006)
-    const maxTStep = 0.0014
 
     const nearestT = (points, x, y, currentT) => {
       const last = points.length - 1
@@ -229,12 +227,21 @@ export class RopeTangle {
       return clamp(bestIndex / last, 0.12, 0.88)
     }
 
-    const slideToward = (current, target) => {
-      const requested = (target - current) * 0.018
-      return current + clamp(requested, -maxTStep, maxTStep)
+    const slideToward = (current, target, response, maxStep) => {
+      const requested = (target - current) * response
+      return current + clamp(requested, -maxStep, maxStep)
     }
 
     for (const knot of this.knots) {
+      const isActivelyPulled = (
+        activeRopeId != null
+        && (knot.aId === activeRopeId || knot.bId === activeRopeId)
+      )
+      const maxCenterStep = isActivelyPulled
+        ? Math.max(0.45, geometry.boardRadius * 0.0035)
+        : Math.max(0.08, geometry.boardRadius * 0.00055)
+      const maxTStep = isActivelyPulled ? 0.0014 : 0.00018
+      const slideResponse = isActivelyPulled ? 0.018 : 0.006
       const ropeA = physics.getPoints(knot.aId)
       const ropeB = physics.getPoints(knot.bId)
       if (ropeA.length < 5 || ropeB.length < 5) continue
@@ -242,8 +249,8 @@ export class RopeTangle {
       const nextAT = nearestT(ropeA, knot.x, knot.y, knot.aT)
       const nextBT = nearestT(ropeB, knot.x, knot.y, knot.bT)
 
-      knot.aT = slideToward(knot.aT, nextAT)
-      knot.bT = slideToward(knot.bT, nextBT)
+      knot.aT = slideToward(knot.aT, nextAT, slideResponse, maxTStep)
+      knot.bT = slideToward(knot.bT, nextBT, slideResponse, maxTStep)
 
       const aIndex = clamp(
         Math.round((ropeA.length - 1) * knot.aT),
