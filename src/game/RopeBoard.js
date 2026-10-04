@@ -665,16 +665,41 @@ export class RopeBoard {
     ctx.shadowBlur = isActiveTarget ? 16 : 4
     ctx.shadowOffsetY = 2
 
-    ctx.fillStyle = isEmpty ? '#5b5e67' : '#4d5058'
-    ctx.beginPath()
-    ctx.arc(position.x, position.y, radius, 0, TAU)
-    ctx.fill()
+    if (isEmpty) {
+      const rim = ctx.createRadialGradient(
+        position.x - radius * 0.3,
+        position.y - radius * 0.32,
+        radius * 0.08,
+        position.x,
+        position.y,
+        radius,
+      )
+      rim.addColorStop(0, '#aeb2bb')
+      rim.addColorStop(0.45, '#737780')
+      rim.addColorStop(1, '#444850')
 
-    ctx.shadowColor = 'transparent'
+      ctx.fillStyle = rim
+      ctx.beginPath()
+      ctx.arc(position.x, position.y, radius, 0, TAU)
+      ctx.fill()
+
+      ctx.shadowColor = 'transparent'
+      ctx.fillStyle = '#2f3239'
+      ctx.beginPath()
+      ctx.arc(position.x, position.y, radius * 0.58, 0, TAU)
+      ctx.fill()
+    } else {
+      ctx.fillStyle = '#4d5058'
+      ctx.beginPath()
+      ctx.arc(position.x, position.y, radius, 0, TAU)
+      ctx.fill()
+      ctx.shadowColor = 'transparent'
+    }
+
     ctx.strokeStyle = isActiveTarget
       ? 'rgba(164,255,191,.95)'
       : isEmpty
-        ? 'rgba(255,255,255,.13)'
+        ? 'rgba(255,255,255,.28)'
         : 'rgba(0,0,0,.2)'
     ctx.lineWidth = isActiveTarget ? 3 : 1.5
     ctx.setLineDash(isHintTarget ? [4, 4] : [])
