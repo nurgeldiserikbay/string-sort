@@ -189,7 +189,7 @@ describe('RopeTangle', () => {
     expect(knot.bT).toBe(before.bT)
   })
 
-  it('lets persistent knot centers follow the physical rope bundle', () => {
+  it('lets an actively pulled knot move slowly toward the physical bundle', () => {
     const tangle = new RopeTangle(789)
     const [knot] = tangle.update([0, 1, 0, 1, null], geometry)
     const before = { x: knot.x, y: knot.y }
@@ -199,18 +199,47 @@ describe('RopeTangle', () => {
       y: y + index * 0.5,
     }))
 
+    const ropeA = makePoints(260, 230)
+    const ropeB = makePoints(250, 220)
     const physics = {
       getPoints(id) {
-        return id === 0
-          ? makePoints(260, 230)
-          : makePoints(250, 220)
+        return id === 0 ? ropeA : ropeB
       },
     }
 
+    const aIndex = Math.max(2, Math.min(
+      ropeA.length - 3,
+      Math.round((ropeA.length - 1) * knot.aT),
+    ))
+    const bIndex = Math.max(2, Math.min(
+      ropeB.length - 3,
+      Math.round((ropeB.length - 1) * knot.bT),
+    ))
+    const target = {
+      x: (ropeA[aIndex].x + ropeB[bIndex].x) / 2,
+      y: (ropeA[aIndex].y + ropeB[bIndex].y) / 2,
+    }
+    const beforeDistance = Math.hypot(
+      target.x - knot.x,
+      target.y - knot.y,
+    )
+
     tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
 
-    expect(knot.x).toBeGreaterThan(before.x)
-    expect(knot.y).toBeGreaterThan(before.y)
+    const movement = Math.hypot(
+      knot.x - before.x,
+      knot.y - before.y,
+    )
+    const afterDistance = Math.hypot(
+      target.x - knot.x,
+      target.y - knot.y,
+    )
+
+    expect(movement).toBeGreaterThan(0)
+    expect(movement).toBeLessThanOrEqual(
+      geometry.boardRadius * 0.0012 + 0.01,
+    )
+    expect(afterDistance).toBeLessThan(beforeDistance)
   })
 
   it('slides a knot contact toward a closer interior rope segment', () => {
