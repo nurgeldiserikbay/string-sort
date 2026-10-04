@@ -71,8 +71,9 @@ function seededRandom(seed) {
   }
 }
 
-function countCrossings(order) {
+export function getKnotPairs(order) {
   const positionsByRope = new Map()
+
   order.forEach((ropeId, index) => {
     if (ropeId == null) return
     const list = positionsByRope.get(ropeId) ?? []
@@ -80,18 +81,42 @@ function countCrossings(order) {
     positionsByRope.set(ropeId, list)
   })
 
-  const pairs = [...positionsByRope.values()]
-  let crossings = 0
+  const entries = [...positionsByRope.entries()]
+    .filter(([, positions]) => positions.length === 2)
+    .map(([ropeId, positions]) => ({
+      ropeId,
+      positions: [...positions].sort((a, b) => a - b),
+    }))
 
-  for (let i = 0; i < pairs.length; i++) {
-    for (let j = i + 1; j < pairs.length; j++) {
-      const [a, b] = pairs[i].sort((x, y) => x - y)
-      const [c, d] = pairs[j].sort((x, y) => x - y)
-      if ((a < c && c < b && b < d) || (c < a && a < d && d < b)) crossings++
+  const knots = []
+
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      const first = entries[i]
+      const second = entries[j]
+      const [a, b] = first.positions
+      const [c, d] = second.positions
+      const crosses = (
+        (a < c && c < b && b < d)
+        || (c < a && a < d && d < b)
+      )
+
+      if (!crosses) continue
+
+      knots.push({
+        aId: first.ropeId,
+        bId: second.ropeId,
+        aPositions: first.positions,
+        bPositions: second.positions,
+      })
     }
   }
 
-  return crossings
+  return knots
+}
+
+function countCrossings(order) {
+  return getKnotPairs(order).length
 }
 
 function makeSolvedOrder(ropeCount) {
