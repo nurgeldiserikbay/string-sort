@@ -426,10 +426,16 @@ export class GameApp {
     const currentCrossings = getCrossingCount(this.order)
     this.updateHud()
     this.showCrossingFeedback(previousCrossings, currentCrossings)
-    this.haptic()
-    this.audio.swap()
 
-    if (getCrossingCount(this.order) === 0 && !this.isCompleting) {
+    if (currentCrossings < previousCrossings) {
+      this.haptic(ImpactStyle.Medium)
+      this.audio.knotRelease(previousCrossings - currentCrossings)
+    } else {
+      this.haptic()
+      this.audio.swap()
+    }
+
+    if (currentCrossings === 0 && !this.isCompleting) {
       this.isCompleting = true
       this.haptic(ImpactStyle.Medium)
       this.completionTimer = setTimeout(() => {
