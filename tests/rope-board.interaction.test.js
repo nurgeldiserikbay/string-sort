@@ -156,6 +156,27 @@ describe('RopeBoard pointer interaction', () => {
     expect(distance).toBeLessThanOrEqual(g.boardRadius * 0.985 + 0.001)
   })
 
+  it('keeps a simple peg tap neutral', () => {
+    const onSwap = vi.fn()
+    const onInvalidDrop = vi.fn()
+    board = new RopeBoard(canvas, {
+      onSwap,
+      onSolved: vi.fn(),
+      onInvalidDrop,
+      graphics: 'battery',
+    })
+    board.setOrder([0, 1, 0, 1, null])
+
+    const from = board.socketPosition(0)
+
+    board.onPointerDown({ clientX: from.x, clientY: from.y, pointerId: 21 })
+    board.onPointerUp({ clientX: from.x + 1, clientY: from.y + 1, pointerId: 21 })
+
+    expect(onSwap).not.toHaveBeenCalled()
+    expect(onInvalidDrop).not.toHaveBeenCalled()
+    expect(board.invalidDropIndex).toBe(-1)
+  })
+
   it('does not swap when a peg is released away from every socket', () => {
     const onSwap = vi.fn()
     const onInvalidDrop = vi.fn()
