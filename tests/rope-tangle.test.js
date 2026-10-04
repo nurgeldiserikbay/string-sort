@@ -45,4 +45,30 @@ describe('RopeTangle', () => {
       expect(knot.bIndex).toBeLessThanOrEqual(22)
     }
   })
+
+  it('creates alternating double wraps in a dense tangle', () => {
+    const tangle = new RopeTangle(321)
+    const logical = tangle.update(
+      [0, 1, 2, 3, 0, 1, 2, 3, null],
+      geometry,
+    )
+    const constraints = tangle.buildConstraints(new Map([
+      [0, 28],
+      [1, 28],
+      [2, 28],
+      [3, 28],
+    ]))
+
+    expect(logical.length).toBeGreaterThanOrEqual(4)
+    expect(constraints.length).toBeGreaterThan(logical.length)
+
+    const wrappedPair = constraints.filter(
+      (constraint) => constraint.parentKey === constraints[0].parentKey,
+    )
+
+    if (wrappedPair.length === 2) {
+      expect(wrappedPair[0].topId).not.toBe(wrappedPair[1].topId)
+      expect(wrappedPair[0].aIndex).not.toBe(wrappedPair[1].aIndex)
+    }
+  })
 })
