@@ -27,6 +27,7 @@ export class RopeBoard {
     this.raf = 0
     this.depthSeed = 0x51f15e
     this.tangle = new RopeTangle(this.depthSeed)
+    this.needsKnotPrime = true
     this.debugEnabled = (() => {
       try {
         return new URLSearchParams(globalThis.location?.search || '').get('debug') === '1'
@@ -67,6 +68,7 @@ export class RopeBoard {
     if (topologyChanged) {
       this.depthSeed = (0x51f15e ^ Math.imul(order.length + 1, 0x9e3779b1)) >>> 0
       this.tangle = new RopeTangle(this.depthSeed)
+      this.needsKnotPrime = true
       this.physics.clear()
     }
   }
@@ -124,6 +126,7 @@ export class RopeBoard {
     this.canvas.height = Math.round(rect.height * dpr)
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     this.physics.clear()
+    this.needsKnotPrime = true
   }
 
   geometry() {
@@ -260,6 +263,11 @@ export class RopeBoard {
 
     this.tangle.update(this.order, g)
     const knots = this.tangle.buildConstraints(segmentCounts)
+
+    if (this.needsKnotPrime) {
+      this.physics.primeKnotLayout(knots)
+      this.needsKnotPrime = false
+    }
 
     const pegs = this.order
       .map((ropeId, index) => {
