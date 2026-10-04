@@ -37,8 +37,14 @@ describe('SaveData', () => {
     })).toEqual({
       sound: false,
       haptics: true,
+      pegMarkers: false,
       graphics: 'auto',
     })
+  })
+
+  it('enables accessibility peg markers only when explicitly requested', () => {
+    expect(normalizeSettings({ pegMarkers: true }).pegMarkers).toBe(true)
+    expect(normalizeSettings({ pegMarkers: 'yes' }).pegMarkers).toBe(false)
   })
 
   it('reads malformed JSON safely', () => {
