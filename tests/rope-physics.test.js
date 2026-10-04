@@ -31,4 +31,43 @@ describe('RopePhysics', () => {
     expect(points[0].x).toBe(12)
     expect(points.at(-1).x).toBe(104)
   })
+
+  it('couples two ropes around a persistent knot instead of letting them freely pass', () => {
+    const physics = new RopePhysics({
+      gravity: 0,
+      damping: 0.98,
+      constraintIterations: 8,
+    })
+
+    physics.syncRope(0, { x: 0, y: 0 }, { x: 120, y: 120 }, {
+      segmentCount: 12,
+      slack: 1.08,
+    })
+    physics.syncRope(1, { x: 0, y: 120 }, { x: 120, y: 0 }, {
+      segmentCount: 12,
+      slack: 1.08,
+    })
+
+    const knot = {
+      aId: 0,
+      bId: 1,
+      aIndex: 6,
+      bIndex: 6,
+      x: 60,
+      y: 60,
+      stiffness: 0.24,
+      drag: 0.7,
+    }
+
+    for (let frame = 0; frame < 8; frame++) {
+      physics.update(16 + frame * 16, { knots: [knot] })
+    }
+
+    const a = physics.getPoints(0)[6]
+    const b = physics.getPoints(1)[6]
+
+    expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeLessThan(12)
+    expect(Math.hypot(a.x - 60, a.y - 60)).toBeLessThan(18)
+    expect(Math.hypot(b.x - 60, b.y - 60)).toBeLessThan(18)
+  })
 })

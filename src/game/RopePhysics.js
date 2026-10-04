@@ -120,9 +120,71 @@ export class RopePhysics {
     return rope
   }
 
+  primeKnotLayout(knots) {
+    const place = (rope, index, x, y) => {
+      const point = rope?.points?.[index]
+      if (!point || point.pinned) return
+      point.x = x
+      point.y = y
+      point.oldX = x
+      point.oldY = y
+    }
+
+    for (const knot of knots) {
+      const ropeA = this.ropes.get(knot.aId)
+      const ropeB = this.ropes.get(knot.bId)
+      if (!ropeA || !ropeB) continue
+
+      place(ropeA, knot.aIndex, knot.x, knot.y)
+      place(ropeB, knot.bIndex, knot.x, knot.y)
+
+      const shoulder = 9
+      const angle = knot.twistAngle ?? 0
+      const ax = Math.cos(angle)
+      const ay = Math.sin(angle)
+      const bx = -ay
+      const by = ax
+
+      place(
+        ropeA,
+        knot.aIndex - 1,
+        knot.x - ax * shoulder,
+        knot.y - ay * shoulder,
+      )
+      place(
+        ropeA,
+        knot.aIndex + 1,
+        knot.x + ax * shoulder,
+        knot.y + ay * shoulder,
+      )
+      place(
+        ropeB,
+        knot.bIndex - 1,
+        knot.x - bx * shoulder,
+        knot.y - by * shoulder,
+      )
+      place(
+        ropeB,
+        knot.bIndex + 1,
+        knot.x + bx * shoulder,
+        knot.y + by * shoulder,
+      )
+    }
+
+    for (let iteration = 0; iteration < Math.max(4, this.constraintIterations); iteration++) {
+      for (const rope of this.ropes.values()) {
+        this.pinEndpoints(rope)
+        this.solveDistanceConstraints(rope)
+        this.pinEndpoints(rope)
+      }
+      this.solveKnotConstraints(knots)
+    }
+  }
+
   update(time, {
     pegs = [],
     boundary = null,
+    knots = [],
   } = {}) {
     const now = typeof time === 'number' ? time : performance.now()
     if (!this.lastTime) this.lastTime = now
@@ -143,6 +205,11 @@ export class RopePhysics {
         for (const rope of this.ropes.values()) {
           this.pinEndpoints(rope)
           this.solveDistanceConstraints(rope)
+        }
+
+        this.solveKnotConstraints(knots)
+
+        for (const rope of this.ropes.values()) {
           this.solvePegCollisions(rope, pegs)
           if (boundary) this.solveBoundary(rope, boundary)
           this.pinEndpoints(rope)
@@ -154,7 +221,16 @@ export class RopePhysics {
       maxContactsPerPair: 5,
       dedupeDistance: 12,
     })
-    this.applyCrossingFriction(this.contacts)
+
+    const activePairs = new Set(
+      knots.map((knot) => (
+        knot.aId < knot.bId
+          ? `${knot.aId}:${knot.bId}`
+          : `${knot.bId}:${knot.aId}`
+      )),
+    )
+    const boundContacts = this.contacts.filter((contact) => activePairs.has(contact.pair))
+    this.applyCrossingFriction(boundContacts)
   }
 
   integrate(rope, dt, time) {
@@ -210,6 +286,82 @@ export class RopePhysics {
         b.x -= correctionX * (bWeight / totalWeight)
         b.y -= correctionY * (bWeight / totalWeight)
       }
+    }
+  }
+
+  solveKnotConstraints(knots) {
+    const movePoint = (point, targetX, targetY, strength, drag) => {
+      if (!point || point.pinned) return
+
+      point.x += (targetX - point.x) * strength
+      point.y += (targetY - point.y) * strength
+
+      const velocityX = point.x - point.oldX
+      const velocityY = point.y - point.oldY
+      point.oldX = point.x - velocityX * drag
+      point.oldY = point.y - velocityY * drag
+    }
+
+    for (const knot of knots) {
+      const ropeA = this.ropes.get(knot.aId)
+      const ropeB = this.ropes.get(knot.bId)
+      if (!ropeA || !ropeB) continue
+
+      const a = ropeA.points[knot.aIndex]
+      const b = ropeB.points[knot.bIndex]
+      if (!a || !b) continue
+
+      const midpointX = (a.x + b.x) / 2
+      const midpointY = (a.y + b.y) / 2
+      const anchorStrength = 0.22
+      const targetX = midpointX + (knot.x - midpointX) * anchorStrength
+      const targetY = midpointY + (knot.y - midpointY) * anchorStrength
+      const stiffness = knot.stiffness ?? 0.18
+      const drag = knot.drag ?? 0.7
+
+      movePoint(a, targetX, targetY, stiffness, drag)
+      movePoint(b, targetX, targetY, stiffness, drag)
+
+      const aPrev = ropeA.points[knot.aIndex - 1]
+      const aNext = ropeA.points[knot.aIndex + 1]
+      const bPrev = ropeB.points[knot.bIndex - 1]
+      const bNext = ropeB.points[knot.bIndex + 1]
+      const shoulderStrength = stiffness * 0.34
+      const shoulder = 9
+      const angle = knot.twistAngle ?? 0
+      const ax = Math.cos(angle)
+      const ay = Math.sin(angle)
+      const bx = -ay
+      const by = ax
+
+      movePoint(
+        aPrev,
+        targetX - ax * shoulder,
+        targetY - ay * shoulder,
+        shoulderStrength,
+        drag,
+      )
+      movePoint(
+        aNext,
+        targetX + ax * shoulder,
+        targetY + ay * shoulder,
+        shoulderStrength,
+        drag,
+      )
+      movePoint(
+        bPrev,
+        targetX - bx * shoulder,
+        targetY - by * shoulder,
+        shoulderStrength,
+        drag,
+      )
+      movePoint(
+        bNext,
+        targetX + bx * shoulder,
+        targetY + by * shoulder,
+        shoulderStrength,
+        drag,
+      )
     }
   }
 

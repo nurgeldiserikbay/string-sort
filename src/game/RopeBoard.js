@@ -3,6 +3,7 @@ import { RopePhysics } from './RopePhysics.js'
 import { stableDepthOrder } from './RopeTopology.js'
 import { resolvePerformanceProfile } from './PerformanceProfile.js'
 import { FrameGovernor } from './FrameGovernor.js'
+import { RopeTangle } from './RopeTangle.js'
 
 const TAU = Math.PI * 2
 
@@ -25,6 +26,8 @@ export class RopeBoard {
     this.running = false
     this.raf = 0
     this.depthSeed = 0x51f15e
+    this.tangle = new RopeTangle(this.depthSeed)
+    this.needsKnotPrime = true
     this.debugEnabled = (() => {
       try {
         return new URLSearchParams(globalThis.location?.search || '').get('debug') === '1'
@@ -64,6 +67,8 @@ export class RopeBoard {
 
     if (topologyChanged) {
       this.depthSeed = (0x51f15e ^ Math.imul(order.length + 1, 0x9e3779b1)) >>> 0
+      this.tangle = new RopeTangle(this.depthSeed)
+      this.needsKnotPrime = true
       this.physics.clear()
     }
   }
@@ -121,6 +126,7 @@ export class RopeBoard {
     this.canvas.height = Math.round(rect.height * dpr)
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     this.physics.clear()
+    this.needsKnotPrime = true
   }
 
   geometry() {
@@ -229,6 +235,7 @@ export class RopeBoard {
   syncPhysics(time, g) {
     const ropeIds = [...new Set(this.order.filter((ropeId) => ropeId != null))]
     const draggedRopeId = this.dragIndex >= 0 ? this.order[this.dragIndex] : null
+    const segmentCounts = new Map()
 
     this.physics.removeMissing(ropeIds)
 
@@ -236,18 +243,30 @@ export class RopeBoard {
       const endpoints = this.endpointEntries(ropeId)
       if (!endpoints) continue
 
+      const segmentCount = g.size < 360
+        ? this.performanceProfile.smallSegments
+        : this.performanceProfile.largeSegments
+
+      segmentCounts.set(ropeId, segmentCount)
+
       this.physics.syncRope(
         ropeId,
         endpoints[0].position,
         endpoints[1].position,
         {
-          segmentCount: g.size < 360
-            ? this.performanceProfile.smallSegments
-            : this.performanceProfile.largeSegments,
-          slack: 1.065,
+          segmentCount,
+          slack: 1.085,
           retargetLength: draggedRopeId !== ropeId,
         },
       )
+    }
+
+    this.tangle.update(this.order, g)
+    const knots = this.tangle.buildConstraints(segmentCounts)
+
+    if (this.needsKnotPrime) {
+      this.physics.primeKnotLayout(knots)
+      this.needsKnotPrime = false
     }
 
     const pegs = this.order
@@ -265,6 +284,7 @@ export class RopeBoard {
 
     this.physics.update(time, {
       pegs,
+      knots,
       boundary: {
         x: g.cx,
         y: g.cy,
@@ -294,53 +314,71 @@ export class RopeBoard {
 
   drawBoard(g) {
     const ctx = this.ctx
+    const radii = [
+      0.985, 1, 0.976, 0.995, 0.982, 1,
+      0.972, 0.992, 0.98, 0.997, 0.974, 1,
+      0.981, 0.993, 0.97, 0.998, 0.978, 0.992,
+    ]
+
+    const boardPath = (scale = 1) => {
+      ctx.beginPath()
+      radii.forEach((factor, index) => {
+        const angle = -Math.PI / 2 + (index / radii.length) * TAU
+        const radius = g.boardRadius * factor * scale
+        const x = g.cx + Math.cos(angle) * radius
+        const y = g.cy + Math.sin(angle) * radius
+        if (index === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      })
+      ctx.closePath()
+    }
 
     ctx.save()
-    ctx.shadowColor = 'rgba(52, 35, 23, .28)'
-    ctx.shadowBlur = 24
-    ctx.shadowOffsetY = 12
+    ctx.shadowColor = 'rgba(58, 38, 20, .26)'
+    ctx.shadowBlur = 26
+    ctx.shadowOffsetY = 13
 
     const boardGradient = ctx.createRadialGradient(
-      g.cx - g.boardRadius * 0.28,
-      g.cy - g.boardRadius * 0.34,
-      g.boardRadius * 0.1,
+      g.cx - g.boardRadius * 0.34,
+      g.cy - g.boardRadius * 0.38,
+      g.boardRadius * 0.08,
       g.cx,
       g.cy,
       g.boardRadius,
     )
-    boardGradient.addColorStop(0, '#64666e')
-    boardGradient.addColorStop(0.5, '#555861')
-    boardGradient.addColorStop(1, '#43464f')
+    boardGradient.addColorStop(0, '#676a73')
+    boardGradient.addColorStop(0.52, '#555861')
+    boardGradient.addColorStop(1, '#41444d')
 
     ctx.fillStyle = boardGradient
-    ctx.beginPath()
-
-    const teeth = 28
-    for (let index = 0; index <= teeth * 2; index++) {
-      const angle = (index / (teeth * 2)) * TAU
-      const radius = g.boardRadius * (index % 2 === 0 ? 1 : 0.968)
-      const x = g.cx + Math.cos(angle) * radius
-      const y = g.cy + Math.sin(angle) * radius
-      if (index === 0) ctx.moveTo(x, y)
-      else ctx.lineTo(x, y)
-    }
-
-    ctx.closePath()
+    boardPath()
     ctx.fill()
     ctx.restore()
 
     ctx.save()
-    ctx.strokeStyle = 'rgba(255,255,255,.08)'
+    boardPath(0.96)
+    ctx.strokeStyle = 'rgba(255,255,255,.075)'
     ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.arc(g.cx, g.cy, g.boardRadius * 0.92, 0, TAU)
     ctx.stroke()
 
-    ctx.strokeStyle = 'rgba(0,0,0,.18)'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.arc(g.cx, g.cy, g.boardRadius * 0.885, 0, TAU)
+    boardPath(0.91)
+    ctx.strokeStyle = 'rgba(20,22,27,.16)'
+    ctx.lineWidth = 2
     ctx.stroke()
+
+    const sheen = ctx.createRadialGradient(
+      g.cx - g.boardRadius * 0.26,
+      g.cy - g.boardRadius * 0.32,
+      0,
+      g.cx - g.boardRadius * 0.18,
+      g.cy - g.boardRadius * 0.22,
+      g.boardRadius * 0.76,
+    )
+    sheen.addColorStop(0, 'rgba(255,255,255,.07)')
+    sheen.addColorStop(1, 'rgba(255,255,255,0)')
+    ctx.fillStyle = sheen
+    boardPath(0.9)
+    ctx.fill()
     ctx.restore()
   }
 
@@ -651,7 +689,7 @@ export class RopeBoard {
     const lines = [
       `FPS ${this.debugFps || '--'}`,
       `Profile ${this.performanceProfile.id}`,
-      `Ropes ${ropes} · Contacts ${contacts}`,
+      `Ropes ${ropes} · Knots ${this.tangle.getKnots().length}`,
       `DPR cap ${this.performanceProfile.dprCap}`,
     ]
 

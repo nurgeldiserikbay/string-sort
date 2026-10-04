@@ -27,7 +27,7 @@ const INTRO_LEVELS = {
     order: [0, 1, 0, 2, 1, 2, 3, 3, null],
     parMoves: 2,
     targetTime: 40,
-    tutorial: 'Watch the Crossings counter. Lower is better.',
+    tutorial: 'Watch the Knots counter. Every move should loosen the tangle.',
   },
   3: {
     order: [0, 1, 2, 0, 1, 2, 3, 3, null],
@@ -39,7 +39,7 @@ const INTRO_LEVELS = {
     order: [0, 1, 2, 3, 0, 1, 2, 3, null],
     parMoves: 3,
     targetTime: 48,
-    tutorial: 'Reach zero crossings to finish the level.',
+    tutorial: 'Release every knot to finish the level.',
   },
   5: {
     order: [0, 1, 2, 0, 3, 1, 4, 2, 3, 4, null],
@@ -71,8 +71,9 @@ function seededRandom(seed) {
   }
 }
 
-function countCrossings(order) {
+export function getKnotPairs(order) {
   const positionsByRope = new Map()
+
   order.forEach((ropeId, index) => {
     if (ropeId == null) return
     const list = positionsByRope.get(ropeId) ?? []
@@ -80,18 +81,43 @@ function countCrossings(order) {
     positionsByRope.set(ropeId, list)
   })
 
-  const pairs = [...positionsByRope.values()]
-  let crossings = 0
+  const entries = [...positionsByRope.entries()]
+    .filter(([, positions]) => positions.length === 2)
+    .map(([ropeId, positions]) => ({
+      ropeId,
+      positions: [...positions].sort((a, b) => a - b),
+    }))
+    .sort((a, b) => a.ropeId - b.ropeId)
 
-  for (let i = 0; i < pairs.length; i++) {
-    for (let j = i + 1; j < pairs.length; j++) {
-      const [a, b] = pairs[i].sort((x, y) => x - y)
-      const [c, d] = pairs[j].sort((x, y) => x - y)
-      if ((a < c && c < b && b < d) || (c < a && a < d && d < b)) crossings++
+  const knots = []
+
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      const first = entries[i]
+      const second = entries[j]
+      const [a, b] = first.positions
+      const [c, d] = second.positions
+      const crosses = (
+        (a < c && c < b && b < d)
+        || (c < a && a < d && d < b)
+      )
+
+      if (!crosses) continue
+
+      knots.push({
+        aId: first.ropeId,
+        bId: second.ropeId,
+        aPositions: first.positions,
+        bPositions: second.positions,
+      })
     }
   }
 
-  return crossings
+  return knots
+}
+
+function countCrossings(order) {
+  return getKnotPairs(order).length
 }
 
 function makeSolvedOrder(ropeCount) {
