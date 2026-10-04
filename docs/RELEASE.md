@@ -94,7 +94,7 @@ The workflow:
 
 Upload the generated `app-release.aab` to the desired Play Console track.
 
-Before production release, verify:
+Before production release, run through [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) and verify:
 
 - package name is final: `com.nurgeldiserikbay.stringsort`;
 - versionCode is greater than the latest version already uploaded to Play;
