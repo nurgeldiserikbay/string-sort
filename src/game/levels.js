@@ -341,8 +341,10 @@ export function getCrossingCount(order) {
 export function findBestSwap(order) {
   const current = countCrossings(order)
   const emptyIndex = order.indexOf(null)
-  if (emptyIndex < 0) return null
+  if (emptyIndex < 0 || current === 0) return null
 
+  const guaranteed = getGuaranteedSolveMoves(order)
+  const currentDistance = guaranteed.length
   let best = null
 
   for (let from = 0; from < order.length; from++) {
@@ -353,15 +355,41 @@ export function findBestSwap(order) {
       candidate[emptyIndex],
       candidate[from],
     ]
-    const crossings = countCrossings(candidate)
 
-    if (!best || crossings < best.crossings) {
-      best = { from, to: emptyIndex, crossings }
+    const crossings = countCrossings(candidate)
+    const solveDistance = getGuaranteedSolveMoves(candidate).length
+
+    // A hint must always make measurable progress toward a known solved
+    // arrangement. Without this guard, a locally good knot-reducing move
+    // can send the stateless hint system into a loop on larger boards.
+    if (solveDistance >= currentDistance) continue
+
+    if (
+      !best
+      || crossings < best.crossings
+      || (
+        crossings === best.crossings
+        && solveDistance < best.solveDistance
+      )
+    ) {
+      best = {
+        from,
+        to: emptyIndex,
+        crossings,
+        solveDistance,
+      }
     }
   }
 
-  if (best && best.crossings < current) return best
+  if (best) {
+    return {
+      from: best.from,
+      to: best.to,
+      crossings: best.crossings,
+      fallback: best.crossings >= current,
+    }
+  }
 
-  const fallback = getGuaranteedSolveMoves(order)[0]
+  const fallback = guaranteed[0]
   return fallback ? { ...fallback, fallback: true } : null
 }
