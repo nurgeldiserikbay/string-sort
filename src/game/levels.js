@@ -296,21 +296,18 @@ export function createLevel(levelNumber) {
   let ropeCount
   let minCrossings
 
-  if (levelNumber <= 16) {
+  if (levelNumber <= 24) {
+    ropeCount = 6
+    minCrossings = 8 + Math.floor((levelNumber - 9) / 4)
+  } else if (levelNumber <= 49) {
     ropeCount = 7
-    minCrossings = 9 + Math.floor((levelNumber - 9) / 2)
-  } else if (levelNumber <= 32) {
+    minCrossings = 10 + Math.floor((levelNumber - 25) / 5)
+  } else if (levelNumber <= 74) {
     ropeCount = 8
-    minCrossings = 12 + Math.floor((levelNumber - 17) / 3)
-  } else if (levelNumber <= 52) {
-    ropeCount = 9
-    minCrossings = 15 + Math.floor((levelNumber - 33) / 4)
-  } else if (levelNumber <= 76) {
-    ropeCount = 10
-    minCrossings = 18 + Math.floor((levelNumber - 53) / 4)
+    minCrossings = 12 + Math.floor((levelNumber - 50) / 5)
   } else {
-    ropeCount = 12
-    minCrossings = 22 + Math.floor((levelNumber - 77) / 4)
+    ropeCount = 9
+    minCrossings = 14 + Math.floor((levelNumber - 75) / 4)
   }
 
   const maxCrossings = Math.floor((ropeCount * (ropeCount - 1)) / 2)
