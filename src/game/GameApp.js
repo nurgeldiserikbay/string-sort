@@ -8,6 +8,7 @@ import { createBannerSafeSlot } from './MonetizationLayout.js'
 import { normalizeProgress, normalizeSettings, safeReadJson, safeWriteJson } from './SaveData.js'
 import { APP_VERSION, privacySummary } from './AppInfo.js'
 import { uiIcon } from '../ui/icons.js'
+import { installMenuPreview } from '../ui/MenuPreview.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
@@ -39,6 +40,7 @@ export class GameApp {
     this.tutorialHintTimer = 0
     this.completionTimer = 0
     this.feedbackTimer = 0
+    this.menuPreviewCleanup = null
     this.screen = 'menu'
     this.backButtonHandle = null
     this.appStateHandle = null
@@ -99,6 +101,8 @@ export class GameApp {
     clearTimeout(this.completionTimer)
     clearTimeout(this.feedbackTimer)
     this.board?.destroy()
+    this.menuPreviewCleanup?.()
+    this.menuPreviewCleanup = null
     this.backButtonHandle?.remove?.()
     this.appStateHandle?.remove?.()
     document.removeEventListener('visibilitychange', this.onVisibilityChange)
@@ -133,6 +137,8 @@ export class GameApp {
   shell(content) {
     this.board?.destroy()
     this.board = null
+    this.menuPreviewCleanup?.()
+    this.menuPreviewCleanup = null
     this.stopTimer()
     clearTimeout(this.tutorialHintTimer)
     clearTimeout(this.completionTimer)
@@ -164,12 +170,7 @@ export class GameApp {
           <p class="menu-tagline">Untangle · Sort · Feel Good</p>
 
           <div class="mini-board video-board-preview" aria-hidden="true">
-            <div class="mini-board-disc"></div>
-            <span class="mini-rope r1"></span>
-            <span class="mini-rope r2"></span>
-            <span class="mini-rope r3"></span>
-            <span class="mini-rope r4"></span>
-            <span class="mini-hole"></span>
+            <canvas class="menu-preview-canvas" data-menu-preview></canvas>
           </div>
 
           <div class="resume-label">Level ${this.progress.unlocked} of ${TOTAL_LEVELS}</div>
@@ -197,6 +198,10 @@ export class GameApp {
         <footer class="menu-footer">Puzzles for a brighter day</footer>
       </main>
     `)
+
+    this.menuPreviewCleanup = installMenuPreview(
+      this.root.querySelector('[data-menu-preview]'),
+    )
 
     this.root.querySelector('[data-action="play"]').onclick = () => this.startLevel(this.progress.unlocked)
     this.root.querySelector('[data-action="levels"]').onclick = () => this.showLevelSelect()
