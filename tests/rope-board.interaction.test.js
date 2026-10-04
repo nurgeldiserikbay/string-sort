@@ -49,6 +49,7 @@ describe('RopeBoard pointer interaction', () => {
       toJSON() {},
     })
     canvas.setPointerCapture = vi.fn()
+    canvas.releasePointerCapture = vi.fn()
   })
 
   afterEach(() => {
@@ -73,6 +74,46 @@ describe('RopeBoard pointer interaction', () => {
     expect(board.dragIndex).toBe(-1)
   })
 
+  it('cancels a pointer-cancel gesture without moving a peg', () => {
+    const onSwap = vi.fn()
+    board = new RopeBoard(canvas, {
+      onSwap,
+      onSolved: vi.fn(),
+      graphics: 'battery',
+    })
+    board.setOrder([0, 1, 0, 1, null])
+
+    const from = board.socketPosition(1)
+    const to = board.socketPosition(4)
+
+    board.onPointerDown({ clientX: from.x, clientY: from.y, pointerId: 7 })
+    board.onPointerMove({ clientX: to.x, clientY: to.y, pointerId: 7 })
+    board.onPointerCancel({ pointerId: 7 })
+
+    expect(onSwap).not.toHaveBeenCalled()
+    expect(board.dragIndex).toBe(-1)
+    expect(board.activePointerId).toBeNull()
+    expect(canvas.releasePointerCapture).toHaveBeenCalledWith(7)
+  })
+
+  it('ignores a second pointer while one peg is already being dragged', () => {
+    board = new RopeBoard(canvas, {
+      onSwap: vi.fn(),
+      onSolved: vi.fn(),
+      graphics: 'battery',
+    })
+    board.setOrder([0, 1, 0, 1, null])
+
+    const first = board.socketPosition(0)
+    const second = board.socketPosition(1)
+
+    board.onPointerDown({ clientX: first.x, clientY: first.y, pointerId: 10 })
+    board.onPointerDown({ clientX: second.x, clientY: second.y, pointerId: 11 })
+
+    expect(board.activePointerId).toBe(10)
+    expect(board.dragIndex).toBe(0)
+  })
+
   it('keeps the dragged peg inside the physical board boundary', () => {
     board = new RopeBoard(canvas, {
       onSwap: vi.fn(),
@@ -90,7 +131,13 @@ describe('RopeBoard pointer interaction', () => {
 
   it('does not swap when a peg is released away from every socket', () => {
     const onSwap = vi.fn()
-    board = new RopeBoard(canvas, { onSwap, onSolved: vi.fn(), graphics: 'battery' })
+    const onInvalidDrop = vi.fn()
+    board = new RopeBoard(canvas, {
+      onSwap,
+      onSolved: vi.fn(),
+      onInvalidDrop,
+      graphics: 'battery',
+    })
     board.setOrder([0, 1, 0, 1, null])
 
     const from = board.socketPosition(0)
@@ -100,6 +147,8 @@ describe('RopeBoard pointer interaction', () => {
     board.onPointerUp({ clientX: 8, clientY: 510, pointerId: 2 })
 
     expect(onSwap).not.toHaveBeenCalled()
+    expect(onInvalidDrop).toHaveBeenCalledWith(0)
+    expect(board.invalidDropIndex).toBe(0)
   })
 
   it('renders each rope only once even when ropes cross', () => {

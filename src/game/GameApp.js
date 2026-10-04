@@ -388,6 +388,10 @@ export class GameApp {
     this.board = new RopeBoard(canvas, {
       onSwap: (from, to) => this.handleSwap(from, to),
       onSolved: () => {},
+      onInvalidDrop: () => {
+        this.haptic()
+        this.audio.tap()
+      },
       graphics: this.settings.graphics,
       pegMarkers: this.settings.pegMarkers,
     })
@@ -523,6 +527,7 @@ export class GameApp {
     if (this.screen !== 'game') return
     this.screen = 'pause'
     this.stopTimer()
+    this.board?.cancelDrag?.()
     this.board?.stop()
     clearTimeout(this.completionTimer)
     this.completionTimer = 0

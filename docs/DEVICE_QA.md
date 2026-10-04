@@ -33,7 +33,7 @@ The overlay reports:
 - approximate FPS;
 - active graphics profile;
 - rope count;
-- active rope crossing contacts;
+- active logical knots;
 - current DPR cap.
 
 The overlay is disabled in normal gameplay.
@@ -53,21 +53,28 @@ If Auto selects too high a profile for a device, record the reported profile, FP
 
 ## Physics checks
 
-For levels with 4–8 ropes:
+For easy levels and for dense levels with up to 9 ropes:
 
 1. drag a peg slowly across the board;
 2. drag it quickly across multiple ropes;
 3. circle around another peg;
-4. release directly on a target peg;
-5. release away from every peg;
-6. repeatedly undo and restart;
-7. solve the level after several aggressive drags.
+4. drag toward an occupied socket and verify it is rejected;
+5. release directly on the single empty socket;
+6. release away from every socket and verify the peg returns without a move;
+7. start a drag, then send the app to background and return;
+8. try a second finger while the first finger is dragging;
+9. repeatedly undo and restart;
+10. solve the level after several aggressive drags.
 
 Verify:
 
-- rope endpoints remain attached;
+- rope endpoints remain attached to their colored terminals;
+- pointer cancellation/backgrounding never completes an accidental move;
+- a second finger cannot steal the active drag;
 - rope segments do not visibly stretch apart;
 - ropes do not escape the circular board;
+- bound ropes visibly pull one another;
+- knot centers can move/slide with tension without teleporting;
 - over/under rendering remains stable enough to read;
 - peg collision does not trap the rope permanently;
 - no NaN/exploding geometry appears.
