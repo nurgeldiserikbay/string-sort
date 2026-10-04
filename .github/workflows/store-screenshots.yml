@@ -57,6 +57,9 @@ jobs:
       - name: Capture real UI screenshots
         run: npm run screenshots:store
 
+      - name: Verify screenshot package
+        run: npm run screenshots:verify
+
       - name: Generate static store assets
         run: npm run assets:store
 
