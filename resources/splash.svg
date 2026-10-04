@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="25%" r="90%">
+      <stop offset="0" stop-color="#fff9e9"/>
+      <stop offset="1" stop-color="#efd09b"/>
+    </radialGradient>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="34" stdDeviation="30" flood-color="#765128" flood-opacity=".25"/>
+    </filter>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#bg)"/>
+  <g transform="translate(1366 1280)" filter="url(#shadow)">
+    <circle r="430" fill="#2c323b"/>
+    <circle r="385" fill="none" stroke="#fff" stroke-opacity=".07" stroke-width="12"/>
+    <g fill="none" stroke-linecap="round" stroke-width="48">
+      <path d="M-270 -240 C-70 -95 120 230 290 278" stroke="#ff4f5e"/>
+      <path d="M272 -235 C115 -115 -100 205 -282 270" stroke="#36a6ff"/>
+      <path d="M-330 10 C-105 -155 150 -148 330 20" stroke="#45cb6c"/>
+      <path d="M0 -350 C135 -145 125 155 0 365" stroke="#ffc53a"/>
+    </g>
+    <circle r="74" fill="#fff2d3" stroke="#a88b62" stroke-width="14"/>
+    <circle r="24" fill="#45413d"/>
+  </g>
+  <g text-anchor="middle" font-family="Arial Rounded MT Bold, Trebuchet MS, sans-serif" font-weight="800">
+    <text x="1366" y="1950" font-size="250" fill="#ffb51f" stroke="#8e5014" stroke-width="14" paint-order="stroke">STRING</text>
+    <text x="1366" y="2175" font-size="270" fill="#3da6ff" stroke="#165e9b" stroke-width="14" paint-order="stroke">SORT</text>
+    <text x="1366" y="2315" font-size="66" fill="#6a4b30" opacity=".82">UNTANGLE · RELAX · SOLVE</text>
+  </g>
+</svg>
