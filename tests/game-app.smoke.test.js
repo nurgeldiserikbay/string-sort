@@ -140,6 +140,20 @@ describe('GameApp interaction smoke tests', () => {
     expect(root.querySelector('[data-setting="sound"]').textContent.trim()).toBe('Off')
   })
 
+  it('keeps peg markers optional and persists the setting', () => {
+    root.querySelector('[data-action="settings"]').click()
+    const markerButton = root.querySelector('[data-setting="pegMarkers"]')
+
+    expect(markerButton.textContent.trim()).toBe('Off')
+    markerButton.click()
+    expect(app.settings.pegMarkers).toBe(true)
+    expect(markerButton.textContent.trim()).toBe('On')
+
+    app.showMenu()
+    app.showSettings()
+    expect(root.querySelector('[data-setting="pegMarkers"]').textContent.trim()).toBe('On')
+  })
+
   it('cycles graphics quality without leaving settings', () => {
     root.querySelector('[data-action="settings"]').click()
     const graphicsButton = root.querySelector('[data-setting="graphics"]')
