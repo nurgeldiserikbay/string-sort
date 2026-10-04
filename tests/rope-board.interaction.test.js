@@ -96,6 +96,22 @@ describe('RopeBoard pointer interaction', () => {
     expect(canvas.releasePointerCapture).toHaveBeenCalledWith(7)
   })
 
+  it('releases pointer capture when the board is destroyed mid-drag', () => {
+    board = new RopeBoard(canvas, {
+      onSwap: vi.fn(),
+      onSolved: vi.fn(),
+      graphics: 'battery',
+    })
+    board.setOrder([0, 1, 0, 1, null])
+
+    const from = board.socketPosition(0)
+    board.onPointerDown({ clientX: from.x, clientY: from.y, pointerId: 31 })
+    board.destroy()
+
+    expect(canvas.releasePointerCapture).toHaveBeenCalledWith(31)
+    expect(board.activePointerId).toBeNull()
+  })
+
   it('ignores a second pointer while one peg is already being dragged', () => {
     board = new RopeBoard(canvas, {
       onSwap: vi.fn(),
