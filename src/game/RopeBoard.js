@@ -547,6 +547,71 @@ export class RopeBoard {
     }
   }
 
+  drawHintGuide(time) {
+    if (!this.hint || performance.now() >= this.hintUntil) return
+
+    const from = this.socketPosition(this.hint.from)
+    const to = this.socketPosition(this.hint.to)
+    const g = this.geometry()
+    const ctx = this.ctx
+    const pulse = 0.5 + 0.5 * Math.sin(time * 0.008)
+    const controlX = g.cx + (from.x + to.x - g.cx * 2) * 0.16
+    const controlY = g.cy + (from.y + to.y - g.cy * 2) * 0.16
+
+    const directionX = to.x - controlX
+    const directionY = to.y - controlY
+    const directionLength = Math.max(0.001, Math.hypot(directionX, directionY))
+    const ux = directionX / directionLength
+    const uy = directionY / directionLength
+    const arrowLength = 14 + pulse * 3
+    const arrowWidth = 7
+
+    ctx.save()
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+
+    ctx.beginPath()
+    ctx.moveTo(from.x, from.y)
+    ctx.quadraticCurveTo(controlX, controlY, to.x, to.y)
+    ctx.strokeStyle = 'rgba(255,255,255,.58)'
+    ctx.lineWidth = 8
+    ctx.shadowColor = 'rgba(67, 211, 121, .28)'
+    ctx.shadowBlur = 12
+    ctx.stroke()
+
+    const gradient = ctx.createLinearGradient(from.x, from.y, to.x, to.y)
+    gradient.addColorStop(0, 'rgba(99, 201, 255, .72)')
+    gradient.addColorStop(1, 'rgba(116, 246, 155, .95)')
+
+    ctx.shadowColor = 'transparent'
+    ctx.beginPath()
+    ctx.moveTo(from.x, from.y)
+    ctx.quadraticCurveTo(controlX, controlY, to.x, to.y)
+    ctx.strokeStyle = gradient
+    ctx.lineWidth = 3.2 + pulse * 0.8
+    ctx.setLineDash([7, 8])
+    ctx.lineDashOffset = -time * 0.025
+    ctx.stroke()
+    ctx.setLineDash([])
+
+    const tipX = to.x - ux * 5
+    const tipY = to.y - uy * 5
+    const baseX = tipX - ux * arrowLength
+    const baseY = tipY - uy * arrowLength
+    const nx = -uy
+    const ny = ux
+
+    ctx.fillStyle = 'rgba(116, 246, 155, .96)'
+    ctx.beginPath()
+    ctx.moveTo(tipX, tipY)
+    ctx.lineTo(baseX + nx * arrowWidth, baseY + ny * arrowWidth)
+    ctx.lineTo(baseX - nx * arrowWidth, baseY - ny * arrowWidth)
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.restore()
+  }
+
   drawSocket(index) {
     const g = this.geometry()
     const ctx = this.ctx
@@ -872,6 +937,7 @@ export class RopeBoard {
     depthOrder.forEach((ropeId) => this.drawRope(ropeId, time))
     this.drawKnotOverpasses()
     this.drawReleaseBursts(time)
+    this.drawHintGuide(time)
 
     this.order.forEach((ropeId, index) => {
       if (ropeId != null) this.drawPeg(index, time)
