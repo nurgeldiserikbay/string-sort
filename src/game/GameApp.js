@@ -389,6 +389,7 @@ export class GameApp {
       onSwap: (from, to) => this.handleSwap(from, to),
       onSolved: () => {},
       graphics: this.settings.graphics,
+      pegMarkers: this.settings.pegMarkers,
     })
     this.board.setOrder(this.order, { animate: false })
     this.board.start()
@@ -675,6 +676,12 @@ export class GameApp {
             <span>Graphics</span>
             <button class="setting-toggle graphics-toggle" data-setting="graphics">
               ${graphicsLabel(this.settings.graphics)}
+            </button>
+          </div>
+          <div>
+            <span>Peg markers</span>
+            <button class="setting-toggle" data-setting="pegMarkers" aria-pressed="${this.settings.pegMarkers}">
+              ${this.settings.pegMarkers ? 'On' : 'Off'}
             </button>
           </div>
           <div>
