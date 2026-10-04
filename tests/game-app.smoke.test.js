@@ -23,6 +23,7 @@ function makeCanvasContext() {
     fill: vi.fn(),
     strokeRect: vi.fn(),
     createRadialGradient: vi.fn(makeGradient),
+    createLinearGradient: vi.fn(makeGradient),
     setLineDash: vi.fn(),
     shadowColor: '',
     shadowBlur: 0,
@@ -179,6 +180,16 @@ describe('GameApp interaction smoke tests', () => {
 
     const saved = JSON.parse(localStorage.getItem('string-sort-progress-v1'))
     expect(saved.unlocked).toBe(1)
+  })
+
+  it('dismisses onboarding copy after the first legal move', () => {
+    root.querySelector('[data-action="play"]').click()
+
+    expect(root.querySelector('[data-tutorial]')).not.toBeNull()
+
+    app.handleSwap(1, 6)
+
+    expect(root.querySelector('[data-tutorial]').classList.contains('is-dismissed')).toBe(true)
   })
 
   it('rejects an occupied-to-occupied move', () => {
