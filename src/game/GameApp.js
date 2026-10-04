@@ -644,7 +644,7 @@ export class GameApp {
           </div>
           <div>
             <span class="how-step-icon">${uiIcon('levels')}</span>
-            <b>Clear every crossing</b>
+            <b>Release every knot</b>
             <p>Move the free peg until every physical knot releases.</p>
           </div>
         </div>
