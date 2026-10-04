@@ -379,7 +379,10 @@ export class RopeBoard {
       )
     }
 
-    this.tangle.update(this.order, g)
+    const socketPositions = this.order.map((_, index) => (
+      this.socketPosition(index)
+    ))
+    this.tangle.update(this.order, g, socketPositions)
 
     for (const released of this.tangle.consumeReleased()) {
       this.releaseBursts.push({
