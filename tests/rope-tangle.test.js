@@ -92,6 +92,63 @@ describe('RopeTangle', () => {
     expect(distinct.size).toBeGreaterThan(3)
   })
 
+  it('keeps an existing knot stable across repeated topology updates', () => {
+    const tangle = new RopeTangle(654)
+    const order = [0, 1, 0, 1, null]
+    const [first] = tangle.update(order, geometry)
+    const before = {
+      x: first.x,
+      y: first.y,
+      aT: first.aT,
+      bT: first.bT,
+    }
+
+    for (let index = 0; index < 20; index++) {
+      tangle.update(order, geometry)
+    }
+
+    const [after] = tangle.getKnots()
+    expect(after.x).toBeCloseTo(before.x, 8)
+    expect(after.y).toBeCloseTo(before.y, 8)
+    expect(after.aT).toBeCloseTo(before.aT, 8)
+    expect(after.bT).toBeCloseTo(before.bT, 8)
+  })
+
+  it('limits knot-center and contact sliding speed in one physics frame', () => {
+    const tangle = new RopeTangle(987)
+    const [knot] = tangle.update([0, 1, 0, 1, null], geometry)
+    const before = {
+      x: knot.x,
+      y: knot.y,
+      aT: knot.aT,
+      bT: knot.bT,
+    }
+
+    const makePoints = (offset) => Array.from({ length: 25 }, (_, index) => ({
+      x: 520 + index * 5 + offset,
+      y: 480 + index * 3 + offset,
+    }))
+
+    const physics = {
+      getPoints(id) {
+        return id === 0 ? makePoints(0) : makePoints(4)
+      },
+    }
+
+    tangle.followPhysics(physics, geometry)
+
+    const centerMove = Math.hypot(
+      knot.x - before.x,
+      knot.y - before.y,
+    )
+
+    expect(centerMove).toBeLessThanOrEqual(
+      geometry.boardRadius * 0.0035 + 0.01,
+    )
+    expect(Math.abs(knot.aT - before.aT)).toBeLessThanOrEqual(0.00141)
+    expect(Math.abs(knot.bT - before.bT)).toBeLessThanOrEqual(0.00141)
+  })
+
   it('lets persistent knot centers follow the physical rope bundle', () => {
     const tangle = new RopeTangle(789)
     const [knot] = tangle.update([0, 1, 0, 1, null], geometry)
