@@ -87,6 +87,7 @@ export function getKnotPairs(order) {
       ropeId,
       positions: [...positions].sort((a, b) => a - b),
     }))
+    .sort((a, b) => a.ropeId - b.ropeId)
 
   const knots = []
 
