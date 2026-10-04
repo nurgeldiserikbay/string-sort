@@ -9,7 +9,7 @@ Initial public release candidate of String Sort.
 - 100 deterministic levels across five chapters;
 - persistent logical knot graph with connected late-game tangles;
 - Verlet rope simulation with slack, tension, peg collision and board boundaries;
-- sliding knot centers plus double/triple-wrap presentation on dense levels;
+- stable knot centers seeded from real chord intersections with readable over/under presentation;
 - local over/under rope rendering;
 - Hint, Undo and Restart;
 - convergence-safe hints that always progress toward a known solution;

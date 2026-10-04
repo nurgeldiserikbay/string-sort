@@ -147,40 +147,12 @@ export class RopePhysics {
       const ropeB = this.ropes.get(knot.bId)
       if (!ropeA || !ropeB) continue
 
+      // Prime only the actual contact particles. Neighboring rope points
+      // are left to the distance solver so the rope approaches the knot
+      // naturally instead of forming artificial loops around a synthetic
+      // shoulder shape.
       place(ropeA, knot.aIndex, knot.x, knot.y)
       place(ropeB, knot.bIndex, knot.x, knot.y)
-
-      const shoulder = 9
-      const angle = knot.twistAngle ?? 0
-      const ax = Math.cos(angle)
-      const ay = Math.sin(angle)
-      const bx = -ay
-      const by = ax
-
-      place(
-        ropeA,
-        knot.aIndex - 1,
-        knot.x - ax * shoulder,
-        knot.y - ay * shoulder,
-      )
-      place(
-        ropeA,
-        knot.aIndex + 1,
-        knot.x + ax * shoulder,
-        knot.y + ay * shoulder,
-      )
-      place(
-        ropeB,
-        knot.bIndex - 1,
-        knot.x - bx * shoulder,
-        knot.y - by * shoulder,
-      )
-      place(
-        ropeB,
-        knot.bIndex + 1,
-        knot.x + bx * shoulder,
-        knot.y + by * shoulder,
-      )
     }
 
     for (let iteration = 0; iteration < Math.max(4, this.constraintIterations); iteration++) {
@@ -337,46 +309,7 @@ export class RopePhysics {
       movePoint(a, targetX, targetY, stiffness, drag)
       movePoint(b, targetX, targetY, stiffness, drag)
 
-      const aPrev = ropeA.points[knot.aIndex - 1]
-      const aNext = ropeA.points[knot.aIndex + 1]
-      const bPrev = ropeB.points[knot.bIndex - 1]
-      const bNext = ropeB.points[knot.bIndex + 1]
-      const shoulderStrength = stiffness * 0.34
-      const shoulder = 9
-      const angle = knot.twistAngle ?? 0
-      const ax = Math.cos(angle)
-      const ay = Math.sin(angle)
-      const bx = -ay
-      const by = ax
 
-      movePoint(
-        aPrev,
-        targetX - ax * shoulder,
-        targetY - ay * shoulder,
-        shoulderStrength,
-        drag,
-      )
-      movePoint(
-        aNext,
-        targetX + ax * shoulder,
-        targetY + ay * shoulder,
-        shoulderStrength,
-        drag,
-      )
-      movePoint(
-        bPrev,
-        targetX - bx * shoulder,
-        targetY - by * shoulder,
-        shoulderStrength,
-        drag,
-      )
-      movePoint(
-        bNext,
-        targetX + bx * shoulder,
-        targetY + by * shoulder,
-        shoulderStrength,
-        drag,
-      )
     }
   }
 

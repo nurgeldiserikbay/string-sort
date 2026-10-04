@@ -1674,3 +1674,133 @@ html[data-banner-mode="preview"] .game-actions {
     font-size: 14px;
   }
 }
+
+
+/* Finish icon coverage on secondary screens */
+.chapter-tab-icon {
+  position: relative;
+  width: 30px !important;
+  height: 30px !important;
+  display: grid !important;
+  place-items: center;
+  border-radius: 10px !important;
+  background: rgba(76,129,190,.12) !important;
+  color: #4676a7 !important;
+}
+
+.chapter-tab-icon .ui-svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.05;
+}
+
+.chapter-tab-icon small {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff;
+  color: #4f6f96;
+  border: 1.5px solid rgba(70,118,167,.22);
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 900;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08);
+}
+
+.chapter-tab.active .chapter-tab-icon {
+  background: linear-gradient(180deg, #dff2ff, #c7e7ff) !important;
+  color: #2f7db6 !important;
+}
+
+.chapter-tab:disabled .chapter-tab-icon {
+  filter: grayscale(.7);
+}
+
+.about-card .modal-option .ui-svg,
+.danger-option .ui-svg {
+  width: 20px;
+  height: 20px;
+}
+
+
+.star-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.star-icon {
+  width: 18px;
+  height: 18px;
+  stroke: none;
+}
+
+.star-icon.is-earned {
+  color: #ffb400;
+  filter: drop-shadow(0 1.5px 0 rgba(174,111,0,.38));
+}
+
+.star-icon.is-empty {
+  color: rgba(129,113,94,.18);
+}
+
+.level-stars {
+  min-height: 18px;
+  color: inherit !important;
+  letter-spacing: 0 !important;
+  font-size: 0 !important;
+}
+
+.level-card.current .star-icon.is-earned {
+  color: #ffe784;
+  filter: drop-shadow(0 1px 0 rgba(79,58,22,.25));
+}
+
+.level-card.current .star-icon.is-empty {
+  color: rgba(255,255,255,.25);
+}
+
+.stars {
+  gap: 8px;
+  color: inherit;
+  font-size: 0;
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+.stars .star-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.stars .star-icon.is-earned {
+  color: #ffbf20;
+  filter: drop-shadow(0 3px 0 #c87900);
+}
+
+.stars .star-icon.is-empty {
+  color: rgba(111,92,68,.16);
+}
+
+.setting-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.setting-action .ui-svg {
+  width: 17px;
+  height: 17px;
+}
+
+.setting-chevron {
+  transform: rotate(180deg);
+}

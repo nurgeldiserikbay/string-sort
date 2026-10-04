@@ -31,6 +31,28 @@ describe('RopeTangle', () => {
     expect(tangle.consumeReleased()).toHaveLength(0)
   })
 
+  it('initializes a new knot at the real chord intersection', () => {
+    const tangle = new RopeTangle(321)
+    const sockets = [
+      { x: 80, y: 80 },
+      { x: 320, y: 80 },
+      { x: 320, y: 320 },
+      { x: 80, y: 320 },
+      { x: 200, y: 360 },
+    ]
+
+    const [knot] = tangle.update(
+      [0, 1, 0, 1, null],
+      geometry,
+      sockets,
+    )
+
+    expect(knot.x).toBeCloseTo(200, 5)
+    expect(knot.y).toBeCloseTo(200, 5)
+    expect(knot.aT).toBeCloseTo(0.5, 5)
+    expect(knot.bT).toBeCloseTo(0.5, 5)
+  })
+
   it('maps knots onto interior rope particles', () => {
     const tangle = new RopeTangle(777)
     tangle.update([0, 1, 2, 0, 1, 2, null], geometry)
@@ -51,10 +73,10 @@ describe('RopeTangle', () => {
     }
   })
 
-  it('creates alternating double wraps in a dense tangle', () => {
+  it('uses one readable physical contact per logical knot', () => {
     const tangle = new RopeTangle(321)
     const logical = tangle.update(
-      [0, 1, 2, 3, 0, 1, 2, 3, null],
+      [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null],
       geometry,
     )
     const constraints = tangle.buildConstraints(new Map([
@@ -62,18 +84,15 @@ describe('RopeTangle', () => {
       [1, 28],
       [2, 28],
       [3, 28],
+      [4, 28],
     ]))
 
     expect(logical.length).toBeGreaterThanOrEqual(4)
-    expect(constraints.length).toBeGreaterThan(logical.length)
+    expect(constraints).toHaveLength(logical.length)
 
-    const wrappedPair = constraints.filter(
-      (constraint) => constraint.parentKey === constraints[0].parentKey,
-    )
-
-    if (wrappedPair.length === 2) {
-      expect(wrappedPair[0].topId).not.toBe(wrappedPair[1].topId)
-      expect(wrappedPair[0].aIndex).not.toBe(wrappedPair[1].aIndex)
+    for (const constraint of constraints) {
+      expect(constraint.wraps).toBe(1)
+      expect(constraint.wrapIndex).toBe(0)
     }
   })
 
