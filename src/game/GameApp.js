@@ -394,6 +394,7 @@ export class GameApp {
       },
       graphics: this.settings.graphics,
       pegMarkers: this.settings.pegMarkers,
+      visualSeed: this.levelNumber,
     })
     this.board.setOrder(this.order, { animate: false })
     this.board.start()

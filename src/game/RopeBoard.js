@@ -18,6 +18,7 @@ export class RopeBoard {
     onInvalidDrop,
     graphics = 'auto',
     pegMarkers = false,
+    visualSeed = 1,
   }) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d', { alpha: true })
@@ -25,6 +26,7 @@ export class RopeBoard {
     this.onSolved = onSolved
     this.onInvalidDrop = onInvalidDrop
     this.pegMarkers = pegMarkers
+    this.visualSeed = Math.max(1, Number(visualSeed) || 1) >>> 0
     this.order = []
     this.dragIndex = -1
     this.dragPoint = null
@@ -37,7 +39,10 @@ export class RopeBoard {
     this.hintUntil = 0
     this.running = false
     this.raf = 0
-    this.depthSeed = 0x51f15e
+    this.depthSeed = (
+      0x51f15e
+      ^ Math.imul(this.visualSeed + 1, 0x9e3779b1)
+    ) >>> 0
     this.tangle = new RopeTangle(this.depthSeed)
     this.knotConstraints = []
     this.releaseBursts = []
@@ -81,7 +86,11 @@ export class RopeBoard {
     this.order = [...order]
 
     if (topologyChanged) {
-      this.depthSeed = (0x51f15e ^ Math.imul(order.length + 1, 0x9e3779b1)) >>> 0
+      this.depthSeed = (
+        0x51f15e
+        ^ Math.imul(order.length + 1, 0x9e3779b1)
+        ^ Math.imul(this.visualSeed + 1, 0x85ebca6b)
+      ) >>> 0
       this.tangle = new RopeTangle(this.depthSeed)
       this.knotConstraints = []
       this.releaseBursts = []
@@ -162,7 +171,10 @@ export class RopeBoard {
   socketPosition(index) {
     const g = this.geometry()
     const count = this.order.length || 1
-    const angle = -Math.PI / 2 + (index / count) * TAU
+    const seedRotation = (
+      ((this.depthSeed >>> 9) & 1023) / 1023 - 0.5
+    ) * 0.08
+    const angle = -Math.PI / 2 + seedRotation + (index / count) * TAU
     const radius = g.boardRadius * 0.89
 
     return {
@@ -426,7 +438,9 @@ export class RopeBoard {
 
     const boardPath = (scale = 1) => {
       ctx.beginPath()
-      radii.forEach((factor, index) => {
+      const phase = this.depthSeed % radii.length
+      radii.forEach((_, index) => {
+        const factor = radii[(index + phase) % radii.length]
         const angle = -Math.PI / 2 + (index / radii.length) * TAU
         const radius = g.boardRadius * factor * scale
         const x = g.cx + Math.cos(angle) * radius
