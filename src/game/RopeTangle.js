@@ -70,6 +70,8 @@ export class RopeTangle {
         topId: prior?.topId ?? ((hash & 1) ? pair.aId : pair.bId),
         twistAngle: prior?.twistAngle
           ?? (((hash >>> 18) & 1023) / 1023) * Math.PI,
+        wraps: prior?.wraps
+          ?? (sortedPairs.length >= 4 && index % 3 === 0 ? 2 : 1),
         x: geometry.cx + Math.cos(angle) * radius,
         y: geometry.cy + Math.sin(angle) * radius,
         aT: prior?.aT ?? 0.5,
@@ -114,15 +116,51 @@ export class RopeTangle {
   }
 
   buildConstraints(segmentCounts) {
-    return this.knots.map((knot) => {
+    const constraints = []
+
+    for (const knot of this.knots) {
       const aCount = segmentCounts.get(knot.aId) ?? 1
       const bCount = segmentCounts.get(knot.bId) ?? 1
+      const wraps = Math.max(1, knot.wraps ?? 1)
+      const spacing = 10
+      const nx = -Math.sin(knot.twistAngle ?? 0)
+      const ny = Math.cos(knot.twistAngle ?? 0)
 
-      return {
-        ...knot,
-        aIndex: clamp(Math.round(aCount * knot.aT), 2, Math.max(2, aCount - 2)),
-        bIndex: clamp(Math.round(bCount * knot.bT), 2, Math.max(2, bCount - 2)),
+      for (let wrapIndex = 0; wrapIndex < wraps; wrapIndex++) {
+        const centered = wrapIndex - (wraps - 1) / 2
+        const offset = centered * spacing
+        const tOffset = centered * 0.055
+        const alternate = wrapIndex % 2 === 0
+
+        constraints.push({
+          ...knot,
+          key: `${knot.key}#${wrapIndex}`,
+          parentKey: knot.key,
+          wrapIndex,
+          wraps,
+          topId: alternate
+            ? knot.topId
+            : knot.topId === knot.aId
+              ? knot.bId
+              : knot.aId,
+          x: knot.x + nx * offset,
+          y: knot.y + ny * offset,
+          aIndex: clamp(
+            Math.round(aCount * clamp(knot.aT + tOffset, 0.12, 0.88)),
+            2,
+            Math.max(2, aCount - 2),
+          ),
+          bIndex: clamp(
+            Math.round(bCount * clamp(knot.bT - tOffset, 0.12, 0.88)),
+            2,
+            Math.max(2, bCount - 2),
+          ),
+          stiffness: wraps > 1 ? 0.17 : knot.stiffness,
+          drag: wraps > 1 ? 0.66 : knot.drag,
+        })
       }
-    })
+    }
+
+    return constraints
   }
 }
