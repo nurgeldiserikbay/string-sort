@@ -68,6 +68,8 @@ export class RopeTangle {
         aId: pair.aId,
         bId: pair.bId,
         topId: prior?.topId ?? ((hash & 1) ? pair.aId : pair.bId),
+        twistAngle: prior?.twistAngle
+          ?? (((hash >>> 18) & 1023) / 1023) * Math.PI,
         x: geometry.cx + Math.cos(angle) * radius,
         y: geometry.cy + Math.sin(angle) * radius,
         aT: prior?.aT ?? 0.5,
