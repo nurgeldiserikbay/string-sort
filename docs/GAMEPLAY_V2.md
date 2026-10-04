@@ -77,3 +77,23 @@ Endpoint dragging uses a spring-follow visual target. The rope therefore develop
 Moves that reduce the logical knot count receive stronger haptic feedback and a dedicated release sound. Moves that do not improve the tangle retain the normal move feedback.
 
 The level browser is grouped into five 20-level chapters so difficulty progression is visible rather than presenting one long 100-card list.
+
+
+## Tangle graph quality
+
+Procedural levels no longer accept any random permutation that merely reaches a crossing count.
+
+Later levels are ranked by the actual knot graph:
+- from level 17 onward every rope must participate in the tangle;
+- from level 25 onward the knot graph must be connected, so the board behaves like one physical bundle rather than several unrelated mini-puzzles;
+- the generator still remains deterministic for repeatable QA and saved progression.
+
+## Sliding contact model
+
+Physical knot centers are not nailed to fixed coordinates. They:
+- spread apart inside the inner board so dense levels do not collapse into one pixel cluster;
+- follow the rope bundle when the player pulls it;
+- slowly slide along interior rope particles under tension while remaining away from endpoints;
+- disappear as one-shot release events when the logical knot is actually removed.
+
+A knot release drives a small visual burst, stronger haptic feedback, and a short positive sound cue.
