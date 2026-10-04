@@ -120,6 +120,42 @@ export class RopePhysics {
     return rope
   }
 
+  primeKnotLayout(knots) {
+    const place = (rope, index, x, y) => {
+      const point = rope?.points?.[index]
+      if (!point || point.pinned) return
+      point.x = x
+      point.y = y
+      point.oldX = x
+      point.oldY = y
+    }
+
+    for (const knot of knots) {
+      const ropeA = this.ropes.get(knot.aId)
+      const ropeB = this.ropes.get(knot.bId)
+      if (!ropeA || !ropeB) continue
+
+      place(ropeA, knot.aIndex, knot.x, knot.y)
+      place(ropeB, knot.bIndex, knot.x, knot.y)
+
+      const shoulder = 7
+      const phase = ((knot.aId + knot.bId) % 2 === 0 ? 1 : -1)
+      place(ropeA, knot.aIndex - 1, knot.x - shoulder, knot.y + shoulder * phase)
+      place(ropeA, knot.aIndex + 1, knot.x + shoulder, knot.y - shoulder * phase)
+      place(ropeB, knot.bIndex - 1, knot.x + shoulder, knot.y + shoulder * phase)
+      place(ropeB, knot.bIndex + 1, knot.x - shoulder, knot.y - shoulder * phase)
+    }
+
+    for (let iteration = 0; iteration < Math.max(4, this.constraintIterations); iteration++) {
+      for (const rope of this.ropes.values()) {
+        this.pinEndpoints(rope)
+        this.solveDistanceConstraints(rope)
+        this.pinEndpoints(rope)
+      }
+      this.solveKnotConstraints(knots)
+    }
+  }
+
   update(time, {
     pegs = [],
     boundary = null,
