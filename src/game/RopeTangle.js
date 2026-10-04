@@ -63,7 +63,7 @@ export class RopeTangle {
         index * goldenAngle
         + ((hash & 1023) / 1023) * 0.62
       ) % TAU
-      const radialBand = 0.22 + (((hash >>> 10) & 255) / 255) * 0.24
+      const radialBand = 0.32 + (((hash >>> 10) & 255) / 255) * 0.26
       const radius = geometry.boardRadius * radialBand
 
       const knot = {
@@ -85,7 +85,7 @@ export class RopeTangle {
         bT: prior?.bT ?? 0.5,
         stiffness: 0.18,
         drag: 0.52,
-        anchorStrength: 0.72,
+        anchorStrength: 0.82,
       }
 
       nextMap.set(key, knot)
@@ -144,8 +144,8 @@ export class RopeTangle {
   }
 
   relaxCenters(geometry) {
-    const maxRadius = geometry.boardRadius * 0.52
-    const minDistance = Math.max(24, geometry.boardRadius * 0.13)
+    const maxRadius = geometry.boardRadius * 0.64
+    const minDistance = Math.max(28, geometry.boardRadius * 0.16)
 
     for (let iteration = 0; iteration < 7; iteration++) {
       for (let i = 0; i < this.knots.length; i++) {
@@ -192,7 +192,7 @@ export class RopeTangle {
   }
 
   followPhysics(physics, geometry, { activeRopeId = null } = {}) {
-    const maxRadius = geometry.boardRadius * 0.52
+    const maxRadius = geometry.boardRadius * 0.64
     const centerDeadZone = Math.max(1.8, geometry.boardRadius * 0.009)
 
     const nearestT = (points, x, y, currentT) => {
@@ -325,6 +325,8 @@ export class RopeTangle {
           ...knot,
           key: `${knot.key}#${wrapIndex}`,
           parentKey: knot.key,
+          centerX: knot.x,
+          centerY: knot.y,
           wrapIndex,
           wraps,
           topId: alternate
