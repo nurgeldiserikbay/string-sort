@@ -137,3 +137,10 @@ Do not publish if any of these remain:
 - wrong package name/versionCode;
 - signing key not backed up;
 - privacy/Data safety text does not match the production SDK set.
+
+
+## Peg markers setting
+
+The default presentation uses clean colored rope terminals to stay close to the physical-puzzle reference.
+
+Enable **Settings → Peg markers** and verify that small secondary symbols appear on the terminals without changing the rope/peg colors or the one-empty-socket mechanic.
