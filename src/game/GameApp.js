@@ -447,7 +447,7 @@ export class GameApp {
       this.haptic(ImpactStyle.Medium)
       this.completionTimer = setTimeout(() => {
         if (this.screen === 'game') this.completeLevel()
-      }, 380)
+      }, 650)
     }
   }
 
