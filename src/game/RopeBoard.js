@@ -160,6 +160,22 @@ export class RopeBoard {
     }
   }
 
+  constrainDragPoint(point) {
+    const g = this.geometry()
+    const dx = point.x - g.cx
+    const dy = point.y - g.cy
+    const distance = Math.hypot(dx, dy)
+    const maxDistance = g.boardRadius * 0.985
+
+    if (distance <= maxDistance || distance < 0.001) return point
+
+    const scale = maxDistance / distance
+    return {
+      x: g.cx + dx * scale,
+      y: g.cy + dy * scale,
+    }
+  }
+
   findSocket(x, y, multiplier = 2.2) {
     const g = this.geometry()
     let nearest = -1
@@ -194,8 +210,8 @@ export class RopeBoard {
     if (index < 0 || this.order[index] == null) return
 
     this.dragIndex = index
-    this.dragPoint = point
-    this.dragVisualPoint = { ...point }
+    this.dragPoint = this.constrainDragPoint(point)
+    this.dragVisualPoint = { ...this.dragPoint }
     this.hoverIndex = index
     this.canvas.setPointerCapture?.(event.pointerId)
   }
@@ -203,7 +219,7 @@ export class RopeBoard {
   onPointerMove(event) {
     if (this.dragIndex < 0) return
 
-    this.dragPoint = this.eventPoint(event)
+    this.dragPoint = this.constrainDragPoint(this.eventPoint(event))
     this.hoverIndex = this.findSocket(this.dragPoint.x, this.dragPoint.y, 2.5)
   }
 
@@ -211,7 +227,7 @@ export class RopeBoard {
     if (this.dragIndex < 0) return
 
     const from = this.dragIndex
-    const point = this.eventPoint(event)
+    const point = this.constrainDragPoint(this.eventPoint(event))
     const to = this.findSocket(point.x, point.y, 2.65)
 
     this.dragIndex = -1
