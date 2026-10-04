@@ -7,6 +7,7 @@ import { TOTAL_LEVELS, createLevel, findBestSwap, getCrossingCount } from './lev
 import { createBannerSafeSlot } from './MonetizationLayout.js'
 import { normalizeProgress, normalizeSettings, safeReadJson, safeWriteJson } from './SaveData.js'
 import { APP_VERSION, privacySummary } from './AppInfo.js'
+import { uiIcon } from '../ui/icons.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
@@ -144,40 +145,65 @@ export class GameApp {
 
   showMenu() {
     this.screen = 'menu'
+    const totalStars = Object.values(this.progress.stars).reduce((a, b) => a + b, 0)
+
     this.shell(`
       <main class="screen menu-screen">
         <div class="topbar">
-          <button class="icon-button" data-action="settings" aria-label="Settings">⚙</button>
-          <div class="coin-pill"><span>★</span><b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
+          <button class="icon-button soft-icon" data-action="settings" aria-label="Settings">
+            ${uiIcon('settings')}
+          </button>
+          <div class="coin-pill"><span>★</span><b>${totalStars}</b></div>
         </div>
 
         <section class="hero-card">
-          <div class="logo">
+          <div class="logo logo-polished">
             <span>STRING</span>
             <strong>SORT</strong>
           </div>
-          <p>Untangle · Relax · Solve</p>
+          <p class="menu-tagline">Untangle · Sort · Feel Good</p>
 
-          <div class="mini-board" aria-hidden="true">
+          <div class="mini-board video-board-preview" aria-hidden="true">
             <div class="mini-board-disc"></div>
             <span class="mini-rope r1"></span>
             <span class="mini-rope r2"></span>
             <span class="mini-rope r3"></span>
             <span class="mini-rope r4"></span>
+            <span class="mini-hole"></span>
           </div>
 
           <div class="resume-label">Level ${this.progress.unlocked} of ${TOTAL_LEVELS}</div>
-          <button class="primary-button play-button" data-action="play"><span>▶</span> ${this.progress.unlocked > 1 ? 'Continue' : 'Play'}</button>
-          <button class="secondary-link" data-action="levels">Level select</button>
+          <button class="primary-button play-button glossy-play" data-action="play">
+            ${uiIcon('play', 'ui-svg play-svg')}
+            <span>${this.progress.unlocked > 1 ? 'Continue' : 'Play'}</span>
+          </button>
+
+          <div class="menu-action-grid">
+            <button class="menu-action-card" data-action="levels">
+              <span class="menu-action-icon levels-icon">${uiIcon('levels')}</span>
+              <b>Levels</b>
+            </button>
+            <button class="menu-action-card" data-action="settings">
+              <span class="menu-action-icon settings-icon">${uiIcon('settings')}</span>
+              <b>Settings</b>
+            </button>
+            <button class="menu-action-card" data-action="how-to-play">
+              <span class="menu-action-icon hint-icon">${uiIcon('hint')}</span>
+              <b>How to Play</b>
+            </button>
+          </div>
         </section>
 
-        <footer class="menu-footer">A little puzzle. A brighter you.</footer>
+        <footer class="menu-footer">Puzzles for a brighter day</footer>
       </main>
     `)
 
     this.root.querySelector('[data-action="play"]').onclick = () => this.startLevel(this.progress.unlocked)
     this.root.querySelector('[data-action="levels"]').onclick = () => this.showLevelSelect()
-    this.root.querySelector('[data-action="settings"]').onclick = () => this.showSettings()
+    this.root.querySelectorAll('[data-action="settings"]').forEach((button) => {
+      button.onclick = () => this.showSettings()
+    })
+    this.root.querySelector('[data-action="how-to-play"]').onclick = () => this.showHowToPlay()
   }
 
   showLevelSelect() {
@@ -193,7 +219,7 @@ export class GameApp {
           aria-label="Level ${n}${unlocked ? '' : ', locked'}"
           ${unlocked ? '' : 'disabled'}
         >
-          <b>${unlocked ? n : '🔒'}</b>
+          <b>${unlocked ? n : uiIcon('lock', 'ui-svg level-lock-svg')}</b>
           <span>${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>
         </button>
       `
@@ -202,7 +228,7 @@ export class GameApp {
     this.shell(`
       <main class="screen levels-screen">
         <header class="page-header">
-          <button class="icon-button" data-action="back" aria-label="Back">‹</button>
+          <button class="icon-button soft-icon" data-action="back" aria-label="Back">${uiIcon('back')}</button>
           <h1>Levels</h1>
           <div class="coin-pill"><span>★</span><b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
         </header>
@@ -238,27 +264,41 @@ export class GameApp {
     this.shell(`
       <main class="screen game-screen">
         <header class="game-header">
-          <button class="icon-button" data-action="pause" aria-label="Pause">Ⅱ</button>
+          <button class="icon-button soft-icon" data-action="pause" aria-label="Pause">${uiIcon('pause')}</button>
           <div class="level-pill">Level ${this.levelNumber}</div>
-          <div class="coin-pill compact"><span>★</span><b>${this.progress.stars[this.levelNumber] || 0}</b></div>
+          <div class="timer-pill compact-timer">${uiIcon('timer')} <strong data-timer>00:00</strong></div>
         </header>
 
-        <div class="timer-pill">⏱ <strong data-timer>00:00</strong></div>
+        <div class="game-objective">Untie all the knots</div>
         ${this.level.tutorial ? `<div class="tutorial-chip">${this.level.tutorial}</div>` : ''}
 
-        <section class="board-wrap">
+        <section class="board-wrap board-wrap-video">
           <canvas id="game-board" aria-label="String Sort game board"></canvas>
         </section>
 
-        <div class="status-row">
-          <div><span>Moves</span><strong data-moves>0</strong></div>
-          <div data-crossing-card><span>Crossings</span><strong data-crossings>${getCrossingCount(this.order)}</strong></div>
+        <div class="status-row video-status">
+          <div>
+            <span class="status-icon">${uiIcon('moves')}</span>
+            <span>Moves</span>
+            <strong data-moves>0</strong>
+          </div>
+          <div data-crossing-card>
+            <span class="status-icon">${uiIcon('crossings')}</span>
+            <span>Crossings</span>
+            <strong data-crossings>${getCrossingCount(this.order)}</strong>
+          </div>
         </div>
 
-        <nav class="game-actions">
-          <button class="round-action hint" data-action="hint"><span>💡</span><b>Hint</b></button>
-          <button class="round-action undo" data-action="undo"><span>↶</span><b>Undo</b></button>
-          <button class="round-action restart" data-action="restart"><span>↻</span><b>Restart</b></button>
+        <nav class="game-actions video-actions">
+          <button class="round-action hint" data-action="hint">
+            <span>${uiIcon('hint')}</span><b>Hint</b>
+          </button>
+          <button class="round-action undo" data-action="undo">
+            <span>${uiIcon('undo')}</span><b>Undo</b>
+          </button>
+          <button class="round-action restart" data-action="restart">
+            <span>${uiIcon('restart')}</span><b>Restart</b>
+          </button>
         </nav>
 
         ${createBannerSafeSlot()}
@@ -400,9 +440,9 @@ export class GameApp {
       <section class="modal-card">
         <button class="modal-close" data-action="resume">×</button>
         <h2>Paused</h2>
-        <button class="primary-button" data-action="resume">▶ Resume</button>
-        <button class="modal-option" data-action="restart">↻ Restart</button>
-        <button class="modal-option" data-action="menu">⌂ Main menu</button>
+        <button class="primary-button" data-action="resume">${uiIcon('play')} Resume</button>
+        <button class="modal-option" data-action="restart">${uiIcon('restart')} Restart</button>
+        <button class="modal-option" data-action="menu">${uiIcon('home')} Main menu</button>
       </section>
     `
     this.pauseOverlay = overlay
@@ -480,6 +520,39 @@ export class GameApp {
       else this.showLevelSelect()
     }
     overlay.querySelector('[data-action="levels"]').onclick = () => this.showLevelSelect()
+  }
+
+  showHowToPlay() {
+    const overlay = document.createElement('div')
+    overlay.className = 'modal-layer'
+    overlay.innerHTML = `
+      <section class="modal-card how-to-card">
+        <button class="modal-close" data-action="close" aria-label="Close">×</button>
+        <h2>How to Play</h2>
+        <div class="how-to-steps">
+          <div>
+            <span class="how-step-icon">${uiIcon('moves')}</span>
+            <b>Move one peg</b>
+            <p>Drag a colored peg into the single empty socket.</p>
+          </div>
+          <div>
+            <span class="how-step-icon">${uiIcon('crossings')}</span>
+            <b>Untie the ropes</b>
+            <p>The old peg position becomes the next empty socket.</p>
+          </div>
+          <div>
+            <span class="how-step-icon">${uiIcon('levels')}</span>
+            <b>Clear every crossing</b>
+            <p>Reach zero crossings to finish the level.</p>
+          </div>
+        </div>
+        <button class="primary-button" data-action="close">${uiIcon('play')} Got it</button>
+      </section>
+    `
+    this.root.appendChild(overlay)
+    overlay.querySelectorAll('[data-action="close"]').forEach((button) => {
+      button.onclick = () => overlay.remove()
+    })
   }
 
   showSettings() {
