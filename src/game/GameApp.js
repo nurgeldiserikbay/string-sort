@@ -153,7 +153,7 @@ export class GameApp {
           <button class="icon-button soft-icon" data-action="settings" aria-label="Settings">
             ${uiIcon('settings')}
           </button>
-          <div class="coin-pill"><span>★</span><b>${totalStars}</b></div>
+          <div class="coin-pill">${uiIcon('levels', 'ui-svg coin-star')}<b>${totalStars}</b></div>
         </div>
 
         <section class="hero-card">
@@ -220,7 +220,17 @@ export class GameApp {
           ${unlocked ? '' : 'disabled'}
         >
           <b>${unlocked ? n : uiIcon('lock', 'ui-svg level-lock-svg')}</b>
-          <span>${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>
+          ${unlocked ? `
+            <span class="level-mini-preview tone-${n % 6}" aria-hidden="true">
+              <i class="preview-thread thread-a"></i>
+              <i class="preview-thread thread-b"></i>
+              <i class="preview-dot dot-a"></i>
+              <i class="preview-dot dot-b"></i>
+              <i class="preview-dot dot-c"></i>
+              <i class="preview-dot dot-d"></i>
+            </span>
+          ` : ''}
+          <span class="level-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>
         </button>
       `
     }).join('')
@@ -230,7 +240,7 @@ export class GameApp {
         <header class="page-header">
           <button class="icon-button soft-icon" data-action="back" aria-label="Back">${uiIcon('back')}</button>
           <h1>Levels</h1>
-          <div class="coin-pill"><span>★</span><b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
+          <div class="coin-pill">${uiIcon('levels', 'ui-svg coin-star')}<b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
         </header>
         <section class="level-grid">${cards}</section>
       </main>
