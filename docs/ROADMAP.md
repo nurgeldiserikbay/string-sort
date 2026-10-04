@@ -11,7 +11,7 @@
 - Physical knot constraints that couple bound ropes together
 - Distributed knot centers that move with the rope bundle under tension
 - Sliding knot contacts along rope interiors
-- Double-wrap and occasional triple-wrap tangles on denser boards
+- One stable readable physical contact per logical knot
 - Stable local over/under rendering without the old crossing capsule artifact
 - Knot-specific friction only between logically bound ropes
 - Peg collision and board-boundary constraints
@@ -41,7 +41,7 @@
 - Production dependency audit and release-readiness checks in CI
 - Android lint + debug APK build in CI
 - Play Store icon, adaptive launcher icon, light/dark splash and feature graphic sources
-- Automated real-UI 1080×1920 screenshots, including a dense late-game tangle
+- Automated real-UI QA screenshots for phone, 7-inch tablet and 10-inch tablet, including Settings/About/How-to/Pause and a dense late-game tangle
 - Manual signed/versioned AAB release workflow
 - Privacy, Play Store, release and physical-device QA documentation
 
