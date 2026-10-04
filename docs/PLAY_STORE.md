@@ -67,18 +67,22 @@ This generates:
 
 CI publishes these as the `string-sort-store-static-assets` artifact.
 
-The **Play Store Screenshots** workflow captures the real application UI at 1080 × 1920 and packages:
+The **Play Store Screenshots** workflow captures the real application UI for three portrait device profiles:
+
+- phone: 1080 × 1920;
+- 7-inch tablet set: 1200 × 1920;
+- 10-inch tablet set: 1600 × 2560.
+
+Each profile includes:
 - main menu;
 - level selection;
 - live gameplay;
 - solved/completion state;
-- a dense late-game tangle;
-- the generated app icon;
-- the generated feature graphic.
+- a dense late-game tangle.
+
+The workflow verifies that all 15 screenshots exist at the expected pixel dimensions, then packages them together with the generated app icon and feature graphic.
 
 All screenshots are captured from the actual app UI, not concept art.
-
-Tablet screenshots remain optional until final Play Console device support is decided.
 
 ## Manual Play Console values still required
 

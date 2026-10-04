@@ -13,7 +13,8 @@ These should all be green on the release commit:
 - production dependency audit;
 - release-readiness static checks;
 - Play Store static asset generation;
-- real-UI screenshot capture;
+- real-UI phone + 7-inch tablet + 10-inch tablet screenshot capture;
+- screenshot dimension/package verification;
 - Android API 36 verification;
 - Android lint;
 - debug APK build.
@@ -50,7 +51,7 @@ Before the first production upload:
 - verify the public privacy page;
 - answer Data safety against the exact AAB being uploaded;
 - verify content rating and target audience selections;
-- upload the final phone screenshots, icon and feature graphic.
+- inspect and upload the final phone/tablet screenshots, icon and feature graphic.
 
 ## Current network/privacy assumption
 
