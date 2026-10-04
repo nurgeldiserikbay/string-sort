@@ -26,7 +26,8 @@ The paired particles:
 - are coupled around a shared moving knot point;
 - have additional local drag/friction;
 - keep a stable crossing angle;
-- pull nearby rope particles into a small crossed shape instead of collapsing into one point.
+- pull nearby rope particles into a small crossed shape instead of collapsing into one point;
+- can form a two-point alternating wrap in dense levels, so selected rope pairs visibly wind around each other instead of looking like flat line intersections.
 
 This means dragging one peg visibly pulls the other rope(s) that are bound into the same tangle. When a logical knot is removed, its physical constraint disappears and the involved ropes relax naturally.
 
@@ -44,7 +45,8 @@ The center of the board should look like a compact physical bundle:
 - thick glossy cords;
 - soft cast shadows;
 - no artificial "capsule" redraw at crossings;
-- local crossed shapes around real knot constraints;
+- seamless local over/under passes drawn from the rope's actual particle curve;
+- local crossed and double-wrap shapes around real knot constraints;
 - no animated dashed seam;
 - ropes already appear tangled when the level opens.
 
@@ -66,3 +68,12 @@ Later levels progressively add:
 - longer legal solution paths.
 
 The launch set remains deterministic and automatically checked for solvability.
+
+
+## Interaction polish
+
+Endpoint dragging uses a spring-follow visual target. The rope therefore develops tension and pulls the rest of its bound tangle instead of teleporting rigidly to the pointer.
+
+Moves that reduce the logical knot count receive stronger haptic feedback and a dedicated release sound. Moves that do not improve the tangle retain the normal move feedback.
+
+The level browser is grouped into five 20-level chapters so difficulty progression is visible rather than presenting one long 100-card list.
