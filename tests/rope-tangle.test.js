@@ -71,4 +71,43 @@ describe('RopeTangle', () => {
       expect(wrappedPair[0].aIndex).not.toBe(wrappedPair[1].aIndex)
     }
   })
+
+  it('spreads dense knot centers instead of stacking every knot at the exact middle', () => {
+    const tangle = new RopeTangle(456)
+    const knots = tangle.update(
+      [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null],
+      geometry,
+    )
+
+    const distinct = new Set(
+      knots.map((knot) => `${Math.round(knot.x / 8)}:${Math.round(knot.y / 8)}`),
+    )
+
+    expect(knots.length).toBeGreaterThan(5)
+    expect(distinct.size).toBeGreaterThan(3)
+  })
+
+  it('lets persistent knot centers follow the physical rope bundle', () => {
+    const tangle = new RopeTangle(789)
+    const [knot] = tangle.update([0, 1, 0, 1, null], geometry)
+    const before = { x: knot.x, y: knot.y }
+
+    const makePoints = (x, y) => Array.from({ length: 13 }, (_, index) => ({
+      x: x + index,
+      y: y + index * 0.5,
+    }))
+
+    const physics = {
+      getPoints(id) {
+        return id === 0
+          ? makePoints(260, 230)
+          : makePoints(250, 220)
+      },
+    }
+
+    tangle.followPhysics(physics, geometry)
+
+    expect(knot.x).toBeGreaterThan(before.x)
+    expect(knot.y).toBeGreaterThan(before.y)
+  })
 })
