@@ -27,6 +27,7 @@ export class RopeBoard {
     this.raf = 0
     this.depthSeed = 0x51f15e
     this.tangle = new RopeTangle(this.depthSeed)
+    this.knotConstraints = []
     this.needsKnotPrime = true
     this.debugEnabled = (() => {
       try {
@@ -68,6 +69,7 @@ export class RopeBoard {
     if (topologyChanged) {
       this.depthSeed = (0x51f15e ^ Math.imul(order.length + 1, 0x9e3779b1)) >>> 0
       this.tangle = new RopeTangle(this.depthSeed)
+      this.knotConstraints = []
       this.needsKnotPrime = true
       this.physics.clear()
     }
@@ -263,6 +265,7 @@ export class RopeBoard {
 
     this.tangle.update(this.order, g)
     const knots = this.tangle.buildConstraints(segmentCounts)
+    this.knotConstraints = knots
 
     if (this.needsKnotPrime) {
       this.physics.primeKnotLayout(knots)
@@ -417,6 +420,56 @@ export class RopeBoard {
     ctx.stroke()
 
     ctx.restore()
+  }
+
+  drawKnotOverpasses() {
+    const ctx = this.ctx
+    const g = this.geometry()
+
+    for (const knot of this.knotConstraints) {
+      const ropeId = knot.topId
+      const points = this.physics.getPoints(ropeId)
+      const index = ropeId === knot.aId ? knot.aIndex : knot.bIndex
+      if (!points.length || index < 2 || index > points.length - 3) continue
+
+      const p0 = points[index - 2]
+      const p1 = points[index]
+      const p2 = points[index + 2]
+      const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
+      const tension = clamp(this.physics.getTension(ropeId), 0, 0.32)
+      const width = clamp(g.size * 0.0148, 5.2, 9.4) * (1 - tension * 0.12)
+
+      ctx.save()
+      ctx.lineCap = 'butt'
+      ctx.lineJoin = 'round'
+
+      ctx.beginPath()
+      ctx.moveTo(p0.x, p0.y)
+      ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
+      ctx.strokeStyle = 'rgba(18,20,24,.42)'
+      ctx.lineWidth = width + 2.2
+      ctx.shadowColor = 'rgba(0,0,0,.34)'
+      ctx.shadowBlur = 4
+      ctx.shadowOffsetY = 2
+      ctx.stroke()
+
+      ctx.shadowColor = 'transparent'
+      ctx.beginPath()
+      ctx.moveTo(p0.x, p0.y)
+      ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
+      ctx.strokeStyle = color
+      ctx.lineWidth = width
+      ctx.stroke()
+
+      ctx.beginPath()
+      ctx.moveTo(p0.x, p0.y)
+      ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
+      ctx.strokeStyle = 'rgba(255,255,255,.18)'
+      ctx.lineWidth = Math.max(1, width * 0.15)
+      ctx.stroke()
+
+      ctx.restore()
+    }
   }
 
   drawSocket(index) {
@@ -735,6 +788,7 @@ export class RopeBoard {
     // a short "bridge" segment on top of the crossing: that produced a
     // visible capsule/bulge and a discontinuous moving highlight.
     depthOrder.forEach((ropeId) => this.drawRope(ropeId, time))
+    this.drawKnotOverpasses()
 
     this.order.forEach((ropeId, index) => {
       if (ropeId != null) this.drawPeg(index, time)
