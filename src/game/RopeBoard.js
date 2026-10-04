@@ -531,12 +531,12 @@ export class RopeBoard {
 
   drawPegMarker(x, y, radius, ropeId) {
     const ctx = this.ctx
-    const size = radius * 0.38
+    const size = radius * 0.27
     const variant = ropeId % 12
 
     ctx.save()
-    ctx.strokeStyle = 'rgba(255,255,255,.9)'
-    ctx.fillStyle = 'rgba(255,255,255,.9)'
+    ctx.strokeStyle = 'rgba(255,255,255,.68)'
+    ctx.fillStyle = 'rgba(255,255,255,.68)'
     ctx.lineWidth = Math.max(1.5, radius * 0.11)
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
@@ -638,14 +638,14 @@ export class RopeBoard {
     const radius = g.socketRadius * 1.18 * scale
 
     ctx.save()
-    ctx.fillStyle = 'rgba(0,0,0,.34)'
+    ctx.fillStyle = 'rgba(0,0,0,.3)'
     ctx.beginPath()
-    ctx.arc(position.x, position.y + radius * 0.14, radius * 1.08, 0, TAU)
+    ctx.arc(position.x, position.y + radius * 0.16, radius * 1.04, 0, TAU)
     ctx.fill()
 
-    ctx.shadowColor = 'rgba(0,0,0,.35)'
-    ctx.shadowBlur = 8
-    ctx.shadowOffsetY = 5
+    ctx.shadowColor = 'rgba(0,0,0,.32)'
+    ctx.shadowBlur = 7
+    ctx.shadowOffsetY = 4
 
     const gradient = ctx.createRadialGradient(
       position.x - radius * 0.34,
@@ -656,9 +656,9 @@ export class RopeBoard {
       radius,
     )
     gradient.addColorStop(0, '#ffffff')
-    gradient.addColorStop(0.07, color)
-    gradient.addColorStop(0.7, color)
-    gradient.addColorStop(1, '#16191e')
+    gradient.addColorStop(0.1, color)
+    gradient.addColorStop(0.72, color)
+    gradient.addColorStop(1, '#252932')
 
     ctx.fillStyle = gradient
     ctx.beginPath()
@@ -678,10 +678,17 @@ export class RopeBoard {
     )
     ctx.stroke()
 
-    ctx.fillStyle = 'rgba(24,26,31,.76)'
+    ctx.fillStyle = '#31343c'
     ctx.beginPath()
-    ctx.arc(position.x, position.y, radius * 0.31, 0, TAU)
+    ctx.arc(position.x, position.y, radius * 0.44, 0, TAU)
     ctx.fill()
+
+    ctx.strokeStyle = 'rgba(255,255,255,.16)'
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.arc(position.x, position.y, radius * 0.49, 0, TAU)
+    ctx.stroke()
+
     this.drawPegMarker(position.x, position.y, radius, ropeId)
     ctx.restore()
   }
