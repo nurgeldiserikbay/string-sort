@@ -34,11 +34,11 @@ describe('RopeTangle', () => {
   it('initializes a new knot at the real chord intersection', () => {
     const tangle = new RopeTangle(321)
     const sockets = [
-      { x: 40, y: 40 },
-      { x: 160, y: 40 },
-      { x: 160, y: 160 },
-      { x: 40, y: 160 },
-      { x: 200, y: 200 },
+      { x: 80, y: 80 },
+      { x: 320, y: 80 },
+      { x: 320, y: 320 },
+      { x: 80, y: 320 },
+      { x: 200, y: 360 },
     ]
 
     const [knot] = tangle.update(
@@ -47,8 +47,8 @@ describe('RopeTangle', () => {
       sockets,
     )
 
-    expect(knot.x).toBeCloseTo(100, 5)
-    expect(knot.y).toBeCloseTo(100, 5)
+    expect(knot.x).toBeCloseTo(200, 5)
+    expect(knot.y).toBeCloseTo(200, 5)
     expect(knot.aT).toBeCloseTo(0.5, 5)
     expect(knot.bT).toBeCloseTo(0.5, 5)
   })
@@ -76,7 +76,7 @@ describe('RopeTangle', () => {
   it('creates alternating double wraps in a dense tangle', () => {
     const tangle = new RopeTangle(321)
     const logical = tangle.update(
-      [0, 1, 2, 3, 0, 1, 2, 3, null],
+      [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null],
       geometry,
     )
     const constraints = tangle.buildConstraints(new Map([
@@ -84,6 +84,7 @@ describe('RopeTangle', () => {
       [1, 28],
       [2, 28],
       [3, 28],
+      [4, 28],
     ]))
 
     expect(logical.length).toBeGreaterThanOrEqual(4)
