@@ -8,9 +8,18 @@ import { createBannerSafeSlot } from './MonetizationLayout.js'
 import { normalizeProgress, normalizeSettings, safeReadJson, safeWriteJson } from './SaveData.js'
 import { APP_VERSION, privacySummary } from './AppInfo.js'
 import { uiIcon } from '../ui/icons.js'
+import { installMenuPreview } from '../ui/MenuPreview.js'
 
 const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
+
+const LEVEL_CHAPTERS = [
+  { title: 'First Knots', subtitle: 'Learn the empty-socket rhythm', start: 1, end: 20 },
+  { title: 'Twist Lab', subtitle: 'More ropes, tighter turns', start: 21, end: 40 },
+  { title: 'Tangle Garden', subtitle: 'Dense colorful bundles', start: 41, end: 60 },
+  { title: 'Knot Works', subtitle: 'Double wraps and longer routes', start: 61, end: 80 },
+  { title: 'Master Board', subtitle: 'The hardest tangles', start: 81, end: 100 },
+]
 
 function formatTime(seconds) {
   const whole = Math.max(0, Math.floor(seconds))
@@ -39,6 +48,8 @@ export class GameApp {
     this.tutorialHintTimer = 0
     this.completionTimer = 0
     this.feedbackTimer = 0
+    this.menuPreviewCleanup = null
+    this.levelChapter = 0
     this.screen = 'menu'
     this.backButtonHandle = null
     this.appStateHandle = null
@@ -99,6 +110,8 @@ export class GameApp {
     clearTimeout(this.completionTimer)
     clearTimeout(this.feedbackTimer)
     this.board?.destroy()
+    this.menuPreviewCleanup?.()
+    this.menuPreviewCleanup = null
     this.backButtonHandle?.remove?.()
     this.appStateHandle?.remove?.()
     document.removeEventListener('visibilitychange', this.onVisibilityChange)
@@ -133,6 +146,8 @@ export class GameApp {
   shell(content) {
     this.board?.destroy()
     this.board = null
+    this.menuPreviewCleanup?.()
+    this.menuPreviewCleanup = null
     this.stopTimer()
     clearTimeout(this.tutorialHintTimer)
     clearTimeout(this.completionTimer)
@@ -164,12 +179,7 @@ export class GameApp {
           <p class="menu-tagline">Untangle · Sort · Feel Good</p>
 
           <div class="mini-board video-board-preview" aria-hidden="true">
-            <div class="mini-board-disc"></div>
-            <span class="mini-rope r1"></span>
-            <span class="mini-rope r2"></span>
-            <span class="mini-rope r3"></span>
-            <span class="mini-rope r4"></span>
-            <span class="mini-hole"></span>
+            <canvas class="menu-preview-canvas" data-menu-preview></canvas>
           </div>
 
           <div class="resume-label">Level ${this.progress.unlocked} of ${TOTAL_LEVELS}</div>
@@ -198,6 +208,10 @@ export class GameApp {
       </main>
     `)
 
+    this.menuPreviewCleanup = installMenuPreview(
+      this.root.querySelector('[data-menu-preview]'),
+    )
+
     this.root.querySelector('[data-action="play"]').onclick = () => this.startLevel(this.progress.unlocked)
     this.root.querySelector('[data-action="levels"]').onclick = () => this.showLevelSelect()
     this.root.querySelectorAll('[data-action="settings"]').forEach((button) => {
@@ -206,31 +220,67 @@ export class GameApp {
     this.root.querySelector('[data-action="how-to-play"]').onclick = () => this.showHowToPlay()
   }
 
-  showLevelSelect() {
+  showLevelSelect(chapterIndex = null) {
     this.screen = 'levels'
-    const cards = Array.from({ length: TOTAL_LEVELS }, (_, index) => {
-      const n = index + 1
+
+    const currentChapter = Math.min(
+      LEVEL_CHAPTERS.length - 1,
+      Math.floor((Math.max(1, this.progress.unlocked) - 1) / 20),
+    )
+    this.levelChapter = chapterIndex == null
+      ? currentChapter
+      : Math.min(LEVEL_CHAPTERS.length - 1, Math.max(0, chapterIndex))
+
+    const chapter = LEVEL_CHAPTERS[this.levelChapter]
+    const chapterLevels = Array.from(
+      { length: chapter.end - chapter.start + 1 },
+      (_, index) => chapter.start + index,
+    )
+
+    const cards = chapterLevels.map((n) => {
       const unlocked = n <= this.progress.unlocked
       const stars = this.progress.stars[n] || 0
+      const level = unlocked ? createLevel(n) : null
+      const knots = level ? getCrossingCount(level.order) : 0
+
       return `
         <button
-          class="level-card ${unlocked ? '' : 'locked'} ${n === this.progress.unlocked ? 'current' : ''}"
+          class="level-card chapter-tone-${this.levelChapter} ${unlocked ? '' : 'locked'} ${n === this.progress.unlocked ? 'current' : ''}"
           data-level="${n}"
           aria-label="Level ${n}${unlocked ? '' : ', locked'}"
           ${unlocked ? '' : 'disabled'}
         >
-          <b>${unlocked ? n : uiIcon('lock', 'ui-svg level-lock-svg')}</b>
-          ${unlocked ? `
-            <span class="level-mini-preview tone-${n % 6}" aria-hidden="true">
-              <i class="preview-thread thread-a"></i>
-              <i class="preview-thread thread-b"></i>
-              <i class="preview-dot dot-a"></i>
-              <i class="preview-dot dot-b"></i>
-              <i class="preview-dot dot-c"></i>
-              <i class="preview-dot dot-d"></i>
-            </span>
-          ` : ''}
+          <div class="level-card-top">
+            <b>${n}</b>
+            ${unlocked
+              ? `<small>${knots} knot${knots === 1 ? '' : 's'}</small>`
+              : '<small>Locked</small>'}
+          </div>
+          <span class="level-mini-preview tone-${n % 6} ${unlocked ? '' : 'locked-preview'}" aria-hidden="true">
+            <i class="preview-thread thread-a"></i>
+            <i class="preview-thread thread-b"></i>
+            <i class="preview-dot dot-a"></i>
+            <i class="preview-dot dot-b"></i>
+            <i class="preview-dot dot-c"></i>
+            <i class="preview-dot dot-d"></i>
+          </span>
+          ${unlocked ? '' : `<span class="level-lock-badge">${uiIcon('lock', 'ui-svg level-lock-svg')}</span>`}
           <span class="level-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>
+        </button>
+      `
+    }).join('')
+
+    const tabs = LEVEL_CHAPTERS.map((item, index) => {
+      const unlocked = item.start <= this.progress.unlocked
+      return `
+        <button
+          class="chapter-tab ${index === this.levelChapter ? 'active' : ''}"
+          data-chapter="${index}"
+          ${unlocked ? '' : 'disabled'}
+          aria-label="${item.title}${unlocked ? '' : ', locked'}"
+        >
+          <span>${index + 1}</span>
+          <b>${item.title}</b>
         </button>
       `
     }).join('')
@@ -239,10 +289,28 @@ export class GameApp {
       <main class="screen levels-screen">
         <header class="page-header">
           <button class="icon-button soft-icon" data-action="back" aria-label="Back">${uiIcon('back')}</button>
-          <h1>Levels</h1>
+          <div class="level-page-title">
+            <h1>Levels</h1>
+            <p>${chapter.subtitle}</p>
+          </div>
           <div class="coin-pill">${uiIcon('levels', 'ui-svg coin-star')}<b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
         </header>
-        <section class="level-grid">${cards}</section>
+
+        <nav class="chapter-tabs" aria-label="Level chapters">${tabs}</nav>
+
+        <section class="chapter-banner chapter-tone-${this.levelChapter}">
+          <span class="chapter-number">Chapter ${this.levelChapter + 1}</span>
+          <div>
+            <h2>${chapter.title}</h2>
+            <p>Levels ${chapter.start}–${chapter.end}</p>
+          </div>
+          <strong>${Math.min(
+            chapter.end - chapter.start + 1,
+            Math.max(0, this.progress.unlocked - chapter.start + 1),
+          )}/${chapter.end - chapter.start + 1}</strong>
+        </section>
+
+        <section class="level-grid chapter-grid">${cards}</section>
       </main>
     `)
 
@@ -250,14 +318,15 @@ export class GameApp {
     this.root.querySelectorAll('[data-level]').forEach((button) => {
       button.onclick = () => this.startLevel(Number(button.dataset.level))
     })
+    this.root.querySelectorAll('[data-chapter]').forEach((button) => {
+      button.onclick = () => this.showLevelSelect(Number(button.dataset.chapter))
+    })
 
-    if (this.progress.unlocked > 9) {
-      requestAnimationFrame(() => {
-        this.root
-          .querySelector(`[data-level="${this.progress.unlocked}"]`)
-          ?.scrollIntoView({ block: 'center' })
-      })
-    }
+    requestAnimationFrame(() => {
+      this.root
+        .querySelector(`[data-level="${this.progress.unlocked}"]`)
+        ?.scrollIntoView({ block: 'center' })
+    })
   }
 
   startLevel(levelNumber) {
@@ -280,7 +349,7 @@ export class GameApp {
         </header>
 
         <div class="game-objective">Untie all the knots</div>
-        ${this.level.tutorial ? `<div class="tutorial-chip">${this.level.tutorial}</div>` : ''}
+        ${this.level.tutorial ? `<div class="tutorial-chip" data-tutorial>${this.level.tutorial}</div>` : ''}
 
         <section class="board-wrap board-wrap-video">
           <canvas id="game-board" aria-label="String Sort game board"></canvas>
@@ -320,6 +389,7 @@ export class GameApp {
       onSwap: (from, to) => this.handleSwap(from, to),
       onSolved: () => {},
       graphics: this.settings.graphics,
+      pegMarkers: this.settings.pegMarkers,
     })
     this.board.setOrder(this.order, { animate: false })
     this.board.start()
@@ -350,6 +420,13 @@ export class GameApp {
 
     clearTimeout(this.tutorialHintTimer)
     this.tutorialHintTimer = 0
+
+    const tutorial = this.root.querySelector('[data-tutorial]')
+    if (tutorial) {
+      tutorial.classList.add('is-dismissed')
+      setTimeout(() => tutorial.remove(), 220)
+    }
+
     const previousCrossings = getCrossingCount(this.order)
     this.history.push([...this.order])
     ;[this.order[from], this.order[to]] = [this.order[to], this.order[from]]
@@ -358,15 +435,21 @@ export class GameApp {
     const currentCrossings = getCrossingCount(this.order)
     this.updateHud()
     this.showCrossingFeedback(previousCrossings, currentCrossings)
-    this.haptic()
-    this.audio.swap()
 
-    if (getCrossingCount(this.order) === 0 && !this.isCompleting) {
+    if (currentCrossings < previousCrossings) {
+      this.haptic(ImpactStyle.Medium)
+      this.audio.knotRelease(previousCrossings - currentCrossings)
+    } else {
+      this.haptic()
+      this.audio.swap()
+    }
+
+    if (currentCrossings === 0 && !this.isCompleting) {
       this.isCompleting = true
       this.haptic(ImpactStyle.Medium)
       this.completionTimer = setTimeout(() => {
         if (this.screen === 'game') this.completeLevel()
-      }, 380)
+      }, 650)
     }
   }
 
@@ -519,8 +602,11 @@ export class GameApp {
         <div class="ribbon">Great!</div>
         <h2>Level ${this.levelNumber} Complete!</h2>
         <p>${formatTime(this.elapsed)} · ${this.moves} moves</p>
-        <button class="primary-button" data-action="next">${hasNextLevel ? '▶ Next' : '✓ Levels'}</button>
-        <button class="secondary-link" data-action="levels">Levels</button>
+        <button class="primary-button" data-action="next">
+          ${hasNextLevel ? uiIcon('play') : uiIcon('levels')}
+          ${hasNextLevel ? 'Next' : 'Levels'}
+        </button>
+        <button class="secondary-link" data-action="levels">${uiIcon('levels')} Levels</button>
       </section>
     `
     this.root.appendChild(overlay)
@@ -569,7 +655,7 @@ export class GameApp {
     this.shell(`
       <main class="screen settings-screen">
         <header class="page-header">
-          <button class="icon-button" data-action="back" aria-label="Back">‹</button>
+          <button class="icon-button soft-icon" data-action="back" aria-label="Back">${uiIcon('back')}</button>
           <h1>Settings</h1>
           <span></span>
         </header>
@@ -590,6 +676,12 @@ export class GameApp {
             <span>Graphics</span>
             <button class="setting-toggle graphics-toggle" data-setting="graphics">
               ${graphicsLabel(this.settings.graphics)}
+            </button>
+          </div>
+          <div>
+            <span>Peg markers</span>
+            <button class="setting-toggle" data-setting="pegMarkers" aria-pressed="${this.settings.pegMarkers}">
+              ${this.settings.pegMarkers ? 'On' : 'Off'}
             </button>
           </div>
           <div>

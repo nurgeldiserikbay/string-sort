@@ -26,7 +26,8 @@ The paired particles:
 - are coupled around a shared moving knot point;
 - have additional local drag/friction;
 - keep a stable crossing angle;
-- pull nearby rope particles into a small crossed shape instead of collapsing into one point.
+- pull nearby rope particles into a small crossed shape instead of collapsing into one point;
+- can form two- or three-point alternating wraps in dense levels, so selected rope pairs visibly wind around each other instead of looking like flat line intersections.
 
 This means dragging one peg visibly pulls the other rope(s) that are bound into the same tangle. When a logical knot is removed, its physical constraint disappears and the involved ropes relax naturally.
 
@@ -44,7 +45,8 @@ The center of the board should look like a compact physical bundle:
 - thick glossy cords;
 - soft cast shadows;
 - no artificial "capsule" redraw at crossings;
-- local crossed shapes around real knot constraints;
+- seamless local over/under passes drawn from the rope's actual particle curve;
+- local crossed, double-wrap and occasional triple-wrap shapes around real knot constraints;
 - no animated dashed seam;
 - ropes already appear tangled when the level opens.
 
@@ -60,9 +62,38 @@ The board should stay visually simple:
 Early levels teach one knot and the single empty-socket rule.
 
 Later levels progressively add:
-- more ropes;
+- more ropes, capped at nine to stay close to the readable physical-puzzle reference;
 - more active logical knots;
 - denser central knot graphs;
 - longer legal solution paths.
 
 The launch set remains deterministic and automatically checked for solvability.
+
+
+## Interaction polish
+
+Endpoint dragging uses a spring-follow visual target. The rope therefore develops tension and pulls the rest of its bound tangle instead of teleporting rigidly to the pointer.
+
+Moves that reduce the logical knot count receive stronger haptic feedback and a dedicated release sound. Moves that do not improve the tangle retain the normal move feedback.
+
+The level browser is grouped into five 20-level chapters so difficulty progression is visible rather than presenting one long 100-card list.
+
+
+## Tangle graph quality
+
+Procedural levels no longer accept any random permutation that merely reaches a crossing count.
+
+Later levels are ranked by the actual knot graph:
+- from level 17 onward every rope must participate in the tangle;
+- from level 25 onward the knot graph must be connected, so the board behaves like one physical bundle rather than several unrelated mini-puzzles;
+- the generator still remains deterministic for repeatable QA and saved progression.
+
+## Sliding contact model
+
+Physical knot centers are not nailed to fixed coordinates. They:
+- spread apart inside the inner board so dense levels do not collapse into one pixel cluster;
+- follow the rope bundle when the player pulls it;
+- slowly slide along interior rope particles under tension while remaining away from endpoints;
+- disappear as one-shot release events when the logical knot is actually removed.
+
+A knot release drives a small visual burst, stronger haptic feedback, and a short positive sound cue.

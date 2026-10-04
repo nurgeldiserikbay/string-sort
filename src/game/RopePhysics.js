@@ -56,11 +56,21 @@ export class RopePhysics {
     const inv = 1 / Math.max(EPSILON, chord)
     const nx = -dy * inv
     const ny = dx * inv
-    const bend = Math.min(34, chord * 0.105) * (id % 2 === 0 ? 1 : -1)
+    const direction = id % 2 === 0 ? 1 : -1
+    const bend = Math.min(44, chord * 0.13) * direction
+    const phase = (id * 1.61803398875) % (Math.PI * 2)
 
     const points = Array.from({ length: segmentCount + 1 }, (_, index) => {
       const t = index / segmentCount
-      const arc = Math.sin(t * Math.PI) * bend
+      const envelope = Math.sin(t * Math.PI)
+      const mainArc = envelope * bend
+      const secondaryArc = (
+        Math.sin(t * Math.PI * 2 + phase)
+        * envelope
+        * Math.min(12, Math.abs(bend) * 0.28)
+      )
+      const arc = mainArc + secondaryArc
+
       return clonePoint({
         x: lerp(start.x, end.x, t) + nx * arc,
         y: lerp(start.y, end.y, t) + ny * arc,

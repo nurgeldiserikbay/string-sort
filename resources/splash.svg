@@ -1,29 +1,70 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
   <defs>
-    <radialGradient id="bg" cx="35%" cy="25%" r="90%">
-      <stop offset="0" stop-color="#fff9e9"/>
+    <radialGradient id="bg" cx="35%" cy="20%" r="92%">
+      <stop offset="0" stop-color="#fffaf0"/>
       <stop offset="1" stop-color="#efd09b"/>
     </radialGradient>
+    <radialGradient id="board" cx="34%" cy="28%" r="80%">
+      <stop offset="0" stop-color="#696c75"/>
+      <stop offset=".55" stop-color="#51545d"/>
+      <stop offset="1" stop-color="#3d4049"/>
+    </radialGradient>
     <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
-      <feDropShadow dx="0" dy="34" stdDeviation="30" flood-color="#765128" flood-opacity=".25"/>
+      <feDropShadow dx="0" dy="36" stdDeviation="32" flood-color="#67441f" flood-opacity=".28"/>
+    </filter>
+    <filter id="ropeShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="12" stdDeviation="9" flood-color="#11151b" flood-opacity=".42"/>
     </filter>
   </defs>
+
   <rect width="2732" height="2732" fill="url(#bg)"/>
-  <g transform="translate(1366 1280)" filter="url(#shadow)">
-    <circle r="430" fill="#2c323b"/>
-    <circle r="385" fill="none" stroke="#fff" stroke-opacity=".07" stroke-width="12"/>
-    <g fill="none" stroke-linecap="round" stroke-width="48">
-      <path d="M-270 -240 C-70 -95 120 230 290 278" stroke="#ff4f5e"/>
-      <path d="M272 -235 C115 -115 -100 205 -282 270" stroke="#36a6ff"/>
-      <path d="M-330 10 C-105 -155 150 -148 330 20" stroke="#45cb6c"/>
-      <path d="M0 -350 C135 -145 125 155 0 365" stroke="#ffc53a"/>
+  <circle cx="410" cy="340" r="430" fill="#fff" opacity=".2"/>
+  <circle cx="2440" cy="2370" r="520" fill="#7fbf78" opacity=".08"/>
+
+  <g transform="translate(1366 1190)" filter="url(#shadow)">
+    <path d="M0 -510
+      C122 -518 217 -487 306 -432
+      C400 -374 457 -289 489 -186
+      C520 -83 512 23 483 119
+      C449 231 382 310 291 373
+      C197 438 97 455 -15 454
+      C-129 454 -229 430 -315 369
+      C-402 308 -456 231 -485 126
+      C-513 22 -505 -82 -474 -180
+      C-440 -290 -378 -372 -286 -433
+      C-197 -491 -99 -506 0 -510Z" fill="url(#board)"/>
+
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" filter="url(#ropeShadow)">
+      <path d="M-320 -300 C-130 -190 -145 58 85 145 C230 201 255 331 340 370" stroke="#ff4f60"/>
+      <path d="M326 -295 C137 -183 182 16 -34 115 C-192 187 -214 330 -330 356" stroke="#2f93ff"/>
+      <path d="M-438 18 C-225 -150 -65 -46 26 190 C101 379 270 255 437 91" stroke="#35ca70"/>
+      <path d="M0 -447 C145 -232 55 -90 -87 31 C-208 134 -102 325 -7 435" stroke="#ffd33f"/>
+      <path d="M426 -116 C226 -85 171 -205 20 -151 C-138 -95 -212 -194 -382 -220" stroke="#9b5de5"/>
+      <path d="M263 412 C180 240 26 296 -81 202 C-207 91 -298 196 -444 154" stroke="#ff8b31"/>
     </g>
-    <circle r="74" fill="#fff2d3" stroke="#a88b62" stroke-width="14"/>
-    <circle r="24" fill="#45413d"/>
+
+    <g stroke="#242831" stroke-width="14">
+      <circle cx="-320" cy="-300" r="50" fill="#ff4f60"/>
+      <circle cx="340" cy="370" r="50" fill="#ff4f60"/>
+      <circle cx="326" cy="-295" r="50" fill="#2f93ff"/>
+      <circle cx="-330" cy="356" r="50" fill="#2f93ff"/>
+      <circle cx="-438" cy="18" r="50" fill="#35ca70"/>
+      <circle cx="437" cy="91" r="50" fill="#35ca70"/>
+      <circle cx="0" cy="-447" r="50" fill="#ffd33f"/>
+      <circle cx="-7" cy="435" r="50" fill="#ffd33f"/>
+      <circle cx="426" cy="-116" r="50" fill="#9b5de5"/>
+      <circle cx="-382" cy="-220" r="50" fill="#9b5de5"/>
+      <circle cx="263" cy="412" r="50" fill="#ff8b31"/>
+      <circle cx="-444" cy="154" r="50" fill="#ff8b31"/>
+    </g>
+
+    <circle cx="455" cy="235" r="46" fill="#70747d" stroke="#30343b" stroke-width="12"/>
+    <circle cx="455" cy="235" r="24" fill="#2d3037"/>
   </g>
-  <g text-anchor="middle" font-family="Arial Rounded MT Bold, Trebuchet MS, sans-serif" font-weight="800">
-    <text x="1366" y="1950" font-size="250" fill="#ffb51f" stroke="#8e5014" stroke-width="14" paint-order="stroke">STRING</text>
-    <text x="1366" y="2175" font-size="270" fill="#3da6ff" stroke="#165e9b" stroke-width="14" paint-order="stroke">SORT</text>
-    <text x="1366" y="2315" font-size="66" fill="#6a4b30" opacity=".82">UNTANGLE · RELAX · SOLVE</text>
+
+  <g text-anchor="middle" font-family="Arial Rounded MT Bold, Trebuchet MS, sans-serif" font-weight="900">
+    <text x="1366" y="1920" font-size="246" fill="#ffb91f" stroke="#17365a" stroke-width="15" paint-order="stroke">STRING</text>
+    <text x="1366" y="2140" font-size="268" fill="#f3f7ff" stroke="#17365a" stroke-width="15" paint-order="stroke">SORT</text>
+    <text x="1366" y="2295" font-size="62" fill="#6d4a2d" opacity=".8">UNTANGLE · SORT · FEEL GOOD</text>
   </g>
 </svg>

@@ -23,6 +23,7 @@ function makeCanvasContext() {
     fill: vi.fn(),
     strokeRect: vi.fn(),
     createRadialGradient: vi.fn(makeGradient),
+    createLinearGradient: vi.fn(makeGradient),
     setLineDash: vi.fn(),
   }
 }
@@ -70,6 +71,21 @@ describe('RopeBoard pointer interaction', () => {
     expect(canvas.setPointerCapture).toHaveBeenCalledWith(1)
     expect(onSwap).toHaveBeenCalledWith(1, 4)
     expect(board.dragIndex).toBe(-1)
+  })
+
+  it('keeps the dragged peg inside the physical board boundary', () => {
+    board = new RopeBoard(canvas, {
+      onSwap: vi.fn(),
+      onSolved: vi.fn(),
+      graphics: 'battery',
+    })
+    board.setOrder([0, 1, 0, 1, null])
+
+    const g = board.geometry()
+    const point = board.constrainDragPoint({ x: 2000, y: 2000 })
+    const distance = Math.hypot(point.x - g.cx, point.y - g.cy)
+
+    expect(distance).toBeLessThanOrEqual(g.boardRadius * 0.985 + 0.001)
   })
 
   it('does not swap when a peg is released away from every socket', () => {

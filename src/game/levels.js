@@ -20,26 +20,26 @@ const INTRO_LEVELS = {
     order: [0, 1, 0, 1, 2, 2, null],
     parMoves: 1,
     targetTime: 35,
-    tutorial: 'Move a peg into the empty socket. The old spot becomes empty.',
+    tutorial: 'Move the glowing peg into the empty socket.',
     initialHint: { from: 1, to: 6 },
   },
   2: {
     order: [0, 1, 0, 2, 1, 2, 3, 3, null],
     parMoves: 2,
     targetTime: 40,
-    tutorial: 'Watch the Knots counter. Every move should loosen the tangle.',
+    tutorial: 'Each move shifts the empty socket. Reduce the Knots counter.',
   },
   3: {
     order: [0, 1, 2, 0, 1, 2, 3, 3, null],
     parMoves: 2,
     targetTime: 42,
-    tutorial: 'Stuck? Hint highlights a swap that improves the board.',
+    tutorial: 'Stuck? Hint shows a move that loosens the tangle.',
   },
   4: {
     order: [0, 1, 2, 3, 0, 1, 2, 3, null],
     parMoves: 3,
     targetTime: 48,
-    tutorial: 'Release every knot to finish the level.',
+    tutorial: 'No knots left means the level is complete.',
   },
   5: {
     order: [0, 1, 2, 0, 3, 1, 4, 2, 3, 4, null],
@@ -116,6 +116,55 @@ export function getKnotPairs(order) {
   return knots
 }
 
+export function getKnotGraphStats(order) {
+  const ropeIds = [...new Set(order.filter((ropeId) => ropeId != null))]
+    .sort((a, b) => a - b)
+  const knots = getKnotPairs(order)
+  const adjacency = new Map(ropeIds.map((ropeId) => [ropeId, new Set()]))
+
+  for (const knot of knots) {
+    adjacency.get(knot.aId)?.add(knot.bId)
+    adjacency.get(knot.bId)?.add(knot.aId)
+  }
+
+  const involvedRopes = [...adjacency.values()]
+    .filter((neighbors) => neighbors.size > 0)
+    .length
+
+  const visited = new Set()
+  let components = 0
+
+  for (const ropeId of ropeIds) {
+    if (visited.has(ropeId)) continue
+    components++
+
+    const stack = [ropeId]
+    while (stack.length) {
+      const current = stack.pop()
+      if (visited.has(current)) continue
+      visited.add(current)
+
+      for (const neighbor of adjacency.get(current) ?? []) {
+        if (!visited.has(neighbor)) stack.push(neighbor)
+      }
+    }
+  }
+
+  const maxDegree = Math.max(
+    0,
+    ...[...adjacency.values()].map((neighbors) => neighbors.size),
+  )
+
+  return {
+    ropeCount: ropeIds.length,
+    knotCount: knots.length,
+    involvedRopes,
+    components,
+    connected: ropeIds.length > 0 && components === 1,
+    maxDegree,
+  }
+}
+
 function countCrossings(order) {
   return getKnotPairs(order).length
 }
@@ -127,25 +176,47 @@ function makeSolvedOrder(ropeCount) {
   ]
 }
 
-function shuffleForLevel(ropeCount, seed, minCrossings) {
+function shuffleForLevel(
+  ropeCount,
+  seed,
+  minCrossings,
+  {
+    minInvolvedRopes = Math.max(2, ropeCount - 1),
+    requireConnected = false,
+  } = {},
+) {
   const random = seededRandom(seed)
   const base = makeSolvedOrder(ropeCount)
   let best = [...base]
-  let bestScore = 0
+  let bestRank = -Infinity
 
-  for (let attempt = 0; attempt < 160; attempt++) {
+  for (let attempt = 0; attempt < 320; attempt++) {
     const candidate = [...base]
     for (let i = candidate.length - 1; i > 0; i--) {
       const j = Math.floor(random() * (i + 1))
       ;[candidate[i], candidate[j]] = [candidate[j], candidate[i]]
     }
 
-    const score = countCrossings(candidate)
-    if (score > bestScore) {
+    const stats = getKnotGraphStats(candidate)
+    const rank = (
+      stats.knotCount * 10
+      + stats.involvedRopes * 3
+      - stats.components * 2
+      + stats.maxDegree
+    )
+
+    if (rank > bestRank) {
       best = candidate
-      bestScore = score
+      bestRank = rank
     }
-    if (score >= minCrossings) return candidate
+
+    if (
+      stats.knotCount >= minCrossings
+      && stats.involvedRopes >= minInvolvedRopes
+      && (!requireConnected || stats.connected)
+    ) {
+      return candidate
+    }
   }
 
   return best
@@ -225,27 +296,32 @@ export function createLevel(levelNumber) {
   let ropeCount
   let minCrossings
 
-  if (levelNumber <= 16) {
+  if (levelNumber <= 24) {
+    ropeCount = 6
+    minCrossings = 8 + Math.floor((levelNumber - 9) / 4)
+  } else if (levelNumber <= 49) {
     ropeCount = 7
-    minCrossings = 9 + Math.floor((levelNumber - 9) / 2)
-  } else if (levelNumber <= 32) {
+    minCrossings = 10 + Math.floor((levelNumber - 25) / 5)
+  } else if (levelNumber <= 74) {
     ropeCount = 8
-    minCrossings = 12 + Math.floor((levelNumber - 17) / 3)
-  } else if (levelNumber <= 52) {
-    ropeCount = 9
-    minCrossings = 15 + Math.floor((levelNumber - 33) / 4)
-  } else if (levelNumber <= 76) {
-    ropeCount = 10
-    minCrossings = 18 + Math.floor((levelNumber - 53) / 4)
+    minCrossings = 12 + Math.floor((levelNumber - 50) / 5)
   } else {
-    ropeCount = 12
-    minCrossings = 22 + Math.floor((levelNumber - 77) / 4)
+    ropeCount = 9
+    minCrossings = 14 + Math.floor((levelNumber - 75) / 4)
   }
 
   const maxCrossings = Math.floor((ropeCount * (ropeCount - 1)) / 2)
   minCrossings = Math.min(maxCrossings, Math.max(1, minCrossings))
 
-  const order = shuffleForLevel(ropeCount, 9001 + levelNumber * 7919, minCrossings)
+  const order = shuffleForLevel(
+    ropeCount,
+    9001 + levelNumber * 7919,
+    minCrossings,
+    {
+      minInvolvedRopes: levelNumber <= 16 ? ropeCount - 1 : ropeCount,
+      requireConnected: levelNumber >= 25,
+    },
+  )
   const actualCrossings = countCrossings(order)
 
   return {

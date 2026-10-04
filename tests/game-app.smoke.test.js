@@ -23,6 +23,7 @@ function makeCanvasContext() {
     fill: vi.fn(),
     strokeRect: vi.fn(),
     createRadialGradient: vi.fn(makeGradient),
+    createLinearGradient: vi.fn(makeGradient),
     setLineDash: vi.fn(),
     shadowColor: '',
     shadowBlur: 0,
@@ -139,6 +140,20 @@ describe('GameApp interaction smoke tests', () => {
     expect(root.querySelector('[data-setting="sound"]').textContent.trim()).toBe('Off')
   })
 
+  it('keeps peg markers optional and persists the setting', () => {
+    root.querySelector('[data-action="settings"]').click()
+    const markerButton = root.querySelector('[data-setting="pegMarkers"]')
+
+    expect(markerButton.textContent.trim()).toBe('Off')
+    markerButton.click()
+    expect(app.settings.pegMarkers).toBe(true)
+    expect(markerButton.textContent.trim()).toBe('On')
+
+    app.showMenu()
+    app.showSettings()
+    expect(root.querySelector('[data-setting="pegMarkers"]').textContent.trim()).toBe('On')
+  })
+
   it('cycles graphics quality without leaving settings', () => {
     root.querySelector('[data-action="settings"]').click()
     const graphicsButton = root.querySelector('[data-setting="graphics"]')
@@ -181,6 +196,16 @@ describe('GameApp interaction smoke tests', () => {
     expect(saved.unlocked).toBe(1)
   })
 
+  it('dismisses onboarding copy after the first legal move', () => {
+    root.querySelector('[data-action="play"]').click()
+
+    expect(root.querySelector('[data-tutorial]')).not.toBeNull()
+
+    app.handleSwap(1, 6)
+
+    expect(root.querySelector('[data-tutorial]').classList.contains('is-dismissed')).toBe(true)
+  })
+
   it('rejects an occupied-to-occupied move', () => {
     root.querySelector('[data-action="play"]').click()
 
@@ -200,7 +225,7 @@ describe('GameApp interaction smoke tests', () => {
     app.elapsed = 12
 
     app.handleSwap(1, 4)
-    vi.advanceTimersByTime(400)
+    vi.advanceTimersByTime(700)
 
     expect(root.querySelector('.complete-card')).not.toBeNull()
     expect(root.textContent).toContain('Level 1 Complete!')

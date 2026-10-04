@@ -1,50 +1,102 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <defs>
-    <radialGradient id="bg" cx="35%" cy="25%" r="85%">
-      <stop offset="0" stop-color="#fff8e8"/>
-      <stop offset="1" stop-color="#f0cf97"/>
+    <radialGradient id="bg" cx="30%" cy="18%" r="95%">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset=".58" stop-color="#f7e4bd"/>
+      <stop offset="1" stop-color="#ebc98e"/>
     </radialGradient>
-    <radialGradient id="disc" cx="34%" cy="28%" r="78%">
-      <stop offset="0" stop-color="#4f5661"/>
-      <stop offset=".55" stop-color="#303640"/>
-      <stop offset="1" stop-color="#1f242c"/>
+    <radialGradient id="board" cx="34%" cy="28%" r="80%">
+      <stop offset="0" stop-color="#696c75"/>
+      <stop offset=".52" stop-color="#52555e"/>
+      <stop offset="1" stop-color="#3d4049"/>
     </radialGradient>
-    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="22" stdDeviation="22" flood-color="#5a3b1d" flood-opacity=".28"/>
+    <radialGradient id="hole" cx="35%" cy="30%" r="72%">
+      <stop offset="0" stop-color="#b4b8c0"/>
+      <stop offset=".52" stop-color="#6d717a"/>
+      <stop offset="1" stop-color="#3a3d44"/>
+    </radialGradient>
+    <filter id="boardShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#68431e" flood-opacity=".28"/>
     </filter>
-    <filter id="ropeShadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000" flood-opacity=".36"/>
+    <filter id="ropeShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="7" flood-color="#11151b" flood-opacity=".42"/>
     </filter>
   </defs>
-  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
-  <circle cx="512" cy="520" r="330" fill="url(#disc)" filter="url(#shadow)"/>
-  <circle cx="512" cy="520" r="296" fill="none" stroke="#fff" stroke-opacity=".07" stroke-width="8"/>
 
-  <g fill="none" stroke-linecap="round" stroke-width="34" filter="url(#ropeShadow)">
-    <path d="M300 330 C470 460 575 665 742 716" stroke="#ff4f5e"/>
-    <path d="M720 332 C585 430 452 626 310 705" stroke="#36a6ff"/>
-    <path d="M260 520 C430 390 610 390 760 535" stroke="#45cb6c"/>
-    <path d="M508 245 C618 402 620 598 512 790" stroke="#ffc53a"/>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <circle cx="120" cy="100" r="165" fill="#fff" opacity=".28"/>
+  <circle cx="930" cy="890" r="210" fill="#83bd77" opacity=".09"/>
+
+  <g filter="url(#boardShadow)">
+    <path d="M512 132
+      C604 126 664 147 731 181
+      C809 220 848 279 878 356
+      C906 430 909 505 893 585
+      C875 676 836 746 769 808
+      C700 871 624 894 532 899
+      C438 906 357 888 284 846
+      C209 803 163 744 132 663
+      C102 586 103 508 118 431
+      C136 338 178 271 247 211
+      C319 149 405 132 512 132Z" fill="url(#board)"/>
+  </g>
+  <path d="M512 162
+    C600 158 662 177 723 208
+    C791 242 825 296 852 365
+    C875 430 878 505 864 575
+    C848 654 814 715 754 771
+    C690 829 618 850 530 855
+    C445 861 371 844 305 806
+    C238 768 198 714 171 642
+    C145 572 146 505 160 438
+    C176 354 214 294 276 241
+    C341 184 416 164 512 162Z"
+    fill="none" stroke="#fff" stroke-opacity=".07" stroke-width="10"/>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#ropeShadow)">
+    <path d="M300 260 C440 335 421 490 567 552 C669 595 695 705 760 770" stroke="#ff4f60" stroke-width="34"/>
+    <path d="M748 254 C620 335 652 468 506 520 C388 562 370 693 278 758" stroke="#2f93ff" stroke-width="34"/>
+    <path d="M174 507 C315 398 421 458 491 598 C549 713 680 641 840 548" stroke="#35ca70" stroke-width="34"/>
+    <path d="M501 172 C596 308 529 412 430 501 C345 578 418 713 500 842" stroke="#ffd33f" stroke-width="34"/>
+    <path d="M830 390 C704 409 641 348 544 386 C425 433 356 357 221 333" stroke="#9b5de5" stroke-width="34"/>
+    <path d="M703 833 C626 707 527 735 454 663 C372 581 264 638 150 615" stroke="#ff8b31" stroke-width="34"/>
   </g>
 
-  <g fill="none" stroke-linecap="round" stroke-width="8" opacity=".35">
-    <path d="M300 330 C470 460 575 665 742 716" stroke="#fff"/>
-    <path d="M720 332 C585 430 452 626 310 705" stroke="#fff"/>
-    <path d="M260 520 C430 390 610 390 760 535" stroke="#fff"/>
-    <path d="M508 245 C618 402 620 598 512 790" stroke="#fff"/>
+  <g fill="none" stroke="#fff" stroke-opacity=".22" stroke-linecap="round" stroke-width="6">
+    <path d="M300 260 C440 335 421 490 567 552 C669 595 695 705 760 770"/>
+    <path d="M748 254 C620 335 652 468 506 520 C388 562 370 693 278 758"/>
+    <path d="M174 507 C315 398 421 458 491 598 C549 713 680 641 840 548"/>
+    <path d="M501 172 C596 308 529 412 430 501 C345 578 418 713 500 842"/>
+    <path d="M830 390 C704 409 641 348 544 386 C425 433 356 357 221 333"/>
+    <path d="M703 833 C626 707 527 735 454 663 C372 581 264 638 150 615"/>
   </g>
 
-  <g stroke="#161a20" stroke-width="12">
-    <circle cx="300" cy="330" r="46" fill="#ff4f5e"/>
-    <circle cx="742" cy="716" r="46" fill="#ff4f5e"/>
-    <circle cx="720" cy="332" r="46" fill="#36a6ff"/>
-    <circle cx="310" cy="705" r="46" fill="#36a6ff"/>
-    <circle cx="260" cy="520" r="46" fill="#45cb6c"/>
-    <circle cx="760" cy="535" r="46" fill="#45cb6c"/>
-    <circle cx="508" cy="245" r="46" fill="#ffc53a"/>
-    <circle cx="512" cy="790" r="46" fill="#ffc53a"/>
+  <!-- small over/under passes -->
+  <g fill="none" stroke-linecap="butt" stroke-width="36">
+    <path d="M452 472 Q497 500 546 514" stroke="#2f93ff"/>
+    <path d="M474 566 Q513 592 551 608" stroke="#35ca70"/>
+    <path d="M518 387 Q552 376 590 374" stroke="#9b5de5"/>
   </g>
 
-  <circle cx="512" cy="520" r="62" fill="#fff5dc" stroke="#b69b72" stroke-width="12"/>
-  <circle cx="512" cy="520" r="20" fill="#46423d"/>
+  <g stroke="#242831" stroke-width="11">
+    <circle cx="300" cy="260" r="42" fill="#ff4f60"/>
+    <circle cx="760" cy="770" r="42" fill="#ff4f60"/>
+    <circle cx="748" cy="254" r="42" fill="#2f93ff"/>
+    <circle cx="278" cy="758" r="42" fill="#2f93ff"/>
+    <circle cx="174" cy="507" r="42" fill="#35ca70"/>
+    <circle cx="840" cy="548" r="42" fill="#35ca70"/>
+    <circle cx="501" cy="172" r="42" fill="#ffd33f"/>
+    <circle cx="500" cy="842" r="42" fill="#ffd33f"/>
+    <circle cx="830" cy="390" r="42" fill="#9b5de5"/>
+    <circle cx="221" cy="333" r="42" fill="#9b5de5"/>
+    <circle cx="703" cy="833" r="42" fill="#ff8b31"/>
+    <circle cx="150" cy="615" r="42" fill="#ff8b31"/>
+  </g>
+
+  <!-- exactly one empty socket -->
+  <g>
+    <circle cx="887" cy="663" r="38" fill="url(#hole)" stroke="#30343b" stroke-width="8"/>
+    <circle cx="887" cy="663" r="20" fill="#2d3037"/>
+    <circle cx="880" cy="656" r="7" fill="#fff" opacity=".12"/>
+  </g>
 </svg>
