@@ -11,7 +11,7 @@
 - Physical knot constraints that couple bound ropes together
 - Distributed knot centers that move with the rope bundle under tension
 - Sliding knot contacts along rope interiors
-- Double-wrap and occasional triple-wrap tangles on denser boards
+- One stable physical contact per logical knot, with short over/under rendering
 - Stable local over/under rendering without the old crossing capsule artifact
 - Knot-specific friction only between logically bound ropes
 - Peg collision and board-boundary constraints
