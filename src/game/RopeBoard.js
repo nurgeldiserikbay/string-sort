@@ -65,6 +65,7 @@ export class RopeBoard {
     this.physics = new RopePhysics({
       damping: 0.982,
       gravity: 0,
+      ambientMotion: 0.8,
       constraintIterations: this.performanceProfile.constraintIterations,
     })
 
