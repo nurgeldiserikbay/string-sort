@@ -1727,3 +1727,80 @@ html[data-banner-mode="preview"] .game-actions {
   width: 20px;
   height: 20px;
 }
+
+
+.star-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.star-icon {
+  width: 18px;
+  height: 18px;
+  stroke: none;
+}
+
+.star-icon.is-earned {
+  color: #ffb400;
+  filter: drop-shadow(0 1.5px 0 rgba(174,111,0,.38));
+}
+
+.star-icon.is-empty {
+  color: rgba(129,113,94,.18);
+}
+
+.level-stars {
+  min-height: 18px;
+  color: inherit !important;
+  letter-spacing: 0 !important;
+  font-size: 0 !important;
+}
+
+.level-card.current .star-icon.is-earned {
+  color: #ffe784;
+  filter: drop-shadow(0 1px 0 rgba(79,58,22,.25));
+}
+
+.level-card.current .star-icon.is-empty {
+  color: rgba(255,255,255,.25);
+}
+
+.stars {
+  gap: 8px;
+  color: inherit;
+  font-size: 0;
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+.stars .star-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.stars .star-icon.is-earned {
+  color: #ffbf20;
+  filter: drop-shadow(0 3px 0 #c87900);
+}
+
+.stars .star-icon.is-empty {
+  color: rgba(111,92,68,.16);
+}
+
+.setting-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.setting-action .ui-svg {
+  width: 17px;
+  height: 17px;
+}
+
+.setting-chevron {
+  transform: rotate(180deg);
+}
