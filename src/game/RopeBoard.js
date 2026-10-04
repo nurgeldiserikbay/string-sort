@@ -20,6 +20,7 @@ export class RopeBoard {
     this.order = []
     this.dragIndex = -1
     this.dragPoint = null
+    this.dragVisualPoint = null
     this.hoverIndex = -1
     this.hint = null
     this.hintUntil = 0
@@ -192,6 +193,7 @@ export class RopeBoard {
 
     this.dragIndex = index
     this.dragPoint = point
+    this.dragVisualPoint = { ...point }
     this.hoverIndex = index
     this.canvas.setPointerCapture?.(event.pointerId)
   }
@@ -212,6 +214,7 @@ export class RopeBoard {
 
     this.dragIndex = -1
     this.dragPoint = null
+    this.dragVisualPoint = null
     this.hoverIndex = -1
 
     if (to >= 0 && to !== from && this.order[to] == null) {
@@ -225,8 +228,8 @@ export class RopeBoard {
 
     this.order.forEach((id, index) => {
       if (id !== ropeId) return
-      const position = index === this.dragIndex && this.dragPoint
-        ? this.dragPoint
+      const position = index === this.dragIndex && this.dragVisualPoint
+        ? this.dragVisualPoint
         : this.socketPosition(index)
       entries.push({ index, position })
     })
@@ -235,6 +238,14 @@ export class RopeBoard {
   }
 
   syncPhysics(time, g) {
+    if (this.dragIndex >= 0 && this.dragPoint) {
+      if (!this.dragVisualPoint) this.dragVisualPoint = { ...this.dragPoint }
+
+      const follow = 0.42
+      this.dragVisualPoint.x += (this.dragPoint.x - this.dragVisualPoint.x) * follow
+      this.dragVisualPoint.y += (this.dragPoint.y - this.dragVisualPoint.y) * follow
+    }
+
     const ropeIds = [...new Set(this.order.filter((ropeId) => ropeId != null))]
     const draggedRopeId = this.dragIndex >= 0 ? this.order[this.dragIndex] : null
     const segmentCounts = new Map()
