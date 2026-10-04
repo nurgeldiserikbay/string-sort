@@ -83,6 +83,23 @@ try {
   await page.waitForTimeout(450)
   await capture('04-level-complete')
 
+  // Internal/store preview of the dense late-game tangle.
+  await page.evaluate(() => {
+    localStorage.setItem('string-sort-progress-v1', JSON.stringify({
+      unlocked: 100,
+      stars: {},
+      bestTimes: {},
+    }))
+  })
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.click('[data-action="levels"]')
+  await page.waitForSelector('[data-level="80"]')
+  await page.locator('[data-level="80"]').scrollIntoViewIfNeeded()
+  await page.click('[data-level="80"]')
+  await page.waitForSelector('#game-board')
+  await page.waitForTimeout(1200)
+  await capture('05-hard-tangle')
+
   console.log(`Captured Play Store screenshots in ${outputDir}`)
 } finally {
   await context.close()
