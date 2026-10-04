@@ -1013,3 +1013,110 @@ html[data-banner-mode="preview"] .game-actions {
     height: 42px;
   }
 }
+
+
+.coin-star {
+  width: 21px;
+  height: 21px;
+  color: #ffb400;
+  filter: drop-shadow(0 2px 0 #b97500);
+}
+
+.video-board-preview .mini-rope::before,
+.video-board-preview .mini-rope::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: inherit;
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.42),
+    0 3px 5px rgba(0,0,0,.3);
+  transform: translateY(-50%);
+}
+
+.video-board-preview .mini-rope::before { left: -7px; }
+.video-board-preview .mini-rope::after { right: -7px; }
+
+.level-card {
+  padding: 10px 8px 9px;
+  gap: 5px;
+}
+
+.level-card b {
+  line-height: 1;
+}
+
+.level-mini-preview {
+  --c1: #ff4b57;
+  --c2: #2f93ff;
+  position: relative;
+  display: block;
+  width: 62px;
+  height: 42px;
+  margin: 2px auto 1px;
+}
+
+.level-mini-preview.tone-1 { --c1:#ff4b57; --c2:#2f93ff; }
+.level-mini-preview.tone-2 { --c1:#31c96b; --c2:#ff4b57; }
+.level-mini-preview.tone-3 { --c1:#2f93ff; --c2:#ffc62e; }
+.level-mini-preview.tone-4 { --c1:#9b5de5; --c2:#2f93ff; }
+.level-mini-preview.tone-5 { --c1:#31c96b; --c2:#ff8c32; }
+.level-mini-preview.tone-0 { --c1:#24c7d9; --c2:#ff67ae; }
+
+.preview-thread {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  top: 18px;
+  height: 6px;
+  border-radius: 999px;
+  box-shadow:
+    0 2px 2px rgba(0,0,0,.2),
+    inset 0 1px rgba(255,255,255,.34);
+  transform-origin: center;
+}
+
+.thread-a {
+  background: var(--c1);
+  transform: rotate(25deg);
+}
+
+.thread-b {
+  background: var(--c2);
+  transform: rotate(-24deg);
+}
+
+.preview-dot {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.5),
+    0 2px 3px rgba(0,0,0,.18);
+}
+
+.dot-a { left: 3px; top: 5px; background: var(--c1); }
+.dot-b { right: 3px; bottom: 4px; background: var(--c1); }
+.dot-c { right: 3px; top: 5px; background: var(--c2); }
+.dot-d { left: 3px; bottom: 4px; background: var(--c2); }
+
+.level-stars {
+  color: #ffb400 !important;
+  letter-spacing: 1px;
+  font-size: 12px !important;
+}
+
+.level-card.locked .level-stars {
+  color: #b4aa9a !important;
+}
+
+@media (max-width: 380px) {
+  .level-mini-preview {
+    width: 52px;
+    height: 36px;
+  }
+}
