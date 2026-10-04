@@ -348,7 +348,7 @@ export class GameApp {
         </header>
 
         <div class="game-objective">Untie all the knots</div>
-        ${this.level.tutorial ? `<div class="tutorial-chip">${this.level.tutorial}</div>` : ''}
+        ${this.level.tutorial ? `<div class="tutorial-chip" data-tutorial>${this.level.tutorial}</div>` : ''}
 
         <section class="board-wrap board-wrap-video">
           <canvas id="game-board" aria-label="String Sort game board"></canvas>
@@ -418,6 +418,13 @@ export class GameApp {
 
     clearTimeout(this.tutorialHintTimer)
     this.tutorialHintTimer = 0
+
+    const tutorial = this.root.querySelector('[data-tutorial]')
+    if (tutorial) {
+      tutorial.classList.add('is-dismissed')
+      setTimeout(() => tutorial.remove(), 220)
+    }
+
     const previousCrossings = getCrossingCount(this.order)
     this.history.push([...this.order])
     ;[this.order[from], this.order[to]] = [this.order[to], this.order[from]]
