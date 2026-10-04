@@ -81,6 +81,25 @@ export class AudioManager {
     this.tone({ frequency: 430, duration: 0.08, type: 'triangle', gain: 0.06, slideTo: 300 })
   }
 
+  knotRelease(count = 1) {
+    const lift = Math.min(3, Math.max(1, count))
+    this.tone({
+      frequency: 420,
+      duration: 0.075,
+      type: 'triangle',
+      gain: 0.07,
+      slideTo: 620 + lift * 60,
+    })
+    this.tone({
+      frequency: 690 + lift * 55,
+      duration: 0.11,
+      type: 'sine',
+      gain: 0.05,
+      delay: 0.045,
+      slideTo: 900 + lift * 70,
+    })
+  }
+
   win() {
     const notes = [523.25, 659.25, 783.99, 1046.5]
     notes.forEach((frequency, index) => {
