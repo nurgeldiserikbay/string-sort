@@ -2,6 +2,7 @@ import { access, readFile } from 'node:fs/promises'
 
 const REQUIRED_FILES = [
   'capacitor.config.json',
+  'CHANGELOG.md',
   'resources/icon-only.svg',
   'resources/icon-foreground.svg',
   'resources/icon-background.svg',
