@@ -389,13 +389,21 @@ export class RopeBoard {
     const isDropTarget = isEmpty
       && this.dragIndex >= 0
       && this.hoverIndex === index
-    const radius = g.socketRadius * (isDropTarget ? 1.16 : 0.9)
+    const isHintTarget = isEmpty
+      && this.hint
+      && performance.now() < this.hintUntil
+      && this.hint.to === index
+    const isActiveTarget = isDropTarget || isHintTarget
+    const pulse = isHintTarget
+      ? 1 + Math.sin(performance.now() * 0.012) * 0.08
+      : 1
+    const radius = g.socketRadius * (isActiveTarget ? 1.16 : 0.9) * pulse
 
     ctx.save()
-    ctx.shadowColor = isDropTarget
+    ctx.shadowColor = isActiveTarget
       ? 'rgba(120, 255, 160, .58)'
       : 'rgba(0,0,0,.22)'
-    ctx.shadowBlur = isDropTarget ? 16 : 4
+    ctx.shadowBlur = isActiveTarget ? 16 : 4
     ctx.shadowOffsetY = 2
 
     ctx.fillStyle = isEmpty ? '#5b5e67' : '#4d5058'
@@ -404,15 +412,17 @@ export class RopeBoard {
     ctx.fill()
 
     ctx.shadowColor = 'transparent'
-    ctx.strokeStyle = isDropTarget
+    ctx.strokeStyle = isActiveTarget
       ? 'rgba(164,255,191,.95)'
       : isEmpty
         ? 'rgba(255,255,255,.13)'
         : 'rgba(0,0,0,.2)'
-    ctx.lineWidth = isDropTarget ? 3 : 1.5
+    ctx.lineWidth = isActiveTarget ? 3 : 1.5
+    ctx.setLineDash(isHintTarget ? [4, 4] : [])
     ctx.beginPath()
     ctx.arc(position.x, position.y, radius * 0.78, 0, TAU)
     ctx.stroke()
+    ctx.setLineDash([])
 
     ctx.restore()
   }
