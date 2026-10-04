@@ -28,6 +28,16 @@ function formatTime(seconds) {
   return `${minutes}:${secs}`
 }
 
+function starRow(count, className = 'star-row') {
+  return `<span class="${className}">${Array.from(
+    { length: 3 },
+    (_, index) => uiIcon(
+      'star',
+      `ui-svg star-icon ${index < count ? 'is-earned' : 'is-empty'}`,
+    ),
+  ).join('')}</span>`
+}
+
 function safeHaptic(enabled, style = ImpactStyle.Light) {
   if (!enabled) return
   Haptics.impact({ style }).catch(() => {})
@@ -265,7 +275,7 @@ export class GameApp {
             <i class="preview-dot dot-d"></i>
           </span>
           ${unlocked ? '' : `<span class="level-lock-badge">${uiIcon('lock', 'ui-svg level-lock-svg')}</span>`}
-          <span class="level-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>
+          ${starRow(stars, 'level-stars')}
         </button>
       `
     }).join('')
@@ -607,7 +617,7 @@ export class GameApp {
     overlay.innerHTML = `
       <div class="confetti" aria-hidden="true"></div>
       <section class="complete-card">
-        <div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+        ${starRow(stars, 'stars')}
         <div class="ribbon">Great!</div>
         <h2>Level ${this.levelNumber} Complete!</h2>
         <p>${formatTime(this.elapsed)} · ${this.moves} moves</p>
@@ -695,11 +705,15 @@ export class GameApp {
           </div>
           <div>
             <span class="setting-label"><span class="setting-icon info-setting">${uiIcon('info')}</span><span>About</span></span>
-            <button class="setting-toggle neutral-toggle" data-action="about">Open</button>
+            <button class="setting-toggle neutral-toggle setting-action" data-action="about">
+              <span>Open</span>${uiIcon('back', 'ui-svg setting-chevron')}
+            </button>
           </div>
           <div>
             <span class="setting-label"><span class="setting-icon reset-setting">${uiIcon('reset')}</span><span>Progress</span></span>
-            <button class="setting-toggle danger-toggle" data-action="reset-progress">Reset</button>
+            <button class="setting-toggle danger-toggle setting-action" data-action="reset-progress">
+              ${uiIcon('reset')}<span>Reset</span>
+            </button>
           </div>
         </section>
       </main>
