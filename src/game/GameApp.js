@@ -600,8 +600,11 @@ export class GameApp {
         <div class="ribbon">Great!</div>
         <h2>Level ${this.levelNumber} Complete!</h2>
         <p>${formatTime(this.elapsed)} · ${this.moves} moves</p>
-        <button class="primary-button" data-action="next">${hasNextLevel ? '▶ Next' : '✓ Levels'}</button>
-        <button class="secondary-link" data-action="levels">Levels</button>
+        <button class="primary-button" data-action="next">
+          ${hasNextLevel ? uiIcon('play') : uiIcon('levels')}
+          ${hasNextLevel ? 'Next' : 'Levels'}
+        </button>
+        <button class="secondary-link" data-action="levels">${uiIcon('levels')} Levels</button>
       </section>
     `
     this.root.appendChild(overlay)
@@ -650,7 +653,7 @@ export class GameApp {
     this.shell(`
       <main class="screen settings-screen">
         <header class="page-header">
-          <button class="icon-button" data-action="back" aria-label="Back">‹</button>
+          <button class="icon-button soft-icon" data-action="back" aria-label="Back">${uiIcon('back')}</button>
           <h1>Settings</h1>
           <span></span>
         </header>
