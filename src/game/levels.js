@@ -183,6 +183,7 @@ function shuffleForLevel(
   {
     minInvolvedRopes = Math.max(2, ropeCount - 1),
     requireConnected = false,
+    maxCrossings = minCrossings + 1,
   } = {},
 ) {
   const random = seededRandom(seed)
@@ -198,11 +199,14 @@ function shuffleForLevel(
     }
 
     const stats = getKnotGraphStats(candidate)
+    const crossingDistance = Math.abs(stats.knotCount - minCrossings)
+    const overshoot = Math.max(0, stats.knotCount - maxCrossings)
     const rank = (
-      stats.knotCount * 10
-      + stats.involvedRopes * 3
-      - stats.components * 2
+      stats.involvedRopes * 5
+      - stats.components * 8
       + stats.maxDegree
+      - crossingDistance * 10
+      - overshoot * 24
     )
 
     if (rank > bestRank) {
@@ -212,6 +216,7 @@ function shuffleForLevel(
 
     if (
       stats.knotCount >= minCrossings
+      && stats.knotCount <= maxCrossings
       && stats.involvedRopes >= minInvolvedRopes
       && (!requireConnected || stats.connected)
     ) {
@@ -298,16 +303,16 @@ export function createLevel(levelNumber) {
 
   if (levelNumber <= 24) {
     ropeCount = 6
-    minCrossings = 8 + Math.floor((levelNumber - 9) / 4)
+    minCrossings = 5 + Math.floor((levelNumber - 9) / 6)
   } else if (levelNumber <= 49) {
     ropeCount = 7
-    minCrossings = 10 + Math.floor((levelNumber - 25) / 5)
+    minCrossings = 7 + Math.floor((levelNumber - 25) / 8)
   } else if (levelNumber <= 74) {
     ropeCount = 8
-    minCrossings = 12 + Math.floor((levelNumber - 50) / 5)
+    minCrossings = 9 + Math.floor((levelNumber - 50) / 8)
   } else {
     ropeCount = 9
-    minCrossings = 14 + Math.floor((levelNumber - 75) / 4)
+    minCrossings = 11 + Math.floor((levelNumber - 75) / 9)
   }
 
   const maxCrossings = Math.floor((ropeCount * (ropeCount - 1)) / 2)
@@ -320,6 +325,7 @@ export function createLevel(levelNumber) {
     {
       minInvolvedRopes: levelNumber <= 16 ? ropeCount - 1 : ropeCount,
       requireConnected: levelNumber >= 25,
+      maxCrossings: Math.min(maxCrossings, minCrossings + 1),
     },
   )
   const actualCrossings = countCrossings(order)
