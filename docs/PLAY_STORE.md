@@ -6,27 +6,30 @@
 
 ## Short description
 
-Untangle colorful strings, relax your mind, and master satisfying rope puzzles.
+Untangle colorful ropes by moving pegs through one empty socket.
 
 ## Full description
 
 Untangle, sort and relax.
 
-String Sort is a tactile puzzle game where colorful cords cross around a circular board. Move the pegs, reduce the crossings and finish each level with a clean, satisfying layout.
+String Sort is a tactile rope puzzle built around one simple rule: there is always exactly one empty socket. Move a colored peg into that free spot, shift the empty socket around the board, and gradually release every knot.
+
+The ropes do more than draw straight lines. They bend, pull, slide and react to the tangle, giving each move a soft physical feel while keeping the puzzle readable.
 
 ### Features
 
-- Simple drag-and-drop controls
-- Smooth rope movement and tactile haptic feedback
-- Relaxing bite-sized puzzle levels
-- Helpful hints, undo and restart
+- One-empty-socket puzzle mechanic
+- Smooth rope movement with physical knot interactions
+- 100 deterministic launch levels across five chapters
+- Increasingly dense connected tangles
+- Helpful hints that always move toward a known solution
+- Undo and restart
 - Star ratings based on time and moves
-- Increasing difficulty with deterministic puzzle generation
-- Color plus shape markers for better accessibility
+- Sound and haptic feedback
+- Auto / High / Balanced / Battery graphics profiles
+- Optional peg-shape markers for color accessibility
 - Offline gameplay
-- Adjustable sound, haptics and graphics quality
-
-There is no account required in the current version.
+- No account required
 
 ## Suggested tags
 
@@ -46,13 +49,11 @@ Before Play Console submission, verify the final binary. For the current reposit
 - no location permission;
 - no contacts permission;
 - no camera/gallery permission;
-- progress is stored locally on-device.
+- progress and preferences are stored locally on-device.
 
 If ads, analytics, crash reporting or cloud saving are added later, reassess the Data safety form and privacy policy against the exact production build.
 
 ## Store graphics
-
-Vector sources are committed for the launcher identity and feature graphic.
 
 Run:
 
@@ -64,18 +65,26 @@ This generates:
 - `store/generated/app-icon-512.png`
 - `store/generated/feature-graphic-1024x500.png`
 
-CI also publishes these two files as the `string-sort-store-static-assets` artifact.
+CI publishes these as the `string-sort-store-static-assets` artifact.
 
-A manual GitHub Actions workflow named **Play Store Screenshots** can also build the real app UI and capture a 1080 × 1920 phone set automatically. It currently captures:
+The **Play Store Screenshots** workflow captures the real application UI at 1080 × 1920 and packages:
 - main menu;
 - level selection;
 - live gameplay;
-- real level-complete state after solving onboarding level 1 through pointer drags.
+- solved/completion state;
+- a dense late-game tangle;
+- the generated app icon;
+- the generated feature graphic.
 
-The workflow packages those screenshots together with the generated 512 × 512 icon and 1024 × 500 feature graphic as `string-sort-play-store-package`.
+All screenshots are captured from the actual app UI, not concept art.
 
-Still optional depending on the final Play Console device support:
-- 7-inch tablet screenshots;
-- 10-inch tablet screenshots.
+Tablet screenshots remain optional until final Play Console device support is decided.
 
-All phone screenshots are taken from the actual app UI rather than concept art.
+## Manual Play Console values still required
+
+Before publishing, provide:
+- the final public support email;
+- optional public website/support URL;
+- final app category and tags;
+- final content-rating questionnaire answers;
+- final Data safety answers after confirming the exact production binary.

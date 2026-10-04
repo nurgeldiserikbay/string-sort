@@ -24,11 +24,11 @@ npm run build
 - Peg collision and circular board constraints
 - Layered cord rendering with highlights, shadows and moving fiber detail
 - Draggable rope endpoints with tactile follow-through
-- 8 handcrafted onboarding levels followed by 100 deterministic launch levels with solvability checks
-- Crossing-based win condition
+- 100 deterministic launch levels, including 8 handcrafted onboarding levels, with automated solvability checks
+- Persistent knot-graph win condition with physical double/triple-wrap presentation
 - Hint, Undo and Restart
 - Timer, move counter and 1–3 star result
-- Saved progression and saved sound/haptics settings
+- Saved progression plus sound, haptics, graphics and accessibility settings
 - Offline synthesized sound effects
 - Capacitor haptic feedback
 - Main menu, 100-level select, pause, result, settings and About/privacy screens
@@ -45,4 +45,4 @@ See [docs/ANDROID.md](docs/ANDROID.md) for local Android builds and [docs/RELEAS
 
 ## Roadmap
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the remaining manual/external validation. The exact owner-only steps are collected in [docs/FINAL_RELEASE_HANDOFF.md](docs/FINAL_RELEASE_HANDOFF.md).
+See [docs/ROADMAP.md](docs/ROADMAP.md) for remaining manual/external validation. Use [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) for the final pre-publish pass and [docs/FINAL_RELEASE_HANDOFF.md](docs/FINAL_RELEASE_HANDOFF.md) for owner-only steps.

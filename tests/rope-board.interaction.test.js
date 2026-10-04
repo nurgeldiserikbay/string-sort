@@ -96,6 +96,22 @@ describe('RopeBoard pointer interaction', () => {
     expect(canvas.releasePointerCapture).toHaveBeenCalledWith(7)
   })
 
+  it('releases pointer capture when the board is destroyed mid-drag', () => {
+    board = new RopeBoard(canvas, {
+      onSwap: vi.fn(),
+      onSolved: vi.fn(),
+      graphics: 'battery',
+    })
+    board.setOrder([0, 1, 0, 1, null])
+
+    const from = board.socketPosition(0)
+    board.onPointerDown({ clientX: from.x, clientY: from.y, pointerId: 31 })
+    board.destroy()
+
+    expect(canvas.releasePointerCapture).toHaveBeenCalledWith(31)
+    expect(board.activePointerId).toBeNull()
+  })
+
   it('ignores a second pointer while one peg is already being dragged', () => {
     board = new RopeBoard(canvas, {
       onSwap: vi.fn(),
@@ -154,6 +170,27 @@ describe('RopeBoard pointer interaction', () => {
     const distance = Math.hypot(point.x - g.cx, point.y - g.cy)
 
     expect(distance).toBeLessThanOrEqual(g.boardRadius * 0.985 + 0.001)
+  })
+
+  it('keeps a simple peg tap neutral', () => {
+    const onSwap = vi.fn()
+    const onInvalidDrop = vi.fn()
+    board = new RopeBoard(canvas, {
+      onSwap,
+      onSolved: vi.fn(),
+      onInvalidDrop,
+      graphics: 'battery',
+    })
+    board.setOrder([0, 1, 0, 1, null])
+
+    const from = board.socketPosition(0)
+
+    board.onPointerDown({ clientX: from.x, clientY: from.y, pointerId: 21 })
+    board.onPointerUp({ clientX: from.x + 1, clientY: from.y + 1, pointerId: 21 })
+
+    expect(onSwap).not.toHaveBeenCalled()
+    expect(onInvalidDrop).not.toHaveBeenCalled()
+    expect(board.invalidDropIndex).toBe(-1)
   })
 
   it('does not swap when a peg is released away from every socket', () => {

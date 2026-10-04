@@ -1,6 +1,6 @@
 # Privacy policy draft — String Sort
 
-_Last updated: 2026-09-18_
+_Last updated: 2026-10-04_
 
 String Sort is designed to work offline.
 
@@ -14,7 +14,7 @@ The current build:
 - stores level progress, stars, best times and local settings on the device using local application storage;
 - may use device haptic feedback for gameplay interactions.
 
-Because the current build has no backend, analytics or advertising SDK, gameplay information stays on the device unless the user separately shares device/application data through operating-system features.
+Because the current build has no backend, analytics or advertising SDK, gameplay information stays on the device unless the user separately shares device/application data through operating-system features. The game does not upload level progress, timing, hint usage, rope physics data or diagnostics.
 
 ## Local data
 
@@ -24,7 +24,8 @@ String Sort stores:
 - best completion times;
 - sound preference;
 - haptic preference;
-- graphics-quality preference.
+- graphics-quality preference;
+- optional peg-marker accessibility preference.
 
 This information is used only to restore the player's progress and preferences.
 

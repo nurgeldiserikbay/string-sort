@@ -46,6 +46,8 @@
 - Privacy, Play Store, release and physical-device QA documentation
 
 ## Remaining work that requires external/manual validation
+
+Use [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for the final pre-publish pass.
 1. Install the latest CI debug APK on representative low/mid/high Android phones.
 2. Run the physical interaction checks in [DEVICE_QA.md](DEVICE_QA.md), especially rapid dragging through dense levels.
 3. Use the diagnostics overlay only if a real device shows sustained frame-rate/input issues, then tune thresholds from those measurements.

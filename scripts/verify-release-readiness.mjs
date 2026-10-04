@@ -2,6 +2,7 @@ import { access, readFile } from 'node:fs/promises'
 
 const REQUIRED_FILES = [
   'capacitor.config.json',
+  'CHANGELOG.md',
   'resources/icon-only.svg',
   'resources/icon-foreground.svg',
   'resources/icon-background.svg',
@@ -11,6 +12,7 @@ const REQUIRED_FILES = [
   'docs/PLAY_STORE.md',
   'docs/PRIVACY.md',
   'docs/RELEASE.md',
+  'docs/RELEASE_CHECKLIST.md',
   '.github/workflows/android-release.yml',
 ]
 
@@ -30,6 +32,18 @@ const packageJson = JSON.parse(await readFile('package.json', 'utf8'))
 const capacitorMajor = Number(String(packageJson.dependencies?.['@capacitor/core'] || '').match(/\d+/)?.[0])
 if (!Number.isFinite(capacitorMajor) || capacitorMajor < 8) {
   throw new Error('Capacitor 8+ is required for the Android API 36 release setup')
+}
+
+const gitignore = await readFile('.gitignore', 'utf8')
+for (const requiredIgnore of [
+  '*.jks',
+  '*.keystore',
+  'keystore.properties',
+  'android/key.properties',
+]) {
+  if (!gitignore.includes(requiredIgnore)) {
+    throw new Error(`Signing secret is not protected by .gitignore: ${requiredIgnore}`)
+  }
 }
 
 const privacy = await readFile('public/privacy.html', 'utf8')

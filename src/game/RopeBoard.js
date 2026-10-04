@@ -31,6 +31,7 @@ export class RopeBoard {
     this.dragIndex = -1
     this.dragPoint = null
     this.dragVisualPoint = null
+    this.dragStartPoint = null
     this.hoverIndex = -1
     this.activePointerId = null
     this.invalidDropIndex = -1
@@ -135,6 +136,7 @@ export class RopeBoard {
 
   destroy() {
     this.stop()
+    this.cancelDrag()
     this.canvas.removeEventListener('pointerdown', this.onPointerDown)
     this.canvas.removeEventListener('pointermove', this.onPointerMove)
     this.canvas.removeEventListener('pointerup', this.onPointerUp)
@@ -239,6 +241,7 @@ export class RopeBoard {
     this.activePointerId = event.pointerId
     this.dragPoint = this.constrainDragPoint(point)
     this.dragVisualPoint = { ...this.dragPoint }
+    this.dragStartPoint = { ...this.dragPoint }
     this.hoverIndex = index
     this.canvas.setPointerCapture?.(event.pointerId)
   }
@@ -264,6 +267,11 @@ export class RopeBoard {
     const from = this.dragIndex
     const point = this.constrainDragPoint(this.eventPoint(event))
     const to = this.findSocket(point.x, point.y, 2.65)
+    const start = this.dragStartPoint
+    const dragDistance = start
+      ? Math.hypot(point.x - start.x, point.y - start.y)
+      : Infinity
+    const tapThreshold = Math.max(5, this.geometry().socketRadius * 0.45)
 
     this.cancelDrag()
 
@@ -274,6 +282,10 @@ export class RopeBoard {
       if (getCrossingCount(this.order) === 0) this.onSolved?.()
       return
     }
+
+    // A simple tap should remain neutral. Invalid feedback is reserved for
+    // an actual drag that fails to reach the empty socket.
+    if (dragDistance <= tapThreshold) return
 
     this.invalidDropIndex = from
     this.invalidDropUntil = performance.now() + 280
@@ -301,6 +313,7 @@ export class RopeBoard {
     this.dragIndex = -1
     this.dragPoint = null
     this.dragVisualPoint = null
+    this.dragStartPoint = null
     this.hoverIndex = -1
     this.activePointerId = null
   }

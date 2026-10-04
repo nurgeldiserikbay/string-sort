@@ -7,3 +7,11 @@ android/app/build/
 .DS_Store
 *.log
 store/generated/
+
+# Android signing / local secrets
+*.jks
+*.keystore
+keystore.properties
+android/key.properties
+.env
+.env.local

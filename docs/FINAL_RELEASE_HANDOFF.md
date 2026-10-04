@@ -1,35 +1,38 @@
 # Final release handoff
 
-String Sort is now at the point where the remaining blockers are account- or physical-device-dependent rather than ordinary repository implementation work.
+String Sort is at the point where the remaining production blockers are account-, signing-, or physical-device-dependent rather than ordinary repository implementation work.
 
 ## Repository state
 
-The `gpt/initial-game` branch contains:
+The current `main` branch contains:
 
-- playable 100-level game;
-- rope physics and crossing logic;
+- a playable 100-level game;
+- exactly one empty socket on every level;
+- persistent logical knot graphs and physical rope constraints;
+- distributed/sliding knot centers with double/triple wraps on dense levels;
+- spring-follow rope dragging and invalid-drop feedback;
+- deterministic per-level visual variation;
 - save/progression systems;
-- onboarding, hints, undo and restart;
+- onboarding, convergence-safe hints, undo and restart;
 - Android lifecycle/back-button handling;
 - responsive UI, sound and haptics;
+- optional accessibility peg markers;
 - adaptive graphics/performance profiles;
-- automated tests and Android lint/build checks;
-- Play Store icon/feature-graphic/screenshot generation;
-- API 36 verification;
-- signed AAB workflow;
-- privacy/store/release documentation.
+- automated 100-level quality and dense-physics stress tests;
+- Android API 36 lint/build verification;
+- Play Store icon/feature-graphic/real-UI screenshot generation;
+- manual signed AAB workflow;
+- privacy, Play Store, release and physical-device QA documentation.
 
-Use PR #1 to review/merge the branch into `main`.
+Normal repository implementation work should continue through reviewed PRs, but no old feature branch is required for release.
 
 ## What the owner still needs to provide or verify
 
 ### 1. Physical Android device check
 
-Download the latest `string-sort-debug-apk` artifact from GitHub Actions and install it on at least one representative Android phone.
+Download the latest `string-sort-debug-apk` artifact from a successful **CI** run on `main` and install it on representative Android hardware.
 
-Follow [DEVICE_QA.md](DEVICE_QA.md).
-
-For performance diagnostics, use a debug URL/query context with `?debug=1` when testing the web build. Auto graphics mode already falls back if sustained FPS is low.
+Follow [DEVICE_QA.md](DEVICE_QA.md) and [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
 
 ### 2. Release/upload key
 
@@ -44,13 +47,13 @@ Add these GitHub Actions secrets:
 
 See [RELEASE.md](RELEASE.md).
 
-Never send the keystore or passwords in chat and never commit them to git.
+Never commit the keystore or passwords to git.
 
 ### 3. Public Play Store support contact
 
-Provide the final support email and/or public website used in the Play Console listing.
+Provide the final support email required by Play Console and, if desired, a public website/support URL.
 
-The in-app privacy page currently points to the public GitHub repository for project support. Replace or supplement that with the final support contact if desired.
+The bundled privacy page currently links to the public GitHub repository. Replace or supplement that link later if a dedicated support site is created.
 
 ### 4. Monetization decision
 
@@ -62,27 +65,28 @@ A provider-neutral banner-safe area can be previewed with:
 ?adPreview=1
 ```
 
-If ads are added, choose the provider and create the real app/ad-unit IDs first. After that:
+If ads are added later:
 
-- integrate the SDK;
+- choose the provider and real app/ad-unit IDs;
 - use test ads during development;
-- update privacy/Data safety declarations;
+- update privacy and Play Data safety declarations;
+- review child-directed/Families implications if applicable;
 - rerun Android/device QA.
-
-Do not put production ad IDs directly into source code if the provider recommends environment/config separation.
 
 ### 5. Google Play submission
 
-Before uploading:
+Before production:
 
-- merge the release branch;
-- ensure CI is green;
-- create the release AAB through **Android Release AAB**;
+- ensure the intended release commit is on `main`;
+- ensure CI and screenshot workflows are green;
+- run the manual **Android Release AAB** workflow;
 - increment `version_code`;
-- set the desired `version_name`;
+- choose the final `version_name`;
+- download and inspect the signed AAB;
 - download the generated Play Store graphics/screenshot package;
-- verify the exact production SDK/data-safety declarations;
-- upload the signed AAB to an internal/closed test track first.
+- verify privacy/Data safety against that exact binary;
+- upload to an internal testing track first;
+- test installation, upgrade behavior and saved progress before promoting further.
 
 ## Useful commands
 
@@ -105,4 +109,4 @@ npx cap open android
 
 ## Release recommendation
 
-Use Google Play internal testing first. Verify installation, startup, saved progress, sound/haptics, pause/resume, Android Back behavior, several easy and hard levels, and a full app restart before promoting the same build to a wider track.
+Use Google Play internal testing first. Verify startup, saved progress, sound/haptics, pause/resume, Android Back behavior, several easy and hard levels, dense rope dragging, and a full app restart before promoting the same build to a wider track.
