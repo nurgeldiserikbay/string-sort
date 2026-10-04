@@ -131,7 +131,13 @@ describe('RopeBoard pointer interaction', () => {
 
   it('does not swap when a peg is released away from every socket', () => {
     const onSwap = vi.fn()
-    board = new RopeBoard(canvas, { onSwap, onSolved: vi.fn(), graphics: 'battery' })
+    const onInvalidDrop = vi.fn()
+    board = new RopeBoard(canvas, {
+      onSwap,
+      onSolved: vi.fn(),
+      onInvalidDrop,
+      graphics: 'battery',
+    })
     board.setOrder([0, 1, 0, 1, null])
 
     const from = board.socketPosition(0)
@@ -141,6 +147,8 @@ describe('RopeBoard pointer interaction', () => {
     board.onPointerUp({ clientX: 8, clientY: 510, pointerId: 2 })
 
     expect(onSwap).not.toHaveBeenCalled()
+    expect(onInvalidDrop).toHaveBeenCalledWith(0)
+    expect(board.invalidDropIndex).toBe(0)
   })
 
   it('renders each rope only once even when ropes cross', () => {
