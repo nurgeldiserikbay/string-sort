@@ -7,6 +7,7 @@ describe('uiIcon', () => {
       'play',
       'levels',
       'star',
+      'starOutline',
       'settings',
       'hint',
       'undo',
@@ -22,6 +23,7 @@ describe('uiIcon', () => {
       'graphics',
       'markers',
       'info',
+      'shield',
       'reset',
       'close',
     ]) {
