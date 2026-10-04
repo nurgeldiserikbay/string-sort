@@ -112,12 +112,9 @@ export class RopeTangle {
         topId: prior?.topId ?? ((hash & 1) ? pair.aId : pair.bId),
         twistAngle: prior?.twistAngle
           ?? (((hash >>> 18) & 1023) / 1023) * Math.PI,
-        wraps: prior?.wraps
-          ?? (
-            sortedPairs.length >= 10 && index % 5 === 0
-              ? 2
-              : 1
-          ),
+        // One stable physical contact per logical knot. Multiple artificial
+        // wraps made dense boards collapse into unreadable mini-loops.
+        wraps: 1,
         x: prior?.x
           ?? geometric?.x
           ?? geometry.cx + Math.cos(angle) * radius,
@@ -349,44 +346,24 @@ export class RopeTangle {
     for (const knot of this.knots) {
       const aCount = segmentCounts.get(knot.aId) ?? 1
       const bCount = segmentCounts.get(knot.bId) ?? 1
-      const wraps = Math.max(1, knot.wraps ?? 1)
-      const spacing = 9
-      const nx = -Math.sin(knot.twistAngle ?? 0)
-      const ny = Math.cos(knot.twistAngle ?? 0)
 
-      for (let wrapIndex = 0; wrapIndex < wraps; wrapIndex++) {
-        const centered = wrapIndex - (wraps - 1) / 2
-        const offset = centered * spacing
-        const tOffset = centered * 0.055
-        const alternate = wrapIndex % 2 === 0
-
-        constraints.push({
-          ...knot,
-          key: `${knot.key}#${wrapIndex}`,
-          parentKey: knot.key,
-          wrapIndex,
-          wraps,
-          topId: alternate
-            ? knot.topId
-            : knot.topId === knot.aId
-              ? knot.bId
-              : knot.aId,
-          x: knot.x + nx * offset,
-          y: knot.y + ny * offset,
-          aIndex: clamp(
-            Math.round(aCount * clamp(knot.aT + tOffset, 0.12, 0.88)),
-            2,
-            Math.max(2, aCount - 2),
-          ),
-          bIndex: clamp(
-            Math.round(bCount * clamp(knot.bT - tOffset, 0.12, 0.88)),
-            2,
-            Math.max(2, bCount - 2),
-          ),
-          stiffness: wraps > 1 ? 0.14 : knot.stiffness,
-          drag: wraps > 1 ? 0.72 : knot.drag,
-        })
-      }
+      constraints.push({
+        ...knot,
+        key: `${knot.key}#0`,
+        parentKey: knot.key,
+        wrapIndex: 0,
+        wraps: 1,
+        aIndex: clamp(
+          Math.round(aCount * clamp(knot.aT, 0.12, 0.88)),
+          2,
+          Math.max(2, aCount - 2),
+        ),
+        bIndex: clamp(
+          Math.round(bCount * clamp(knot.bT, 0.12, 0.88)),
+          2,
+          Math.max(2, bCount - 2),
+        ),
+      })
     }
 
     return constraints
