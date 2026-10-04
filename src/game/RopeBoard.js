@@ -250,6 +250,8 @@ export class RopeBoard {
 
     const ropeIds = [...new Set(this.order.filter((ropeId) => ropeId != null))]
     const draggedRopeId = this.dragIndex >= 0 ? this.order[this.dragIndex] : null
+    const logicalKnotCount = getCrossingCount(this.order)
+    const ropeSlack = clamp(1.072 + logicalKnotCount * 0.0025, 1.075, 1.14)
     const segmentCounts = new Map()
 
     this.physics.removeMissing(ropeIds)
@@ -270,7 +272,7 @@ export class RopeBoard {
         endpoints[1].position,
         {
           segmentCount,
-          slack: 1.085,
+          slack: ropeSlack,
           retargetLength: draggedRopeId !== ropeId,
         },
       )
