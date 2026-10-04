@@ -294,7 +294,7 @@ export class GameApp {
           </div>
           <div data-crossing-card>
             <span class="status-icon">${uiIcon('crossings')}</span>
-            <span>Crossings</span>
+            <span>Knots</span>
             <strong data-crossings>${getCrossingCount(this.order)}</strong>
           </div>
         </div>
@@ -553,7 +553,7 @@ export class GameApp {
           <div>
             <span class="how-step-icon">${uiIcon('levels')}</span>
             <b>Clear every crossing</b>
-            <p>Reach zero crossings to finish the level.</p>
+            <p>Move the free peg until every physical knot releases.</p>
           </div>
         </div>
         <button class="primary-button" data-action="close">${uiIcon('play')} Got it</button>
