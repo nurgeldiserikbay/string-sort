@@ -425,6 +425,18 @@ export class RopeBoard {
     boardPath(0.9)
     ctx.fill()
     ctx.restore()
+
+    if (getCrossingCount(this.order) === 0) {
+      const pulse = 0.58 + Math.sin(performance.now() * 0.012) * 0.18
+      ctx.save()
+      boardPath(0.965)
+      ctx.strokeStyle = `rgba(113, 241, 132, ${pulse})`
+      ctx.lineWidth = 3.5
+      ctx.shadowColor = 'rgba(94, 235, 117, .5)'
+      ctx.shadowBlur = 18
+      ctx.stroke()
+      ctx.restore()
+    }
   }
 
   drawRope(ropeId, time) {
