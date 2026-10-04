@@ -29,6 +29,7 @@ export class RopeBoard {
     this.depthSeed = 0x51f15e
     this.tangle = new RopeTangle(this.depthSeed)
     this.knotConstraints = []
+    this.releaseBursts = []
     this.needsKnotPrime = true
     this.debugEnabled = (() => {
       try {
@@ -71,6 +72,7 @@ export class RopeBoard {
       this.depthSeed = (0x51f15e ^ Math.imul(order.length + 1, 0x9e3779b1)) >>> 0
       this.tangle = new RopeTangle(this.depthSeed)
       this.knotConstraints = []
+      this.releaseBursts = []
       this.needsKnotPrime = true
       this.physics.clear()
     }
@@ -275,6 +277,15 @@ export class RopeBoard {
     }
 
     this.tangle.update(this.order, g)
+
+    for (const released of this.tangle.consumeReleased()) {
+      this.releaseBursts.push({
+        x: released.x,
+        y: released.y,
+        startedAt: time,
+      })
+    }
+
     const knots = this.tangle.buildConstraints(segmentCounts)
     this.knotConstraints = knots
 
@@ -433,6 +444,55 @@ export class RopeBoard {
     ctx.stroke()
 
     ctx.restore()
+  }
+
+  drawReleaseBursts(time) {
+    const ctx = this.ctx
+    const duration = 460
+
+    this.releaseBursts = this.releaseBursts.filter((burst) => {
+      const age = time - burst.startedAt
+      if (age < 0 || age > duration) return false
+
+      const progress = age / duration
+      const ease = 1 - (1 - progress) * (1 - progress)
+      const alpha = 1 - progress
+      const radius = 8 + ease * 28
+
+      ctx.save()
+      ctx.globalAlpha = alpha
+      ctx.strokeStyle = 'rgba(255, 226, 107, .95)'
+      ctx.fillStyle = 'rgba(255, 247, 198, .9)'
+      ctx.lineCap = 'round'
+      ctx.lineWidth = 2.2
+
+      ctx.beginPath()
+      ctx.arc(burst.x, burst.y, radius * 0.42, 0, TAU)
+      ctx.stroke()
+
+      for (let index = 0; index < 6; index++) {
+        const angle = (index / 6) * TAU
+        const inner = radius * 0.55
+        const outer = radius
+        ctx.beginPath()
+        ctx.moveTo(
+          burst.x + Math.cos(angle) * inner,
+          burst.y + Math.sin(angle) * inner,
+        )
+        ctx.lineTo(
+          burst.x + Math.cos(angle) * outer,
+          burst.y + Math.sin(angle) * outer,
+        )
+        ctx.stroke()
+      }
+
+      ctx.beginPath()
+      ctx.arc(burst.x, burst.y, Math.max(2, 4 * alpha), 0, TAU)
+      ctx.fill()
+      ctx.restore()
+
+      return true
+    })
   }
 
   drawKnotOverpasses() {
@@ -809,6 +869,7 @@ export class RopeBoard {
     // visible capsule/bulge and a discontinuous moving highlight.
     depthOrder.forEach((ropeId) => this.drawRope(ropeId, time))
     this.drawKnotOverpasses()
+    this.drawReleaseBursts(time)
 
     this.order.forEach((ropeId, index) => {
       if (ropeId != null) this.drawPeg(index, time)
