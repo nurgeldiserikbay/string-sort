@@ -63,7 +63,7 @@ export class RopeTangle {
         index * goldenAngle
         + ((hash & 1023) / 1023) * 0.62
       ) % TAU
-      const radialBand = 0.32 + (((hash >>> 10) & 255) / 255) * 0.26
+      const radialBand = 0.38 + (((hash >>> 10) & 255) / 255) * 0.22
       const radius = geometry.boardRadius * radialBand
 
       const knot = {
@@ -73,12 +73,7 @@ export class RopeTangle {
         topId: prior?.topId ?? ((hash & 1) ? pair.aId : pair.bId),
         twistAngle: prior?.twistAngle
           ?? (((hash >>> 18) & 1023) / 1023) * Math.PI,
-        wraps: prior?.wraps
-          ?? (
-            sortedPairs.length >= 10 && index % 5 === 0
-              ? 2
-              : 1
-          ),
+        wraps: 1,
         x: prior?.x ?? geometry.cx + Math.cos(angle) * radius,
         y: prior?.y ?? geometry.cy + Math.sin(angle) * radius,
         aT: prior?.aT ?? 0.5,
@@ -138,14 +133,14 @@ export class RopeTangle {
     // Center spreading is layout initialization, not an animation force.
     // Re-running it every frame caused knots to repel one another while
     // physics simultaneously pulled them back, producing visible jitter.
-    if (hasNewKnots) this.relaxCenters(geometry)
+    if (hasNewKnots && previous.size === 0) this.relaxCenters(geometry)
 
     return this.knots
   }
 
   relaxCenters(geometry) {
-    const maxRadius = geometry.boardRadius * 0.64
-    const minDistance = Math.max(28, geometry.boardRadius * 0.16)
+    const maxRadius = geometry.boardRadius * 0.66
+    const minDistance = Math.max(30, geometry.boardRadius * 0.17)
 
     for (let iteration = 0; iteration < 7; iteration++) {
       for (let i = 0; i < this.knots.length; i++) {
@@ -192,7 +187,7 @@ export class RopeTangle {
   }
 
   followPhysics(physics, geometry, { activeRopeId = null } = {}) {
-    const maxRadius = geometry.boardRadius * 0.64
+    const maxRadius = geometry.boardRadius * 0.66
     const centerDeadZone = Math.max(1.8, geometry.boardRadius * 0.009)
 
     const nearestT = (points, x, y, currentT) => {
