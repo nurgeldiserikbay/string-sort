@@ -251,19 +251,20 @@ export class GameApp {
           ${unlocked ? '' : 'disabled'}
         >
           <div class="level-card-top">
-            <b>${unlocked ? n : uiIcon('lock', 'ui-svg level-lock-svg')}</b>
-            ${unlocked ? `<small>${knots} knot${knots === 1 ? '' : 's'}</small>` : ''}
+            <b>${n}</b>
+            ${unlocked
+              ? `<small>${knots} knot${knots === 1 ? '' : 's'}</small>`
+              : '<small>Locked</small>'}
           </div>
-          ${unlocked ? `
-            <span class="level-mini-preview tone-${n % 6}" aria-hidden="true">
-              <i class="preview-thread thread-a"></i>
-              <i class="preview-thread thread-b"></i>
-              <i class="preview-dot dot-a"></i>
-              <i class="preview-dot dot-b"></i>
-              <i class="preview-dot dot-c"></i>
-              <i class="preview-dot dot-d"></i>
-            </span>
-          ` : ''}
+          <span class="level-mini-preview tone-${n % 6} ${unlocked ? '' : 'locked-preview'}" aria-hidden="true">
+            <i class="preview-thread thread-a"></i>
+            <i class="preview-thread thread-b"></i>
+            <i class="preview-dot dot-a"></i>
+            <i class="preview-dot dot-b"></i>
+            <i class="preview-dot dot-c"></i>
+            <i class="preview-dot dot-d"></i>
+          </span>
+          ${unlocked ? '' : `<span class="level-lock-badge">${uiIcon('lock', 'ui-svg level-lock-svg')}</span>`}
           <span class="level-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>
         </button>
       `
