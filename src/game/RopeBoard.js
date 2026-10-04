@@ -65,7 +65,7 @@ export class RopeBoard {
     this.physics = new RopePhysics({
       damping: 0.982,
       gravity: 0,
-      ambientMotion: 0.8,
+      ambientMotion: 0.15,
       constraintIterations: this.performanceProfile.constraintIterations,
     })
 
@@ -420,7 +420,9 @@ export class RopeBoard {
       },
     })
 
-    this.tangle.followPhysics(this.physics, g)
+    this.tangle.followPhysics(this.physics, g, {
+      activeRopeId: draggedRopeId,
+    })
   }
 
   smoothPath(points) {
@@ -622,9 +624,9 @@ export class RopeBoard {
       const index = ropeId === knot.aId ? knot.aIndex : knot.bIndex
       if (!points.length || index < 2 || index > points.length - 3) continue
 
-      const p0 = points[index - 2]
+      const p0 = points[index - 1]
       const p1 = points[index]
-      const p2 = points[index + 2]
+      const p2 = points[index + 1]
       const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
       const tension = clamp(this.physics.getTension(ropeId), 0, 0.32)
       const width = clamp(g.size * 0.0148, 5.2, 9.4) * (1 - tension * 0.12)
@@ -636,11 +638,11 @@ export class RopeBoard {
       ctx.beginPath()
       ctx.moveTo(p0.x, p0.y)
       ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
-      ctx.strokeStyle = 'rgba(18,20,24,.42)'
-      ctx.lineWidth = width + 2.2
-      ctx.shadowColor = 'rgba(0,0,0,.34)'
-      ctx.shadowBlur = 4
-      ctx.shadowOffsetY = 2
+      ctx.strokeStyle = 'rgba(20,22,27,.56)'
+      ctx.lineWidth = width + 3.2
+      ctx.shadowColor = 'rgba(0,0,0,.28)'
+      ctx.shadowBlur = 2.5
+      ctx.shadowOffsetY = 1.5
       ctx.stroke()
 
       ctx.shadowColor = 'transparent'
