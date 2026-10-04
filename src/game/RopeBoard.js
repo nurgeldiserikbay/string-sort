@@ -305,6 +305,8 @@ export class RopeBoard {
         radius: g.boardRadius * 0.91,
       },
     })
+
+    this.tangle.followPhysics(this.physics, g)
   }
 
   smoothPath(points) {
