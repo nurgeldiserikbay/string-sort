@@ -1,14 +1,18 @@
 export const TOTAL_LEVELS = 100
 
 export const ROPE_COLORS = [
-  '#ff4b4b',
-  '#2f9bff',
-  '#36c76b',
-  '#ffc62e',
-  '#b85cff',
-  '#ff7a22',
+  '#ff4757',
+  '#2d8cff',
+  '#34c96b',
+  '#ffd23f',
+  '#9b5de5',
+  '#ff8c32',
   '#24c7d9',
-  '#ff5eaa',
+  '#ff67ae',
+  '#8bd450',
+  '#9b6b43',
+  '#536dfe',
+  '#ff6b6b',
 ]
 
 const INTRO_LEVELS = {
@@ -177,7 +181,9 @@ export function getGuaranteedSolveMoves(order) {
 export function createLevel(levelNumber) {
   const intro = INTRO_LEVELS[levelNumber]
   if (intro) {
-    const ropeCount = new Set(intro.order).size
+    const ropeCount = new Set(
+      intro.order.filter((ropeId) => ropeId != null),
+    ).size
     return {
       id: levelNumber,
       ropeCount,
@@ -193,15 +199,21 @@ export function createLevel(levelNumber) {
   let ropeCount
   let minCrossings
 
-  if (levelNumber <= 24) {
-    ropeCount = 6
-    minCrossings = 8 + Math.floor((levelNumber - 9) / 3)
-  } else if (levelNumber <= 49) {
+  if (levelNumber <= 16) {
     ropeCount = 7
-    minCrossings = 10 + Math.floor((levelNumber - 25) / 4)
-  } else {
+    minCrossings = 9 + Math.floor((levelNumber - 9) / 2)
+  } else if (levelNumber <= 32) {
     ropeCount = 8
-    minCrossings = 12 + Math.floor((levelNumber - 50) / 5)
+    minCrossings = 12 + Math.floor((levelNumber - 17) / 3)
+  } else if (levelNumber <= 52) {
+    ropeCount = 9
+    minCrossings = 15 + Math.floor((levelNumber - 33) / 4)
+  } else if (levelNumber <= 76) {
+    ropeCount = 10
+    minCrossings = 18 + Math.floor((levelNumber - 53) / 4)
+  } else {
+    ropeCount = 12
+    minCrossings = 22 + Math.floor((levelNumber - 77) / 4)
   }
 
   const maxCrossings = Math.floor((ropeCount * (ropeCount - 1)) / 2)
