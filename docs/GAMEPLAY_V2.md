@@ -27,7 +27,7 @@ The paired particles:
 - have additional local drag/friction;
 - keep a stable crossing angle;
 - pull nearby rope particles into a small crossed shape instead of collapsing into one point;
-- can form two- or three-point alternating wraps in dense levels, so selected rope pairs visibly wind around each other instead of looking like flat line intersections.
+- uses one stable contact per logical knot, seeded from the real geometric chord intersection so dense boards stay readable instead of collapsing into synthetic loops.
 
 This means dragging one peg visibly pulls the other rope(s) that are bound into the same tangle. When a logical knot is removed, its physical constraint disappears and the involved ropes relax naturally.
 
@@ -46,7 +46,7 @@ The center of the board should look like a compact physical bundle:
 - soft cast shadows;
 - no artificial "capsule" redraw at crossings;
 - seamless local over/under passes drawn from the rope's actual particle curve;
-- local crossed, double-wrap and occasional triple-wrap shapes around real knot constraints;
+- short, stable over/under crossings around real knot contacts;
 - no animated dashed seam;
 - ropes already appear tangled when the level opens.
 
