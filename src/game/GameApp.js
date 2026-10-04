@@ -388,6 +388,10 @@ export class GameApp {
     this.board = new RopeBoard(canvas, {
       onSwap: (from, to) => this.handleSwap(from, to),
       onSolved: () => {},
+      onInvalidDrop: () => {
+        this.haptic()
+        this.audio.tap()
+      },
       graphics: this.settings.graphics,
       pegMarkers: this.settings.pegMarkers,
     })
