@@ -3,6 +3,7 @@ import { RopePhysics } from './RopePhysics.js'
 import { stableDepthOrder } from './RopeTopology.js'
 import { resolvePerformanceProfile } from './PerformanceProfile.js'
 import { FrameGovernor } from './FrameGovernor.js'
+import { RopeTangle } from './RopeTangle.js'
 
 const TAU = Math.PI * 2
 
@@ -25,6 +26,7 @@ export class RopeBoard {
     this.running = false
     this.raf = 0
     this.depthSeed = 0x51f15e
+    this.tangle = new RopeTangle(this.depthSeed)
     this.debugEnabled = (() => {
       try {
         return new URLSearchParams(globalThis.location?.search || '').get('debug') === '1'
@@ -64,6 +66,7 @@ export class RopeBoard {
 
     if (topologyChanged) {
       this.depthSeed = (0x51f15e ^ Math.imul(order.length + 1, 0x9e3779b1)) >>> 0
+      this.tangle = new RopeTangle(this.depthSeed)
       this.physics.clear()
     }
   }
@@ -229,6 +232,7 @@ export class RopeBoard {
   syncPhysics(time, g) {
     const ropeIds = [...new Set(this.order.filter((ropeId) => ropeId != null))]
     const draggedRopeId = this.dragIndex >= 0 ? this.order[this.dragIndex] : null
+    const segmentCounts = new Map()
 
     this.physics.removeMissing(ropeIds)
 
@@ -236,19 +240,26 @@ export class RopeBoard {
       const endpoints = this.endpointEntries(ropeId)
       if (!endpoints) continue
 
+      const segmentCount = g.size < 360
+        ? this.performanceProfile.smallSegments
+        : this.performanceProfile.largeSegments
+
+      segmentCounts.set(ropeId, segmentCount)
+
       this.physics.syncRope(
         ropeId,
         endpoints[0].position,
         endpoints[1].position,
         {
-          segmentCount: g.size < 360
-            ? this.performanceProfile.smallSegments
-            : this.performanceProfile.largeSegments,
-          slack: 1.065,
+          segmentCount,
+          slack: 1.085,
           retargetLength: draggedRopeId !== ropeId,
         },
       )
     }
+
+    this.tangle.update(this.order, g)
+    const knots = this.tangle.buildConstraints(segmentCounts)
 
     const pegs = this.order
       .map((ropeId, index) => {
@@ -265,6 +276,7 @@ export class RopeBoard {
 
     this.physics.update(time, {
       pegs,
+      knots,
       boundary: {
         x: g.cx,
         y: g.cy,
@@ -651,7 +663,7 @@ export class RopeBoard {
     const lines = [
       `FPS ${this.debugFps || '--'}`,
       `Profile ${this.performanceProfile.id}`,
-      `Ropes ${ropes} · Contacts ${contacts}`,
+      `Ropes ${ropes} · Knots ${this.tangle.getKnots().length}`,
       `DPR cap ${this.performanceProfile.dprCap}`,
     ]
 
