@@ -55,6 +55,7 @@ export function normalizeSettings(raw) {
   return {
     sound: source.sound !== false,
     haptics: source.haptics !== false,
+    pegMarkers: source.pegMarkers === true,
     graphics,
   }
 }
