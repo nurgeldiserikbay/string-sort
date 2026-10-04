@@ -11,6 +11,7 @@ const REQUIRED_FILES = [
   'docs/PLAY_STORE.md',
   'docs/PRIVACY.md',
   'docs/RELEASE.md',
+  'docs/RELEASE_CHECKLIST.md',
   '.github/workflows/android-release.yml',
 ]
 
