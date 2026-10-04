@@ -635,6 +635,20 @@ export class RopeBoard {
       ctx.lineCap = 'butt'
       ctx.lineJoin = 'round'
 
+      if (knot.wrapIndex === 0) {
+        const centerX = knot.centerX ?? knot.x
+        const centerY = knot.centerY ?? knot.y
+        ctx.beginPath()
+        ctx.arc(centerX, centerY, width * 1.18, 0, TAU)
+        ctx.fillStyle = 'rgba(19,21,26,.28)'
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(centerX, centerY, width * 1.18, 0, TAU)
+        ctx.strokeStyle = 'rgba(255,255,255,.09)'
+        ctx.lineWidth = 1.1
+        ctx.stroke()
+      }
+
       ctx.beginPath()
       ctx.moveTo(p0.x, p0.y)
       ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
