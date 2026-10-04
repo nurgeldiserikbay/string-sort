@@ -15,6 +15,7 @@ export class RopeBoard {
   constructor(canvas, {
     onSwap,
     onSolved,
+    onInvalidDrop,
     graphics = 'auto',
     pegMarkers = false,
   }) {
@@ -22,6 +23,7 @@ export class RopeBoard {
     this.ctx = canvas.getContext('2d', { alpha: true })
     this.onSwap = onSwap
     this.onSolved = onSolved
+    this.onInvalidDrop = onInvalidDrop
     this.pegMarkers = pegMarkers
     this.order = []
     this.dragIndex = -1
@@ -29,6 +31,8 @@ export class RopeBoard {
     this.dragVisualPoint = null
     this.hoverIndex = -1
     this.activePointerId = null
+    this.invalidDropIndex = -1
+    this.invalidDropUntil = 0
     this.hint = null
     this.hintUntil = 0
     this.running = false
@@ -252,9 +256,16 @@ export class RopeBoard {
     this.cancelDrag()
 
     if (to >= 0 && to !== from && this.order[to] == null) {
+      this.invalidDropIndex = -1
+      this.invalidDropUntil = 0
       this.onSwap?.(from, to)
       if (getCrossingCount(this.order) === 0) this.onSolved?.()
+      return
     }
+
+    this.invalidDropIndex = from
+    this.invalidDropUntil = performance.now() + 280
+    this.onInvalidDrop?.(from)
   }
 
   onPointerCancel(event) {
@@ -844,12 +855,27 @@ export class RopeBoard {
   drawPeg(index, time) {
     const g = this.geometry()
     const ctx = this.ctx
-    const position = index === this.dragIndex && this.dragVisualPoint
+    let position = index === this.dragIndex && this.dragVisualPoint
       ? this.dragVisualPoint
       : this.socketPosition(index)
     const ropeId = this.order[index]
     if (ropeId == null) return
     const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
+
+    if (index === this.invalidDropIndex && performance.now() < this.invalidDropUntil) {
+      const remaining = clamp(
+        (this.invalidDropUntil - performance.now()) / 280,
+        0,
+        1,
+      )
+      position = {
+        ...position,
+        x: position.x + Math.sin(time * 0.09) * 5 * remaining,
+      }
+    } else if (index === this.invalidDropIndex) {
+      this.invalidDropIndex = -1
+      this.invalidDropUntil = 0
+    }
 
     let scale = index === this.dragIndex ? 1.18 : 1
 
