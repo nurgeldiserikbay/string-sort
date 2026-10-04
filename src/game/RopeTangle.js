@@ -84,7 +84,7 @@ export class RopeTangle {
       }))
       .sort((a, b) => a.key.localeCompare(b.key))
 
-    const hasNewKnots = sortedPairs.some((pair) => !previous.has(pair.key))
+    let needsCenterRelax = false
     const ropeKnots = new Map()
 
     sortedPairs.forEach((pair, index) => {
@@ -104,6 +104,7 @@ export class RopeTangle {
       const radialBand = 0.12 + (((hash >>> 10) & 255) / 255) * 0.24
       const radius = geometry.boardRadius * radialBand
       const geometric = prior ? null : geometricKnot(pair, socketPositions)
+      if (!prior && !geometric) needsCenterRelax = true
 
       const knot = {
         key,
@@ -125,6 +126,7 @@ export class RopeTangle {
         bT: prior?.bT ?? geometric?.bT ?? 0.5,
         stiffness: 0.16,
         drag: 0.78,
+        seededFromGeometry: Boolean(geometric),
       }
 
       nextMap.set(key, knot)
@@ -147,7 +149,7 @@ export class RopeTangle {
         // Existing knot contacts keep their rope-relative position.
         // Reassigning aT/bT every frame made the visible tie point jump
         // between particles and was the main source of "swimming" knots.
-        if (previous.has(knot.key)) return
+        if (previous.has(knot.key) || knot.seededFromGeometry) return
 
         const spread = knots.length <= 1
           ? 0.5
@@ -177,7 +179,7 @@ export class RopeTangle {
     // Center spreading is layout initialization, not an animation force.
     // Re-running it every frame caused knots to repel one another while
     // physics simultaneously pulled them back, producing visible jitter.
-    if (hasNewKnots) this.relaxCenters(geometry)
+    if (needsCenterRelax) this.relaxCenters(geometry)
 
     return this.knots
   }
