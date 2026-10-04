@@ -13,6 +13,14 @@ import { installMenuPreview } from '../ui/MenuPreview.js'
 const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
 
+const LEVEL_CHAPTERS = [
+  { title: 'First Knots', subtitle: 'Learn the empty-socket rhythm', start: 1, end: 20 },
+  { title: 'Twist Lab', subtitle: 'More ropes, tighter turns', start: 21, end: 40 },
+  { title: 'Tangle Garden', subtitle: 'Dense colorful bundles', start: 41, end: 60 },
+  { title: 'Knot Works', subtitle: 'Double wraps and longer routes', start: 61, end: 80 },
+  { title: 'Master Board', subtitle: 'The hardest tangles', start: 81, end: 100 },
+]
+
 function formatTime(seconds) {
   const whole = Math.max(0, Math.floor(seconds))
   const minutes = Math.floor(whole / 60).toString().padStart(2, '0')
@@ -41,6 +49,7 @@ export class GameApp {
     this.completionTimer = 0
     this.feedbackTimer = 0
     this.menuPreviewCleanup = null
+    this.levelChapter = 0
     this.screen = 'menu'
     this.backButtonHandle = null
     this.appStateHandle = null
@@ -211,20 +220,40 @@ export class GameApp {
     this.root.querySelector('[data-action="how-to-play"]').onclick = () => this.showHowToPlay()
   }
 
-  showLevelSelect() {
+  showLevelSelect(chapterIndex = null) {
     this.screen = 'levels'
-    const cards = Array.from({ length: TOTAL_LEVELS }, (_, index) => {
-      const n = index + 1
+
+    const currentChapter = Math.min(
+      LEVEL_CHAPTERS.length - 1,
+      Math.floor((Math.max(1, this.progress.unlocked) - 1) / 20),
+    )
+    this.levelChapter = chapterIndex == null
+      ? currentChapter
+      : Math.min(LEVEL_CHAPTERS.length - 1, Math.max(0, chapterIndex))
+
+    const chapter = LEVEL_CHAPTERS[this.levelChapter]
+    const chapterLevels = Array.from(
+      { length: chapter.end - chapter.start + 1 },
+      (_, index) => chapter.start + index,
+    )
+
+    const cards = chapterLevels.map((n) => {
       const unlocked = n <= this.progress.unlocked
       const stars = this.progress.stars[n] || 0
+      const level = unlocked ? createLevel(n) : null
+      const knots = level ? getCrossingCount(level.order) : 0
+
       return `
         <button
-          class="level-card ${unlocked ? '' : 'locked'} ${n === this.progress.unlocked ? 'current' : ''}"
+          class="level-card chapter-tone-${this.levelChapter} ${unlocked ? '' : 'locked'} ${n === this.progress.unlocked ? 'current' : ''}"
           data-level="${n}"
           aria-label="Level ${n}${unlocked ? '' : ', locked'}"
           ${unlocked ? '' : 'disabled'}
         >
-          <b>${unlocked ? n : uiIcon('lock', 'ui-svg level-lock-svg')}</b>
+          <div class="level-card-top">
+            <b>${unlocked ? n : uiIcon('lock', 'ui-svg level-lock-svg')}</b>
+            ${unlocked ? `<small>${knots} knot${knots === 1 ? '' : 's'}</small>` : ''}
+          </div>
           ${unlocked ? `
             <span class="level-mini-preview tone-${n % 6}" aria-hidden="true">
               <i class="preview-thread thread-a"></i>
@@ -240,14 +269,47 @@ export class GameApp {
       `
     }).join('')
 
+    const tabs = LEVEL_CHAPTERS.map((item, index) => {
+      const unlocked = item.start <= this.progress.unlocked
+      return `
+        <button
+          class="chapter-tab ${index === this.levelChapter ? 'active' : ''}"
+          data-chapter="${index}"
+          ${unlocked ? '' : 'disabled'}
+          aria-label="${item.title}${unlocked ? '' : ', locked'}"
+        >
+          <span>${index + 1}</span>
+          <b>${item.title}</b>
+        </button>
+      `
+    }).join('')
+
     this.shell(`
       <main class="screen levels-screen">
         <header class="page-header">
           <button class="icon-button soft-icon" data-action="back" aria-label="Back">${uiIcon('back')}</button>
-          <h1>Levels</h1>
+          <div class="level-page-title">
+            <h1>Levels</h1>
+            <p>${chapter.subtitle}</p>
+          </div>
           <div class="coin-pill">${uiIcon('levels', 'ui-svg coin-star')}<b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
         </header>
-        <section class="level-grid">${cards}</section>
+
+        <nav class="chapter-tabs" aria-label="Level chapters">${tabs}</nav>
+
+        <section class="chapter-banner chapter-tone-${this.levelChapter}">
+          <span class="chapter-number">Chapter ${this.levelChapter + 1}</span>
+          <div>
+            <h2>${chapter.title}</h2>
+            <p>Levels ${chapter.start}–${chapter.end}</p>
+          </div>
+          <strong>${Math.min(
+            chapter.end - chapter.start + 1,
+            Math.max(0, this.progress.unlocked - chapter.start + 1),
+          )}/${chapter.end - chapter.start + 1}</strong>
+        </section>
+
+        <section class="level-grid chapter-grid">${cards}</section>
       </main>
     `)
 
@@ -255,14 +317,15 @@ export class GameApp {
     this.root.querySelectorAll('[data-level]').forEach((button) => {
       button.onclick = () => this.startLevel(Number(button.dataset.level))
     })
+    this.root.querySelectorAll('[data-chapter]').forEach((button) => {
+      button.onclick = () => this.showLevelSelect(Number(button.dataset.chapter))
+    })
 
-    if (this.progress.unlocked > 9) {
-      requestAnimationFrame(() => {
-        this.root
-          .querySelector(`[data-level="${this.progress.unlocked}"]`)
-          ?.scrollIntoView({ block: 'center' })
-      })
-    }
+    requestAnimationFrame(() => {
+      this.root
+        .querySelector(`[data-level="${this.progress.unlocked}"]`)
+        ?.scrollIntoView({ block: 'center' })
+    })
   }
 
   startLevel(levelNumber) {
