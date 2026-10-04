@@ -114,6 +114,33 @@ describe('RopeBoard pointer interaction', () => {
     expect(board.dragIndex).toBe(0)
   })
 
+  it('varies deterministic board geometry between level visual seeds', () => {
+    const first = new RopeBoard(canvas, {
+      onSwap: vi.fn(),
+      onSolved: vi.fn(),
+      graphics: 'battery',
+      visualSeed: 12,
+    })
+    first.setOrder([0, 1, 0, 1, null])
+    const firstPosition = first.socketPosition(0)
+    const firstSeed = first.depthSeed
+    first.destroy()
+
+    const second = new RopeBoard(canvas, {
+      onSwap: vi.fn(),
+      onSolved: vi.fn(),
+      graphics: 'battery',
+      visualSeed: 13,
+    })
+    second.setOrder([0, 1, 0, 1, null])
+    board = second
+
+    const secondPosition = second.socketPosition(0)
+
+    expect(second.depthSeed).not.toBe(firstSeed)
+    expect(secondPosition.x).not.toBe(firstPosition.x)
+  })
+
   it('keeps the dragged peg inside the physical board boundary', () => {
     board = new RopeBoard(canvas, {
       onSwap: vi.fn(),
