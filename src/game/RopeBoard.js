@@ -28,6 +28,7 @@ export class RopeBoard {
     this.dragPoint = null
     this.dragVisualPoint = null
     this.hoverIndex = -1
+    this.activePointerId = null
     this.hint = null
     this.hintUntil = 0
     this.running = false
@@ -60,12 +61,13 @@ export class RopeBoard {
     this.onPointerDown = this.onPointerDown.bind(this)
     this.onPointerMove = this.onPointerMove.bind(this)
     this.onPointerUp = this.onPointerUp.bind(this)
+    this.onPointerCancel = this.onPointerCancel.bind(this)
     this.resize = this.resize.bind(this)
 
     canvas.addEventListener('pointerdown', this.onPointerDown)
     canvas.addEventListener('pointermove', this.onPointerMove)
     canvas.addEventListener('pointerup', this.onPointerUp)
-    canvas.addEventListener('pointercancel', this.onPointerUp)
+    canvas.addEventListener('pointercancel', this.onPointerCancel)
     window.addEventListener('resize', this.resize)
     this.resize()
   }
@@ -123,7 +125,7 @@ export class RopeBoard {
     this.canvas.removeEventListener('pointerdown', this.onPointerDown)
     this.canvas.removeEventListener('pointermove', this.onPointerMove)
     this.canvas.removeEventListener('pointerup', this.onPointerUp)
-    this.canvas.removeEventListener('pointercancel', this.onPointerUp)
+    this.canvas.removeEventListener('pointercancel', this.onPointerCancel)
     window.removeEventListener('resize', this.resize)
   }
 
@@ -211,11 +213,14 @@ export class RopeBoard {
   }
 
   onPointerDown(event) {
+    if (this.activePointerId != null) return
+
     const point = this.eventPoint(event)
     const index = this.findSocket(point.x, point.y)
     if (index < 0 || this.order[index] == null) return
 
     this.dragIndex = index
+    this.activePointerId = event.pointerId
     this.dragPoint = this.constrainDragPoint(point)
     this.dragVisualPoint = { ...this.dragPoint }
     this.hoverIndex = index
@@ -223,28 +228,58 @@ export class RopeBoard {
   }
 
   onPointerMove(event) {
-    if (this.dragIndex < 0) return
+    if (
+      this.dragIndex < 0
+      || this.activePointerId == null
+      || event.pointerId !== this.activePointerId
+    ) return
 
     this.dragPoint = this.constrainDragPoint(this.eventPoint(event))
     this.hoverIndex = this.findSocket(this.dragPoint.x, this.dragPoint.y, 2.5)
   }
 
   onPointerUp(event) {
-    if (this.dragIndex < 0) return
+    if (
+      this.dragIndex < 0
+      || this.activePointerId == null
+      || event.pointerId !== this.activePointerId
+    ) return
 
     const from = this.dragIndex
     const point = this.constrainDragPoint(this.eventPoint(event))
     const to = this.findSocket(point.x, point.y, 2.65)
 
-    this.dragIndex = -1
-    this.dragPoint = null
-    this.dragVisualPoint = null
-    this.hoverIndex = -1
+    this.cancelDrag()
 
     if (to >= 0 && to !== from && this.order[to] == null) {
       this.onSwap?.(from, to)
       if (getCrossingCount(this.order) === 0) this.onSolved?.()
     }
+  }
+
+  onPointerCancel(event) {
+    if (
+      this.activePointerId == null
+      || event.pointerId !== this.activePointerId
+    ) return
+
+    this.cancelDrag()
+  }
+
+  cancelDrag() {
+    if (this.activePointerId != null) {
+      try {
+        this.canvas.releasePointerCapture?.(this.activePointerId)
+      } catch {
+        // Pointer capture may already have been released by the browser.
+      }
+    }
+
+    this.dragIndex = -1
+    this.dragPoint = null
+    this.dragVisualPoint = null
+    this.hoverIndex = -1
+    this.activePointerId = null
   }
 
   endpointEntries(ropeId) {
