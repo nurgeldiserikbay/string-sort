@@ -73,7 +73,13 @@ export class RopeTangle {
         twistAngle: prior?.twistAngle
           ?? (((hash >>> 18) & 1023) / 1023) * Math.PI,
         wraps: prior?.wraps
-          ?? (sortedPairs.length >= 4 && index % 3 === 0 ? 2 : 1),
+          ?? (
+            sortedPairs.length >= 8 && index % 7 === 0
+              ? 3
+              : sortedPairs.length >= 4 && index % 3 === 0
+                ? 2
+                : 1
+          ),
         x: prior?.x ?? geometry.cx + Math.cos(angle) * radius,
         y: prior?.y ?? geometry.cy + Math.sin(angle) * radius,
         aT: prior?.aT ?? 0.5,
@@ -128,10 +134,10 @@ export class RopeTangle {
   }
 
   relaxCenters(geometry) {
-    const maxRadius = geometry.boardRadius * 0.4
-    const minDistance = Math.max(16, geometry.boardRadius * 0.075)
+    const maxRadius = geometry.boardRadius * 0.44
+    const minDistance = Math.max(18, geometry.boardRadius * 0.09)
 
-    for (let iteration = 0; iteration < 4; iteration++) {
+    for (let iteration = 0; iteration < 5; iteration++) {
       for (let i = 0; i < this.knots.length; i++) {
         const a = this.knots[i]
 
@@ -176,7 +182,7 @@ export class RopeTangle {
   }
 
   followPhysics(physics, geometry) {
-    const maxRadius = geometry.boardRadius * 0.43
+    const maxRadius = geometry.boardRadius * 0.46
 
     const nearestT = (points, x, y, currentT) => {
       const last = points.length - 1
@@ -226,7 +232,7 @@ export class RopeTangle {
       const b = ropeB[bIndex]
       const targetX = (a.x + b.x) / 2
       const targetY = (a.y + b.y) / 2
-      const follow = 0.13
+      const follow = 0.09
 
       knot.x += (targetX - knot.x) * follow
       knot.y += (targetY - knot.y) * follow
@@ -260,7 +266,7 @@ export class RopeTangle {
       const aCount = segmentCounts.get(knot.aId) ?? 1
       const bCount = segmentCounts.get(knot.bId) ?? 1
       const wraps = Math.max(1, knot.wraps ?? 1)
-      const spacing = 10
+      const spacing = wraps >= 3 ? 9 : 10
       const nx = -Math.sin(knot.twistAngle ?? 0)
       const ny = Math.cos(knot.twistAngle ?? 0)
 
@@ -293,8 +299,8 @@ export class RopeTangle {
             2,
             Math.max(2, bCount - 2),
           ),
-          stiffness: wraps > 1 ? 0.17 : knot.stiffness,
-          drag: wraps > 1 ? 0.66 : knot.drag,
+          stiffness: wraps >= 3 ? 0.15 : wraps > 1 ? 0.17 : knot.stiffness,
+          drag: wraps >= 3 ? 0.62 : wraps > 1 ? 0.66 : knot.drag,
         })
       }
     }
