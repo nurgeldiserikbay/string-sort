@@ -720,13 +720,13 @@ export class RopeBoard {
 
   drawPegMarker(x, y, radius, ropeId) {
     const ctx = this.ctx
-    const size = radius * 0.27
+    const size = radius * 0.21
     const variant = ropeId % 12
 
     ctx.save()
-    ctx.strokeStyle = 'rgba(255,255,255,.68)'
-    ctx.fillStyle = 'rgba(255,255,255,.68)'
-    ctx.lineWidth = Math.max(1.5, radius * 0.11)
+    ctx.strokeStyle = 'rgba(255,255,255,.44)'
+    ctx.fillStyle = 'rgba(255,255,255,.44)'
+    ctx.lineWidth = Math.max(1.2, radius * 0.085)
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
 
@@ -867,15 +867,15 @@ export class RopeBoard {
     )
     ctx.stroke()
 
-    ctx.fillStyle = '#31343c'
+    ctx.fillStyle = 'rgba(24,27,33,.34)'
     ctx.beginPath()
-    ctx.arc(position.x, position.y, radius * 0.44, 0, TAU)
+    ctx.arc(position.x, position.y, radius * 0.34, 0, TAU)
     ctx.fill()
 
-    ctx.strokeStyle = 'rgba(255,255,255,.16)'
-    ctx.lineWidth = 1.5
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'
+    ctx.lineWidth = 1.2
     ctx.beginPath()
-    ctx.arc(position.x, position.y, radius * 0.49, 0, TAU)
+    ctx.arc(position.x, position.y, radius * 0.39, 0, TAU)
     ctx.stroke()
 
     this.drawPegMarker(position.x, position.y, radius, ropeId)
