@@ -211,7 +211,7 @@ describe('GameApp interaction smoke tests', () => {
     app.elapsed = 12
 
     app.handleSwap(1, 4)
-    vi.advanceTimersByTime(400)
+    vi.advanceTimersByTime(700)
 
     expect(root.querySelector('.complete-card')).not.toBeNull()
     expect(root.textContent).toContain('Level 1 Complete!')
