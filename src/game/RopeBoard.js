@@ -743,8 +743,8 @@ export class RopeBoard {
   drawPeg(index, time) {
     const g = this.geometry()
     const ctx = this.ctx
-    const position = index === this.dragIndex && this.dragPoint
-      ? this.dragPoint
+    const position = index === this.dragIndex && this.dragVisualPoint
+      ? this.dragVisualPoint
       : this.socketPosition(index)
     const ropeId = this.order[index]
     if (ropeId == null) return
