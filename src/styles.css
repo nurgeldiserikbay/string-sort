@@ -1374,3 +1374,47 @@ html[data-banner-mode="preview"] .game-actions {
   margin-right: 5px;
   vertical-align: -0.2em;
 }
+
+
+.level-card {
+  position: relative;
+}
+
+.level-card.locked {
+  opacity: .7;
+}
+
+.level-card.locked .level-card-top b {
+  color: rgba(78,61,46,.72);
+}
+
+.level-card.locked .level-card-top small {
+  color: rgba(78,61,46,.42);
+}
+
+.locked-preview {
+  opacity: .22;
+  filter: grayscale(1);
+}
+
+.level-lock-badge {
+  position: absolute;
+  right: 11px;
+  top: 10px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(103,90,77,.11);
+  color: rgba(90,78,65,.5) !important;
+}
+
+.level-lock-badge .level-lock-svg {
+  width: 16px;
+  height: 16px;
+}
+
+.level-card.locked .level-stars {
+  opacity: .38;
+}
