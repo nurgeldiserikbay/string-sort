@@ -24,6 +24,11 @@ describe('RopeTangle', () => {
 
     tangle.update([0, null, 0, 1, 1], geometry)
     expect(tangle.getKnots()).toHaveLength(0)
+
+    const released = tangle.consumeReleased()
+    expect(released).toHaveLength(1)
+    expect(released[0]).toMatchObject({ aId: 0, bId: 1 })
+    expect(tangle.consumeReleased()).toHaveLength(0)
   })
 
   it('maps knots onto interior rope particles', () => {
