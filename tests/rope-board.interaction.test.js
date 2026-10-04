@@ -23,6 +23,7 @@ function makeCanvasContext() {
     fill: vi.fn(),
     strokeRect: vi.fn(),
     createRadialGradient: vi.fn(makeGradient),
+    createLinearGradient: vi.fn(makeGradient),
     setLineDash: vi.fn(),
   }
 }
