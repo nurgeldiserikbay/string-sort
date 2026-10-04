@@ -31,6 +31,28 @@ describe('RopeTangle', () => {
     expect(tangle.consumeReleased()).toHaveLength(0)
   })
 
+  it('initializes a new knot at the real chord intersection', () => {
+    const tangle = new RopeTangle(321)
+    const sockets = [
+      { x: 40, y: 40 },
+      { x: 160, y: 40 },
+      { x: 160, y: 160 },
+      { x: 40, y: 160 },
+      { x: 200, y: 200 },
+    ]
+
+    const [knot] = tangle.update(
+      [0, 1, 0, 1, null],
+      geometry,
+      sockets,
+    )
+
+    expect(knot.x).toBeCloseTo(100, 5)
+    expect(knot.y).toBeCloseTo(100, 5)
+    expect(knot.aT).toBeCloseTo(0.5, 5)
+    expect(knot.bT).toBeCloseTo(0.5, 5)
+  })
+
   it('maps knots onto interior rope particles', () => {
     const tangle = new RopeTangle(777)
     tangle.update([0, 1, 2, 0, 1, 2, null], geometry)
