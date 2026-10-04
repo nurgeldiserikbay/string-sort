@@ -33,6 +33,18 @@ if (!Number.isFinite(capacitorMajor) || capacitorMajor < 8) {
   throw new Error('Capacitor 8+ is required for the Android API 36 release setup')
 }
 
+const gitignore = await readFile('.gitignore', 'utf8')
+for (const requiredIgnore of [
+  '*.jks',
+  '*.keystore',
+  'keystore.properties',
+  'android/key.properties',
+]) {
+  if (!gitignore.includes(requiredIgnore)) {
+    throw new Error(`Signing secret is not protected by .gitignore: ${requiredIgnore}`)
+  }
+}
+
 const privacy = await readFile('public/privacy.html', 'utf8')
 for (const forbidden of ['TODO', 'YOUR_EMAIL', 'example@example.com']) {
   if (privacy.includes(forbidden)) {
