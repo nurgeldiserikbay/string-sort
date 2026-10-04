@@ -46,6 +46,7 @@ export class RopeTangle {
       }))
       .sort((a, b) => a.key.localeCompare(b.key))
 
+    const hasNewKnots = sortedPairs.some((pair) => !previous.has(pair.key))
     const ropeKnots = new Map()
 
     sortedPairs.forEach((pair, index) => {
@@ -105,6 +106,11 @@ export class RopeTangle {
       })
 
       knots.forEach((knot, index) => {
+        // Existing knot contacts keep their rope-relative position.
+        // Reassigning aT/bT every frame made the visible tie point jump
+        // between particles and was the main source of "swimming" knots.
+        if (previous.has(knot.key)) return
+
         const spread = knots.length <= 1
           ? 0.5
           : 0.24 + (index / (knots.length - 1)) * 0.52
@@ -129,7 +135,12 @@ export class RopeTangle {
 
     this.knotMap = nextMap
     this.knots = [...nextMap.values()]
-    this.relaxCenters(geometry)
+
+    // Center spreading is layout initialization, not an animation force.
+    // Re-running it every frame caused knots to repel one another while
+    // physics simultaneously pulled them back, producing visible jitter.
+    if (hasNewKnots) this.relaxCenters(geometry)
+
     return this.knots
   }
 
@@ -183,17 +194,26 @@ export class RopeTangle {
 
   followPhysics(physics, geometry) {
     const maxRadius = geometry.boardRadius * 0.46
+    const maxCenterStep = Math.max(0.45, geometry.boardRadius * 0.0035)
+    const centerDeadZone = Math.max(1.15, geometry.boardRadius * 0.006)
+    const maxTStep = 0.0014
 
     const nearestT = (points, x, y, currentT) => {
       const last = points.length - 1
       const currentIndex = clamp(Math.round(last * currentT), 2, last - 2)
+      const searchStart = Math.max(2, currentIndex - 2)
+      const searchEnd = Math.min(last - 2, currentIndex + 2)
+      const currentPoint = points[currentIndex]
+      const currentScore = Math.hypot(currentPoint.x - x, currentPoint.y - y)
       let bestIndex = currentIndex
-      let bestScore = Infinity
+      let bestScore = currentScore
 
-      for (let index = 2; index <= last - 2; index++) {
+      // Only search locally around the existing contact. A global nearest
+      // point search can suddenly jump to a different loop of the same rope.
+      for (let index = searchStart; index <= searchEnd; index++) {
         const point = points[index]
         const distance = Math.hypot(point.x - x, point.y - y)
-        const travelPenalty = Math.abs(index - currentIndex) * 2.2
+        const travelPenalty = Math.abs(index - currentIndex) * 3.4
         const score = distance + travelPenalty
 
         if (score < bestScore) {
@@ -202,7 +222,16 @@ export class RopeTangle {
         }
       }
 
+      // Hysteresis keeps the contact on its current particle unless moving
+      // to a neighbor is meaningfully better.
+      if (currentScore - bestScore < 2.4) return currentT
+
       return clamp(bestIndex / last, 0.12, 0.88)
+    }
+
+    const slideToward = (current, target) => {
+      const requested = (target - current) * 0.018
+      return current + clamp(requested, -maxTStep, maxTStep)
     }
 
     for (const knot of this.knots) {
@@ -212,10 +241,9 @@ export class RopeTangle {
 
       const nextAT = nearestT(ropeA, knot.x, knot.y, knot.aT)
       const nextBT = nearestT(ropeB, knot.x, knot.y, knot.bT)
-      const slide = 0.055
 
-      knot.aT += (nextAT - knot.aT) * slide
-      knot.bT += (nextBT - knot.bT) * slide
+      knot.aT = slideToward(knot.aT, nextAT)
+      knot.bT = slideToward(knot.bT, nextBT)
 
       const aIndex = clamp(
         Math.round((ropeA.length - 1) * knot.aT),
@@ -232,10 +260,18 @@ export class RopeTangle {
       const b = ropeB[bIndex]
       const targetX = (a.x + b.x) / 2
       const targetY = (a.y + b.y) / 2
-      const follow = 0.09
+      const targetDx = targetX - knot.x
+      const targetDy = targetY - knot.y
+      const targetDistance = Math.hypot(targetDx, targetDy)
 
-      knot.x += (targetX - knot.x) * follow
-      knot.y += (targetY - knot.y) * follow
+      if (targetDistance > centerDeadZone) {
+        const desiredStep = Math.min(
+          maxCenterStep,
+          (targetDistance - centerDeadZone) * 0.035,
+        )
+        knot.x += (targetDx / targetDistance) * desiredStep
+        knot.y += (targetDy / targetDistance) * desiredStep
+      }
 
       const dx = knot.x - geometry.cx
       const dy = knot.y - geometry.cy
