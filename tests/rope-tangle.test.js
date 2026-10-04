@@ -51,7 +51,7 @@ describe('RopeTangle', () => {
     }
   })
 
-  it('uses only occasional double wraps on dense tangles', () => {
+  it('uses one physical contact per logical knot for readability', () => {
     const tangle = new RopeTangle(321)
     const logical = tangle.update(
       [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null],
@@ -66,17 +66,13 @@ describe('RopeTangle', () => {
     ]))
 
     expect(logical.length).toBeGreaterThanOrEqual(10)
-    expect(constraints.length).toBeGreaterThan(logical.length)
-    expect(Math.max(...logical.map((knot) => knot.wraps))).toBe(2)
+    expect(logical.every((knot) => knot.wraps === 1)).toBe(true)
+    expect(constraints).toHaveLength(logical.length)
 
-    const doubleWrap = logical.find((knot) => knot.wraps === 2)
-    const wrappedPair = constraints.filter(
-      (constraint) => constraint.parentKey === doubleWrap.key,
-    )
-
-    expect(wrappedPair).toHaveLength(2)
-    expect(wrappedPair[0].topId).not.toBe(wrappedPair[1].topId)
-    expect(wrappedPair[0].aIndex).not.toBe(wrappedPair[1].aIndex)
+    for (const constraint of constraints) {
+      expect(constraint.wrapIndex).toBe(0)
+      expect(constraint.parentKey).toBe(constraint.key.replace('#0', ''))
+    }
   })
 
   it('keeps dense knot centers out of a tiny central pile', () => {
