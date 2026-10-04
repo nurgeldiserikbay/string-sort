@@ -55,6 +55,19 @@ describe('launch level quality gate', () => {
     }
   })
 
+  it('caps simultaneous procedural knots for visual readability', () => {
+    let maxKnots = 0
+
+    for (let levelNumber = 9; levelNumber <= TOTAL_LEVELS; levelNumber++) {
+      const knots = getCrossingCount(createLevel(levelNumber).order)
+      maxKnots = Math.max(maxKnots, knots)
+      expect(knots, `level ${levelNumber} knot count`).toBeLessThanOrEqual(12)
+    }
+
+    expect(getCrossingCount(createLevel(80).order)).toBeLessThanOrEqual(10)
+    expect(maxKnots).toBeGreaterThanOrEqual(9)
+  })
+
   it('keeps later levels as one connected physical tangle', () => {
     for (let levelNumber = 25; levelNumber <= TOTAL_LEVELS; levelNumber++) {
       const level = createLevel(levelNumber)

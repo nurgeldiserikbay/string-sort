@@ -10,9 +10,13 @@ const profiles = [
 const captures = [
   '01-main-menu',
   '02-levels',
-  '03-gameplay',
-  '04-level-complete',
-  '05-hard-tangle',
+  '03-settings',
+  '04-about',
+  '05-how-to-play',
+  '06-gameplay',
+  '07-pause',
+  '08-level-complete',
+  '09-hard-tangle',
 ]
 
 for (const profile of profiles) {

@@ -1674,3 +1674,83 @@ html[data-banner-mode="preview"] .game-actions {
     font-size: 14px;
   }
 }
+
+
+/* Complete icon coverage: levels, results and modal actions */
+.level-stars,
+.stars {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.level-stars {
+  gap: 2px;
+}
+
+.level-star {
+  width: 14px;
+  height: 14px;
+  color: #ffb400;
+  stroke-width: 1.8;
+  filter: drop-shadow(0 1px 0 rgba(174,111,0,.28));
+}
+
+.level-star.is-empty {
+  color: rgba(122,97,70,.26);
+  filter: none;
+}
+
+.stars {
+  gap: 5px;
+  line-height: 1;
+}
+
+.result-star {
+  width: 42px;
+  height: 42px;
+  color: #ffbf20;
+  stroke-width: 1.65;
+  filter: drop-shadow(0 3px 0 #c87900);
+}
+
+.result-star.is-empty {
+  color: rgba(178,137,77,.28);
+  filter: none;
+}
+
+.setting-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.setting-action .ui-svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+}
+
+.danger-option .ui-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.secondary-link .ui-svg {
+  margin-right: 0;
+}
+
+@media (max-width: 360px) {
+  .result-star {
+    width: 36px;
+    height: 36px;
+  }
+}

@@ -33,6 +33,15 @@ function safeHaptic(enabled, style = ImpactStyle.Light) {
   Haptics.impact({ style }).catch(() => {})
 }
 
+function renderStars(count, total = 3, className = 'rating-star') {
+  return Array.from({ length: total }, (_, index) => (
+    uiIcon(
+      index < count ? 'star' : 'starOutline',
+      `ui-svg ${className} ${index < count ? 'is-filled' : 'is-empty'}`,
+    )
+  )).join('')
+}
+
 export class GameApp {
   constructor(root) {
     this.root = root
@@ -265,7 +274,7 @@ export class GameApp {
             <i class="preview-dot dot-d"></i>
           </span>
           ${unlocked ? '' : `<span class="level-lock-badge">${uiIcon('lock', 'ui-svg level-lock-svg')}</span>`}
-          <span class="level-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>
+          <span class="level-stars">${renderStars(stars, 3, 'level-star')}</span>
         </button>
       `
     }).join('')
@@ -604,7 +613,7 @@ export class GameApp {
     overlay.innerHTML = `
       <div class="confetti" aria-hidden="true"></div>
       <section class="complete-card">
-        <div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+        <div class="stars">${renderStars(stars, 3, 'result-star')}</div>
         <div class="ribbon">Great!</div>
         <h2>Level ${this.levelNumber} Complete!</h2>
         <p>${formatTime(this.elapsed)} · ${this.moves} moves</p>
@@ -692,11 +701,11 @@ export class GameApp {
           </div>
           <div>
             <span class="setting-label"><span class="setting-icon info-setting">${uiIcon('info')}</span><span>About</span></span>
-            <button class="setting-toggle neutral-toggle" data-action="about">Open</button>
+            <button class="setting-toggle neutral-toggle setting-action" data-action="about">${uiIcon('info')} Open</button>
           </div>
           <div>
             <span class="setting-label"><span class="setting-icon reset-setting">${uiIcon('reset')}</span><span>Progress</span></span>
-            <button class="setting-toggle danger-toggle" data-action="reset-progress">Reset</button>
+            <button class="setting-toggle danger-toggle setting-action" data-action="reset-progress">${uiIcon('reset')} Reset</button>
           </div>
         </section>
       </main>
@@ -737,14 +746,14 @@ export class GameApp {
     overlay.className = 'modal-layer'
     overlay.innerHTML = `
       <section class="modal-card about-card">
-        <button class="modal-close" data-action="close" aria-label="Close">×</button>
+        <button class="modal-close" data-action="close" aria-label="Close">${uiIcon('close')}</button>
         <h2>String Sort</h2>
         <p class="version-label">Version ${APP_VERSION}</p>
         <div class="privacy-summary">
           ${privacySummary().map((line) => `<p>• ${line}</p>`).join('')}
         </div>
-        <button class="modal-option" data-action="privacy">Privacy details</button>
-        <button class="primary-button" data-action="close">Done</button>
+        <button class="modal-option" data-action="privacy">${uiIcon('shield')} Privacy details</button>
+        <button class="primary-button" data-action="close">${uiIcon('check')} Done</button>
       </section>
     `
 
@@ -766,8 +775,8 @@ export class GameApp {
       <section class="modal-card">
         <h2>Reset progress?</h2>
         <p class="modal-copy">Stars, best times and unlocked levels on this device will be cleared.</p>
-        <button class="modal-option danger-option" data-action="confirm">Reset progress</button>
-        <button class="primary-button" data-action="cancel">Keep progress</button>
+        <button class="modal-option danger-option" data-action="confirm">${uiIcon('reset')} Reset progress</button>
+        <button class="primary-button" data-action="cancel">${uiIcon('check')} Keep progress</button>
       </section>
     `
 

@@ -51,10 +51,10 @@ describe('RopeTangle', () => {
     }
   })
 
-  it('creates alternating double wraps in a dense tangle', () => {
+  it('uses one physical contact per logical knot for readability', () => {
     const tangle = new RopeTangle(321)
     const logical = tangle.update(
-      [0, 1, 2, 3, 0, 1, 2, 3, null],
+      [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null],
       geometry,
     )
     const constraints = tangle.buildConstraints(new Map([
@@ -62,19 +62,35 @@ describe('RopeTangle', () => {
       [1, 28],
       [2, 28],
       [3, 28],
+      [4, 28],
     ]))
 
-    expect(logical.length).toBeGreaterThanOrEqual(4)
-    expect(constraints.length).toBeGreaterThan(logical.length)
+    expect(logical.length).toBeGreaterThanOrEqual(10)
+    expect(logical.every((knot) => knot.wraps === 1)).toBe(true)
+    expect(constraints).toHaveLength(logical.length)
 
-    const wrappedPair = constraints.filter(
-      (constraint) => constraint.parentKey === constraints[0].parentKey,
+    for (const constraint of constraints) {
+      expect(constraint.wrapIndex).toBe(0)
+      expect(constraint.parentKey).toBe(constraint.key.replace('#0', ''))
+    }
+  })
+
+  it('keeps dense knot centers out of a tiny central pile', () => {
+    const tangle = new RopeTangle(2468)
+    const knots = tangle.update(
+      [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, null],
+      geometry,
     )
 
-    if (wrappedPair.length === 2) {
-      expect(wrappedPair[0].topId).not.toBe(wrappedPair[1].topId)
-      expect(wrappedPair[0].aIndex).not.toBe(wrappedPair[1].aIndex)
-    }
+    const radii = knots.map((knot) => Math.hypot(
+      knot.x - geometry.cx,
+      knot.y - geometry.cy,
+    ))
+
+    expect(knots.length).toBeGreaterThan(8)
+    expect(Math.max(...radii)).toBeGreaterThan(geometry.boardRadius * 0.34)
+    expect(radii.filter((radius) => radius < geometry.boardRadius * 0.12).length)
+      .toBeLessThanOrEqual(1)
   })
 
   it('spreads dense knot centers instead of stacking every knot at the exact middle', () => {
@@ -135,7 +151,7 @@ describe('RopeTangle', () => {
       },
     }
 
-    tangle.followPhysics(physics, geometry)
+    tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
 
     const centerMove = Math.hypot(
       knot.x - before.x,
@@ -143,13 +159,37 @@ describe('RopeTangle', () => {
     )
 
     expect(centerMove).toBeLessThanOrEqual(
-      geometry.boardRadius * 0.0035 + 0.01,
+      geometry.boardRadius * 0.0012 + 0.01,
     )
-    expect(Math.abs(knot.aT - before.aT)).toBeLessThanOrEqual(0.00141)
-    expect(Math.abs(knot.bT - before.bT)).toBeLessThanOrEqual(0.00141)
+    expect(Math.abs(knot.aT - before.aT)).toBeLessThanOrEqual(0.00071)
+    expect(Math.abs(knot.bT - before.bT)).toBeLessThanOrEqual(0.00071)
   })
 
-  it('lets persistent knot centers follow the physical rope bundle', () => {
+  it('keeps idle knot centers fixed while rope particles settle', () => {
+    const tangle = new RopeTangle(744)
+    const [knot] = tangle.update([0, 1, 0, 1, null], geometry)
+    const before = { x: knot.x, y: knot.y, aT: knot.aT, bT: knot.bT }
+
+    const physics = {
+      getPoints() {
+        return Array.from({ length: 15 }, (_, index) => ({
+          x: 500 + index * 7,
+          y: 500 + index * 4,
+        }))
+      },
+    }
+
+    for (let frame = 0; frame < 60; frame++) {
+      tangle.followPhysics(physics, geometry)
+    }
+
+    expect(knot.x).toBe(before.x)
+    expect(knot.y).toBe(before.y)
+    expect(knot.aT).toBe(before.aT)
+    expect(knot.bT).toBe(before.bT)
+  })
+
+  it('lets an actively pulled knot move slowly toward the physical bundle', () => {
     const tangle = new RopeTangle(789)
     const [knot] = tangle.update([0, 1, 0, 1, null], geometry)
     const before = { x: knot.x, y: knot.y }
@@ -159,18 +199,47 @@ describe('RopeTangle', () => {
       y: y + index * 0.5,
     }))
 
+    const ropeA = makePoints(260, 230)
+    const ropeB = makePoints(250, 220)
     const physics = {
       getPoints(id) {
-        return id === 0
-          ? makePoints(260, 230)
-          : makePoints(250, 220)
+        return id === 0 ? ropeA : ropeB
       },
     }
 
-    tangle.followPhysics(physics, geometry)
+    const aIndex = Math.max(2, Math.min(
+      ropeA.length - 3,
+      Math.round((ropeA.length - 1) * knot.aT),
+    ))
+    const bIndex = Math.max(2, Math.min(
+      ropeB.length - 3,
+      Math.round((ropeB.length - 1) * knot.bT),
+    ))
+    const target = {
+      x: (ropeA[aIndex].x + ropeB[bIndex].x) / 2,
+      y: (ropeA[aIndex].y + ropeB[bIndex].y) / 2,
+    }
+    const beforeDistance = Math.hypot(
+      target.x - knot.x,
+      target.y - knot.y,
+    )
 
-    expect(knot.x).toBeGreaterThan(before.x)
-    expect(knot.y).toBeGreaterThan(before.y)
+    tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
+
+    const movement = Math.hypot(
+      knot.x - before.x,
+      knot.y - before.y,
+    )
+    const afterDistance = Math.hypot(
+      target.x - knot.x,
+      target.y - knot.y,
+    )
+
+    expect(movement).toBeGreaterThan(0)
+    expect(movement).toBeLessThanOrEqual(
+      geometry.boardRadius * 0.0012 + 0.01,
+    )
+    expect(afterDistance).toBeLessThan(beforeDistance)
   })
 
   it('slides a knot contact toward a closer interior rope segment', () => {
@@ -197,7 +266,7 @@ describe('RopeTangle', () => {
       },
     }
 
-    tangle.followPhysics(physics, geometry)
+    tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
 
     expect(knot.aT).toBeLessThan(beforeAT)
     expect(knot.bT).toBeLessThan(beforeBT)

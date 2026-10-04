@@ -63,7 +63,7 @@ export class RopeTangle {
         index * goldenAngle
         + ((hash & 1023) / 1023) * 0.62
       ) % TAU
-      const radialBand = 0.09 + (((hash >>> 10) & 255) / 255) * 0.27
+      const radialBand = 0.38 + (((hash >>> 10) & 255) / 255) * 0.22
       const radius = geometry.boardRadius * radialBand
 
       const knot = {
@@ -73,20 +73,14 @@ export class RopeTangle {
         topId: prior?.topId ?? ((hash & 1) ? pair.aId : pair.bId),
         twistAngle: prior?.twistAngle
           ?? (((hash >>> 18) & 1023) / 1023) * Math.PI,
-        wraps: prior?.wraps
-          ?? (
-            sortedPairs.length >= 8 && index % 7 === 0
-              ? 3
-              : sortedPairs.length >= 4 && index % 3 === 0
-                ? 2
-                : 1
-          ),
+        wraps: 1,
         x: prior?.x ?? geometry.cx + Math.cos(angle) * radius,
         y: prior?.y ?? geometry.cy + Math.sin(angle) * radius,
         aT: prior?.aT ?? 0.5,
         bT: prior?.bT ?? 0.5,
-        stiffness: 0.2,
-        drag: 0.72,
+        stiffness: 0.18,
+        drag: 0.52,
+        anchorStrength: 0.82,
       }
 
       nextMap.set(key, knot)
@@ -139,16 +133,16 @@ export class RopeTangle {
     // Center spreading is layout initialization, not an animation force.
     // Re-running it every frame caused knots to repel one another while
     // physics simultaneously pulled them back, producing visible jitter.
-    if (hasNewKnots) this.relaxCenters(geometry)
+    if (hasNewKnots && previous.size === 0) this.relaxCenters(geometry)
 
     return this.knots
   }
 
   relaxCenters(geometry) {
-    const maxRadius = geometry.boardRadius * 0.44
-    const minDistance = Math.max(18, geometry.boardRadius * 0.09)
+    const maxRadius = geometry.boardRadius * 0.66
+    const minDistance = Math.max(30, geometry.boardRadius * 0.17)
 
-    for (let iteration = 0; iteration < 5; iteration++) {
+    for (let iteration = 0; iteration < 7; iteration++) {
       for (let i = 0; i < this.knots.length; i++) {
         const a = this.knots[i]
 
@@ -167,7 +161,7 @@ export class RopeTangle {
             distance = 1
           }
 
-          const push = (minDistance - distance) * 0.24
+          const push = (minDistance - distance) * 0.31
           const nx = dx / distance
           const ny = dy / distance
 
@@ -193,14 +187,14 @@ export class RopeTangle {
   }
 
   followPhysics(physics, geometry, { activeRopeId = null } = {}) {
-    const maxRadius = geometry.boardRadius * 0.46
-    const centerDeadZone = Math.max(1.15, geometry.boardRadius * 0.006)
+    const maxRadius = geometry.boardRadius * 0.66
+    const centerDeadZone = Math.max(1.8, geometry.boardRadius * 0.009)
 
     const nearestT = (points, x, y, currentT) => {
       const last = points.length - 1
       const currentIndex = clamp(Math.round(last * currentT), 2, last - 2)
-      const searchStart = Math.max(2, currentIndex - 2)
-      const searchEnd = Math.min(last - 2, currentIndex + 2)
+      const searchStart = Math.max(2, currentIndex - 1)
+      const searchEnd = Math.min(last - 2, currentIndex + 1)
       const currentPoint = points[currentIndex]
       const currentScore = Math.hypot(currentPoint.x - x, currentPoint.y - y)
       let bestIndex = currentIndex
@@ -211,7 +205,7 @@ export class RopeTangle {
       for (let index = searchStart; index <= searchEnd; index++) {
         const point = points[index]
         const distance = Math.hypot(point.x - x, point.y - y)
-        const travelPenalty = Math.abs(index - currentIndex) * 3.4
+        const travelPenalty = Math.abs(index - currentIndex) * 5.2
         const score = distance + travelPenalty
 
         if (score < bestScore) {
@@ -222,7 +216,7 @@ export class RopeTangle {
 
       // Hysteresis keeps the contact on its current particle unless moving
       // to a neighbor is meaningfully better.
-      if (currentScore - bestScore < 2.4) return currentT
+      if (currentScore - bestScore < 4.2) return currentT
 
       return clamp(bestIndex / last, 0.12, 0.88)
     }
@@ -237,11 +231,14 @@ export class RopeTangle {
         activeRopeId != null
         && (knot.aId === activeRopeId || knot.bId === activeRopeId)
       )
-      const maxCenterStep = isActivelyPulled
-        ? Math.max(0.45, geometry.boardRadius * 0.0035)
-        : Math.max(0.08, geometry.boardRadius * 0.00055)
-      const maxTStep = isActivelyPulled ? 0.0014 : 0.00018
-      const slideResponse = isActivelyPulled ? 0.018 : 0.006
+      // An untouched knot is a visual anchor. It should not wander while
+      // the ropes settle. Only knots belonging to the actively dragged rope
+      // are allowed to slide, and even then only very slowly.
+      if (!isActivelyPulled) continue
+
+      const maxCenterStep = Math.max(0.18, geometry.boardRadius * 0.0012)
+      const maxTStep = 0.0007
+      const slideResponse = 0.012
       const ropeA = physics.getPoints(knot.aId)
       const ropeB = physics.getPoints(knot.bId)
       if (ropeA.length < 5 || ropeB.length < 5) continue
@@ -274,7 +271,7 @@ export class RopeTangle {
       if (targetDistance > centerDeadZone) {
         const desiredStep = Math.min(
           maxCenterStep,
-          (targetDistance - centerDeadZone) * 0.035,
+          (targetDistance - centerDeadZone) * 0.02,
         )
         knot.x += (targetDx / targetDistance) * desiredStep
         knot.y += (targetDy / targetDistance) * desiredStep
@@ -323,6 +320,8 @@ export class RopeTangle {
           ...knot,
           key: `${knot.key}#${wrapIndex}`,
           parentKey: knot.key,
+          centerX: knot.x,
+          centerY: knot.y,
           wrapIndex,
           wraps,
           topId: alternate
