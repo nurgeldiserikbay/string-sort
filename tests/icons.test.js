@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { uiIcon } from '../src/ui/icons.js'
+import { hasUiIcon, uiIcon } from '../src/ui/icons.js'
 
 describe('uiIcon', () => {
   it('renders the polished gameplay icon set as accessible decorative SVG', () => {
@@ -36,6 +36,38 @@ describe('uiIcon', () => {
       expect(svg).toContain('aria-hidden="true"')
       expect(svg).toContain('stroke="currentColor"')
       expect(svg).not.toContain('emoji')
+    }
+  })
+
+
+  it('defines every icon used outside the main menu', () => {
+    for (const name of [
+      'back',
+      'pause',
+      'timer',
+      'moves',
+      'crossings',
+      'hint',
+      'undo',
+      'restart',
+      'lock',
+      'knot',
+      'twist',
+      'garden',
+      'weave',
+      'crown',
+      'trophy',
+      'home',
+      'sound',
+      'haptics',
+      'graphics',
+      'markers',
+      'info',
+      'reset',
+      'close',
+      'check',
+    ]) {
+      expect(hasUiIcon(name), `${name} should not fall back to help`).toBe(true)
     }
   })
 
