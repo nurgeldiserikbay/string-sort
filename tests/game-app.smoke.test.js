@@ -78,6 +78,7 @@ describe('GameApp interaction smoke tests', () => {
 
     app.showSettings()
     expect(root.querySelectorAll('.setting-icon .ui-svg')).toHaveLength(6)
+    expect(root.querySelector('.setting-chevron')).not.toBeNull()
   })
 
   it('opens the first playable level from the menu', () => {
@@ -97,6 +98,7 @@ describe('GameApp interaction smoke tests', () => {
 
     expect(root.querySelector('.modal-card')).not.toBeNull()
     expect(root.textContent).toContain('Paused')
+    expect(root.querySelectorAll('.modal-option-icon .ui-svg')).toHaveLength(2)
     expect(stopSpy).toHaveBeenCalled()
 
     root.querySelector('.modal-card [data-action="resume"]').click()
@@ -179,6 +181,7 @@ describe('GameApp interaction smoke tests', () => {
     root.querySelector('[data-action="about"]').click()
 
     expect(root.querySelector('.about-card')).not.toBeNull()
+    expect(root.querySelector('.privacy-modal-icon .ui-svg')).not.toBeNull()
     expect(root.textContent).toContain('Version 0.1.0')
     expect(root.textContent).toContain('works offline')
   })

@@ -148,6 +148,31 @@ describe('RopeTangle', () => {
     }
   })
 
+  it('routes multiple contacts on the same rope through distinct particles', () => {
+    const tangle = new RopeTangle(333)
+    tangle.update(
+      [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null],
+      geometry,
+    )
+
+    const constraints = tangle.buildConstraints(new Map([
+      [0, 28],
+      [1, 28],
+      [2, 28],
+      [3, 28],
+      [4, 28],
+    ]))
+
+    for (let ropeId = 0; ropeId < 5; ropeId++) {
+      const particleIndexes = constraints
+        .filter((knot) => knot.aId === ropeId || knot.bId === ropeId)
+        .map((knot) => knot.aId === ropeId ? knot.aIndex : knot.bIndex)
+
+      expect(particleIndexes.length).toBeGreaterThan(1)
+      expect(new Set(particleIndexes).size).toBe(particleIndexes.length)
+    }
+  })
+
   it('spreads dense knot centers instead of stacking every knot at the exact middle', () => {
     const tangle = new RopeTangle(456)
     const knots = tangle.update(
@@ -213,9 +238,9 @@ describe('RopeTangle', () => {
       knot.y - before.y,
     )
 
-    expect(centerMove).toBeLessThanOrEqual(0.281)
-    expect(Math.abs(knot.aT - before.aT)).toBeLessThanOrEqual(0.00071)
-    expect(Math.abs(knot.bT - before.bT)).toBeLessThanOrEqual(0.00071)
+    expect(centerMove).toBeLessThanOrEqual(0.121)
+    expect(Math.abs(knot.aT - before.aT)).toBeLessThanOrEqual(0.00036)
+    expect(Math.abs(knot.bT - before.bT)).toBeLessThanOrEqual(0.00036)
   })
 
   it('keeps idle knot contacts fixed when only rope particles vibrate', () => {

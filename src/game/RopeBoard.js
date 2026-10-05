@@ -352,7 +352,9 @@ export class RopeBoard {
 
     const ropeIds = [...new Set(this.order.filter((ropeId) => ropeId != null))]
     const logicalKnotCount = getCrossingCount(this.order)
-    const ropeSlack = clamp(1.072 + logicalKnotCount * 0.0025, 1.075, 1.14)
+    // Extra slack used to create decorative curls in the center. Keep the
+    // ropes slightly relaxed, but taut enough that every tie is readable.
+    const ropeSlack = clamp(1.058 + logicalKnotCount * 0.00135, 1.06, 1.095)
     const segmentCounts = new Map()
 
     this.physics.removeMissing(ropeIds)
