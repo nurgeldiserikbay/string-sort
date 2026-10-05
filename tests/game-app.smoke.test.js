@@ -71,6 +71,15 @@ describe('GameApp interaction smoke tests', () => {
     vi.restoreAllMocks()
   })
 
+  it('uses dedicated vector icons across level and settings pages', () => {
+    root.querySelector('[data-action="levels"]').click()
+    expect(root.querySelectorAll('.chapter-tab-icon .ui-svg')).toHaveLength(5)
+    expect(root.querySelector('.chapter-banner-icon .ui-svg')).not.toBeNull()
+
+    app.showSettings()
+    expect(root.querySelectorAll('.setting-icon .ui-svg')).toHaveLength(6)
+  })
+
   it('opens the first playable level from the menu', () => {
     root.querySelector('[data-action="play"]').click()
 
@@ -228,6 +237,7 @@ describe('GameApp interaction smoke tests', () => {
     vi.advanceTimersByTime(700)
 
     expect(root.querySelector('.complete-card')).not.toBeNull()
+    expect(root.querySelector('.complete-trophy .ui-svg')).not.toBeNull()
     expect(root.textContent).toContain('Level 1 Complete!')
     expect(app.progress.unlocked).toBeGreaterThanOrEqual(2)
 
