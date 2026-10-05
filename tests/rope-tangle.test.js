@@ -59,6 +59,38 @@ describe('RopeTangle', () => {
     expect(knot.bT).toBeCloseTo(0.5, 5)
   })
 
+  it('spreads dense geometric crossings into stable readable anchors', () => {
+    const tangle = new RopeTangle(4321)
+    const count = 11
+    const sockets = Array.from({ length: count }, (_, index) => {
+      const angle = -Math.PI / 2 + (index / count) * Math.PI * 2
+      return {
+        x: geometry.cx + Math.cos(angle) * 140,
+        y: geometry.cy + Math.sin(angle) * 140,
+      }
+    })
+
+    const knots = tangle.update(
+      [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null],
+      geometry,
+      sockets,
+    )
+
+    const distinctAnchors = new Set(
+      knots.map((knot) => (
+        `${Math.round(knot.anchorX / 6)}:${Math.round(knot.anchorY / 6)}`
+      )),
+    )
+
+    expect(knots.length).toBeGreaterThan(5)
+    expect(distinctAnchors.size).toBeGreaterThan(4)
+
+    for (const knot of knots) {
+      expect(knot.x).toBeCloseTo(knot.anchorX, 8)
+      expect(knot.y).toBeCloseTo(knot.anchorY, 8)
+    }
+  })
+
   it('maps knots onto interior rope particles', () => {
     const tangle = new RopeTangle(777)
     tangle.update([0, 1, 2, 0, 1, 2, null], geometry)
@@ -234,7 +266,7 @@ describe('RopeTangle', () => {
         x: 430 + index * 12 + offset,
         y: 420 + index * 8,
       }))
-      points[2] = {
+      points[5] = {
         x: knot.x + offset,
         y: knot.y + offset,
       }
