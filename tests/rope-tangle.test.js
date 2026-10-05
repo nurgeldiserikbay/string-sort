@@ -47,8 +47,14 @@ describe('RopeTangle', () => {
       sockets,
     )
 
-    expect(knot.x).toBeCloseTo(200, 5)
-    expect(knot.y).toBeCloseTo(200, 5)
+    const distanceFromIntersection = Math.hypot(
+      knot.x - 200,
+      knot.y - 200,
+    )
+    expect(distanceFromIntersection).toBeGreaterThan(0)
+    expect(distanceFromIntersection).toBeLessThan(4)
+    expect(knot.anchorX).toBeCloseTo(knot.x, 8)
+    expect(knot.anchorY).toBeCloseTo(knot.y, 8)
     expect(knot.aT).toBeCloseTo(0.5, 5)
     expect(knot.bT).toBeCloseTo(0.5, 5)
   })
@@ -154,18 +160,43 @@ describe('RopeTangle', () => {
       },
     }
 
-    tangle.followPhysics(physics, geometry)
+    tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
 
     const centerMove = Math.hypot(
       knot.x - before.x,
       knot.y - before.y,
     )
 
-    expect(centerMove).toBeLessThanOrEqual(
-      geometry.boardRadius * 0.0035 + 0.01,
-    )
-    expect(Math.abs(knot.aT - before.aT)).toBeLessThanOrEqual(0.00141)
-    expect(Math.abs(knot.bT - before.bT)).toBeLessThanOrEqual(0.00141)
+    expect(centerMove).toBeLessThanOrEqual(0.281)
+    expect(Math.abs(knot.aT - before.aT)).toBeLessThanOrEqual(0.00071)
+    expect(Math.abs(knot.bT - before.bT)).toBeLessThanOrEqual(0.00071)
+  })
+
+  it('keeps idle knot contacts fixed when only rope particles vibrate', () => {
+    const tangle = new RopeTangle(788)
+    const [knot] = tangle.update([0, 1, 0, 1, null], geometry)
+    const before = {
+      x: knot.x,
+      y: knot.y,
+      aT: knot.aT,
+      bT: knot.bT,
+    }
+
+    const physics = {
+      getPoints(id) {
+        return Array.from({ length: 13 }, (_, index) => ({
+          x: 300 + index * 7 + id * 20,
+          y: 280 + index * 5 + id * 15,
+        }))
+      },
+    }
+
+    tangle.followPhysics(physics, geometry)
+
+    expect(knot.x).toBeCloseTo(before.x, 8)
+    expect(knot.y).toBeCloseTo(before.y, 8)
+    expect(knot.aT).toBeCloseTo(before.aT, 8)
+    expect(knot.bT).toBeCloseTo(before.bT, 8)
   })
 
   it('lets persistent knot centers follow the physical rope bundle', () => {
@@ -186,7 +217,7 @@ describe('RopeTangle', () => {
       },
     }
 
-    tangle.followPhysics(physics, geometry)
+    tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
 
     expect(knot.x).toBeGreaterThan(before.x)
     expect(knot.y).toBeGreaterThan(before.y)
@@ -216,7 +247,7 @@ describe('RopeTangle', () => {
       },
     }
 
-    tangle.followPhysics(physics, geometry)
+    tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
 
     expect(knot.aT).toBeLessThan(beforeAT)
     expect(knot.bT).toBeLessThan(beforeBT)
