@@ -23,6 +23,12 @@ describe('uiIcon', () => {
       'markers',
       'info',
       'reset',
+      'knot',
+      'twist',
+      'garden',
+      'weave',
+      'crown',
+      'trophy',
       'close',
     ]) {
       const svg = uiIcon(name)
