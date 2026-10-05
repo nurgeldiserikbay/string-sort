@@ -14,6 +14,7 @@ describe('uiIcon', () => {
       'pause',
       'home',
       'back',
+      'forward',
       'timer',
       'crossings',
       'moves',
@@ -22,6 +23,7 @@ describe('uiIcon', () => {
       'graphics',
       'markers',
       'info',
+      'privacy',
       'reset',
       'knot',
       'twist',
@@ -43,6 +45,7 @@ describe('uiIcon', () => {
   it('defines every icon used outside the main menu', () => {
     for (const name of [
       'back',
+      'forward',
       'pause',
       'timer',
       'moves',
@@ -63,6 +66,7 @@ describe('uiIcon', () => {
       'graphics',
       'markers',
       'info',
+      'privacy',
       'reset',
       'close',
       'check',
