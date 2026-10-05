@@ -101,10 +101,16 @@ export class RopeTangle {
         index * goldenAngle
         + ((hash & 1023) / 1023) * 0.62
       ) % TAU
-      const radialBand = 0.12 + (((hash >>> 10) & 255) / 255) * 0.24
+      const radialBand = 0.22 + (((hash >>> 10) & 255) / 255) * 0.28
       const radius = geometry.boardRadius * radialBand
+      const seededX = geometry.cx + Math.cos(angle) * radius
+      const seededY = geometry.cy + Math.sin(angle) * radius
       const geometric = prior ? null : geometricKnot(pair, socketPositions)
-      if (!prior && !geometric) needsCenterRelax = true
+
+      // Logical chord intersections are often all very close to the exact
+      // board center. Use them to preserve ordering along each rope, but
+      // spread the visible physical tie centers across the inner board.
+      if (!prior) needsCenterRelax = true
 
       const knot = {
         key,
@@ -116,12 +122,16 @@ export class RopeTangle {
         // One stable physical contact per logical knot. Multiple artificial
         // wraps made dense boards collapse into unreadable mini-loops.
         wraps: 1,
-        x: prior?.x
-          ?? geometric?.x
-          ?? geometry.cx + Math.cos(angle) * radius,
-        y: prior?.y
-          ?? geometric?.y
-          ?? geometry.cy + Math.sin(angle) * radius,
+        x: prior?.x ?? (
+          geometric
+            ? geometric.x * 0.18 + seededX * 0.82
+            : seededX
+        ),
+        y: prior?.y ?? (
+          geometric
+            ? geometric.y * 0.18 + seededY * 0.82
+            : seededY
+        ),
         aT: prior?.aT ?? geometric?.aT ?? 0.5,
         bT: prior?.bT ?? geometric?.bT ?? 0.5,
         stiffness: 0.16,
@@ -140,23 +150,28 @@ export class RopeTangle {
 
     for (const [ropeId, knots] of ropeKnots) {
       knots.sort((a, b) => {
+        const aSeed = a.aId === ropeId ? a.aT : a.bT
+        const bSeed = b.aId === ropeId ? b.aT : b.bT
+
+        if (Math.abs(aSeed - bSeed) > 0.001) return aSeed - bSeed
+
         const aa = Math.atan2(a.y - geometry.cy, a.x - geometry.cx)
         const ba = Math.atan2(b.y - geometry.cy, b.x - geometry.cx)
         return aa - ba
       })
 
       knots.forEach((knot, index) => {
-        // Existing knot contacts keep their rope-relative position.
-        // Reassigning aT/bT every frame made the visible tie point jump
-        // between particles and was the main source of "swimming" knots.
-        if (previous.has(knot.key) || knot.seededFromGeometry) return
+        // Existing contacts keep their rope-relative particle. New contacts
+        // are deliberately distributed along the rope so five logical knots
+        // cannot all target the same center particle.
+        if (previous.has(knot.key)) return
 
         const spread = knots.length <= 1
           ? 0.5
-          : 0.24 + (index / (knots.length - 1)) * 0.52
+          : 0.18 + (index / (knots.length - 1)) * 0.64
 
         if (knot.aId === ropeId) knot.aT = spread
-        if (knot.bId === ropeId) knot.bT = 1 - spread
+        if (knot.bId === ropeId) knot.bT = spread
       })
     }
 
@@ -185,10 +200,10 @@ export class RopeTangle {
   }
 
   relaxCenters(geometry) {
-    const maxRadius = geometry.boardRadius * 0.58
-    const minDistance = Math.max(24, geometry.boardRadius * 0.12)
+    const maxRadius = geometry.boardRadius * 0.56
+    const minDistance = Math.max(28, geometry.boardRadius * 0.15)
 
-    for (let iteration = 0; iteration < 5; iteration++) {
+    for (let iteration = 0; iteration < 9; iteration++) {
       for (let i = 0; i < this.knots.length; i++) {
         const a = this.knots[i]
 
@@ -207,7 +222,7 @@ export class RopeTangle {
             distance = 1
           }
 
-          const push = (minDistance - distance) * 0.38
+          const push = (minDistance - distance) * 0.42
           const nx = dx / distance
           const ny = dy / distance
 
@@ -278,10 +293,10 @@ export class RopeTangle {
         && (knot.aId === activeRopeId || knot.bId === activeRopeId)
       )
       const maxCenterStep = isActivelyPulled
-        ? Math.max(0.45, geometry.boardRadius * 0.0035)
-        : Math.max(0.08, geometry.boardRadius * 0.00055)
-      const maxTStep = isActivelyPulled ? 0.0014 : 0.00018
-      const slideResponse = isActivelyPulled ? 0.018 : 0.006
+        ? Math.max(0.34, geometry.boardRadius * 0.0024)
+        : Math.max(0.03, geometry.boardRadius * 0.00018)
+      const maxTStep = isActivelyPulled ? 0.0009 : 0.00006
+      const slideResponse = isActivelyPulled ? 0.012 : 0.002
       const ropeA = physics.getPoints(knot.aId)
       const ropeB = physics.getPoints(knot.bId)
       if (ropeA.length < 5 || ropeB.length < 5) continue

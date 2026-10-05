@@ -14,11 +14,11 @@ const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
 
 const LEVEL_CHAPTERS = [
-  { title: 'First Knots', subtitle: 'Learn the empty-socket rhythm', start: 1, end: 20 },
-  { title: 'Twist Lab', subtitle: 'More ropes, tighter turns', start: 21, end: 40 },
-  { title: 'Tangle Garden', subtitle: 'Dense colorful bundles', start: 41, end: 60 },
-  { title: 'Knot Works', subtitle: 'Double wraps and longer routes', start: 61, end: 80 },
-  { title: 'Master Board', subtitle: 'The hardest tangles', start: 81, end: 100 },
+  { title: 'First Knots', subtitle: 'Learn the empty-socket rhythm', start: 1, end: 20, icon: 'chapterStart' },
+  { title: 'Twist Lab', subtitle: 'More ropes, tighter turns', start: 21, end: 40, icon: 'chapterTwist' },
+  { title: 'Tangle Garden', subtitle: 'Dense colorful bundles', start: 41, end: 60, icon: 'chapterGarden' },
+  { title: 'Knot Works', subtitle: 'Readable physical ties', start: 61, end: 80, icon: 'chapterKnot' },
+  { title: 'Master Board', subtitle: 'The hardest tangles', start: 81, end: 100, icon: 'chapterMaster' },
 ]
 
 function formatTime(seconds) {
@@ -289,8 +289,8 @@ export class GameApp {
           ${unlocked ? '' : 'disabled'}
           aria-label="${item.title}${unlocked ? '' : ', locked'}"
         >
-          <span class="chapter-tab-icon">
-            ${uiIcon('levels')}
+          <span class="chapter-tab-icon chapter-icon-${index}">
+            ${uiIcon(item.icon)}
             <small>${index + 1}</small>
           </span>
           <b>${item.title}</b>
@@ -706,7 +706,7 @@ export class GameApp {
           <div>
             <span class="setting-label"><span class="setting-icon info-setting">${uiIcon('info')}</span><span>About</span></span>
             <button class="setting-toggle neutral-toggle setting-action" data-action="about">
-              <span>Open</span>${uiIcon('back', 'ui-svg setting-chevron')}
+              <span>Open</span>${uiIcon('chevronRight', 'ui-svg setting-chevron')}
             </button>
           </div>
           <div>
