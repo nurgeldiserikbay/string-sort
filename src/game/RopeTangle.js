@@ -112,7 +112,7 @@ export class RopeTangle {
       const density = clamp((sortedPairs.length - 1) / 10, 0, 1)
       const spiralRadius = geometric
         ? geometry.boardRadius
-          * (0.035 + density * (0.05 + (index % 5) * 0.022))
+          * (0.018 + density * (0.075 + (index % 5) * 0.024))
         : 0
       const spiralAngle = (
         index * goldenAngle
