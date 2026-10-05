@@ -278,10 +278,10 @@ export class RopeTangle {
         && (knot.aId === activeRopeId || knot.bId === activeRopeId)
       )
       const maxCenterStep = isActivelyPulled
-        ? Math.max(0.45, geometry.boardRadius * 0.0035)
-        : Math.max(0.08, geometry.boardRadius * 0.00055)
-      const maxTStep = isActivelyPulled ? 0.0014 : 0.00018
-      const slideResponse = isActivelyPulled ? 0.018 : 0.006
+        ? Math.max(0.34, geometry.boardRadius * 0.0024)
+        : Math.max(0.03, geometry.boardRadius * 0.00018)
+      const maxTStep = isActivelyPulled ? 0.0009 : 0.00006
+      const slideResponse = isActivelyPulled ? 0.012 : 0.002
       const ropeA = physics.getPoints(knot.aId)
       const ropeB = physics.getPoints(knot.bId)
       if (ropeA.length < 5 || ropeB.length < 5) continue
