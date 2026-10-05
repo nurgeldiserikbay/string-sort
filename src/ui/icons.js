@@ -145,6 +145,10 @@ const ICONS = {
   check: '<path d="m5.8 12.3 3.8 3.8 8.6-8.6"/>',
 }
 
+export function hasUiIcon(name) {
+  return Object.prototype.hasOwnProperty.call(ICONS, name)
+}
+
 export function uiIcon(name, className = 'ui-svg') {
   const icon = ICONS[name] ?? ICONS.help
 

@@ -635,17 +635,17 @@ export class RopeBoard {
       const width = clamp(g.size * 0.0148, 5.2, 9.4) * (1 - tension * 0.12)
 
       ctx.save()
-      ctx.lineCap = 'butt'
+      ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
 
       ctx.beginPath()
       ctx.moveTo(p0.x, p0.y)
       ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
-      ctx.strokeStyle = 'rgba(20,22,27,.56)'
-      ctx.lineWidth = width + 3.2
-      ctx.shadowColor = 'rgba(0,0,0,.28)'
-      ctx.shadowBlur = 2.5
-      ctx.shadowOffsetY = 1.5
+      ctx.strokeStyle = 'rgba(33,36,43,.94)'
+      ctx.lineWidth = width + 5
+      ctx.shadowColor = 'rgba(0,0,0,.24)'
+      ctx.shadowBlur = 2
+      ctx.shadowOffsetY = 1.2
       ctx.stroke()
 
       ctx.shadowColor = 'transparent'
@@ -659,8 +659,8 @@ export class RopeBoard {
       ctx.beginPath()
       ctx.moveTo(p0.x, p0.y)
       ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
-      ctx.strokeStyle = 'rgba(255,255,255,.18)'
-      ctx.lineWidth = Math.max(1, width * 0.15)
+      ctx.strokeStyle = 'rgba(255,255,255,.26)'
+      ctx.lineWidth = Math.max(1.1, width * 0.17)
       ctx.stroke()
 
       ctx.restore()
