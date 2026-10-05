@@ -43,6 +43,36 @@ const ICONS = {
   ].join(''),
 
   back: '<path d="m14.8 5.6-6.4 6.4 6.4 6.4"/>',
+  chevronRight: '<path d="m9.2 5.6 6.4 6.4-6.4 6.4"/>',
+
+  chapterStart: [
+    '<path d="M6.2 18.2 12 5.8l5.8 12.4"/>',
+    '<path d="M8.2 14.2h7.6"/>',
+    '<circle cx="12" cy="18.2" r="1.2" fill="currentColor" stroke="none"/>',
+  ].join(''),
+
+  chapterTwist: [
+    '<path d="M5 7.2c3.4-2.8 10.6-2.8 14 0"/>',
+    '<path d="M5 16.8c3.4 2.8 10.6 2.8 14 0"/>',
+    '<path d="M8.5 5.4 15.5 18.6M15.5 5.4 8.5 18.6"/>',
+  ].join(''),
+
+  chapterGarden: [
+    '<path d="M12 19v-7"/>',
+    '<path d="M12 12c-4.6.1-6.5-2.4-6.6-5.7 3.5-.2 6.2 1.7 6.6 5.7Z"/>',
+    '<path d="M12 12c4.6.1 6.5-2.4 6.6-5.7-3.5-.2-6.2 1.7-6.6 5.7Z"/>',
+  ].join(''),
+
+  chapterKnot: [
+    '<path d="M7 7c2.8 0 3.2 3.2 5 5s2.2 5 5 5"/>',
+    '<path d="M17 7c-2.8 0-3.2 3.2-5 5s-2.2 5-5 5"/>',
+    '<circle cx="7" cy="7" r="1.5"/><circle cx="17" cy="17" r="1.5"/>',
+  ].join(''),
+
+  chapterMaster: [
+    '<path d="m5 9 3.2 2.2L12 5l3.8 6.2L19 9l-1.2 9H6.2Z"/>',
+    '<path d="M7 18h10"/>',
+  ].join(''),
 
   timer: [
     '<circle cx="12" cy="13" r="7.1"/>',
