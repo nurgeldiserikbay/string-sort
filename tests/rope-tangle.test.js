@@ -31,7 +31,7 @@ describe('RopeTangle', () => {
     expect(tangle.consumeReleased()).toHaveLength(0)
   })
 
-  it('initializes a new knot at the real chord intersection', () => {
+  it('uses chord geometry for ordering but offsets the visible tie from center', () => {
     const tangle = new RopeTangle(321)
     const sockets = [
       { x: 80, y: 80 },
@@ -47,8 +47,12 @@ describe('RopeTangle', () => {
       sockets,
     )
 
-    expect(knot.x).toBeCloseTo(200, 5)
-    expect(knot.y).toBeCloseTo(200, 5)
+    const distanceFromCenter = Math.hypot(
+      knot.x - geometry.cx,
+      knot.y - geometry.cy,
+    )
+
+    expect(distanceFromCenter).toBeGreaterThan(geometry.boardRadius * 0.12)
     expect(knot.aT).toBeCloseTo(0.5, 5)
     expect(knot.bT).toBeCloseTo(0.5, 5)
   })
@@ -109,6 +113,38 @@ describe('RopeTangle', () => {
 
     expect(knots.length).toBeGreaterThan(5)
     expect(distinct.size).toBeGreaterThan(3)
+  })
+
+  it('spreads dense geometric knots across the board and along each rope', () => {
+    const tangle = new RopeTangle(812)
+    const order = [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, null]
+    const sockets = order.map((_, index) => {
+      const angle = -Math.PI / 2 + (index / order.length) * Math.PI * 2
+      const radius = geometry.boardRadius * 0.88
+      return {
+        x: geometry.cx + Math.cos(angle) * radius,
+        y: geometry.cy + Math.sin(angle) * radius,
+      }
+    })
+
+    const knots = tangle.update(order, geometry, sockets)
+    const distances = knots.map((knot) => Math.hypot(
+      knot.x - geometry.cx,
+      knot.y - geometry.cy,
+    ))
+    const ropeZeroTs = knots
+      .filter((knot) => knot.aId === 0 || knot.bId === 0)
+      .map((knot) => knot.aId === 0 ? knot.aT : knot.bT)
+      .sort((a, b) => a - b)
+
+    expect(knots.length).toBeGreaterThan(5)
+    expect(Math.max(...distances)).toBeGreaterThan(
+      geometry.boardRadius * 0.3,
+    )
+
+    for (let index = 1; index < ropeZeroTs.length; index++) {
+      expect(ropeZeroTs[index] - ropeZeroTs[index - 1]).toBeGreaterThan(0.08)
+    }
   })
 
   it('keeps an existing knot stable across repeated topology updates', () => {
