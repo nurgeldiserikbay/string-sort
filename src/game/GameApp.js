@@ -553,8 +553,14 @@ export class GameApp {
         <button class="modal-close" data-action="resume" aria-label="Resume">${uiIcon('close')}</button>
         <h2>Paused</h2>
         <button class="primary-button" data-action="resume">${uiIcon('play')} Resume</button>
-        <button class="modal-option" data-action="restart">${uiIcon('restart')} Restart</button>
-        <button class="modal-option" data-action="menu">${uiIcon('home')} Main menu</button>
+        <button class="modal-option" data-action="restart">
+          <span class="modal-option-icon restart-modal-icon">${uiIcon('restart')}</span>
+          <span>Restart</span>
+        </button>
+        <button class="modal-option" data-action="menu">
+          <span class="modal-option-icon home-modal-icon">${uiIcon('home')}</span>
+          <span>Main menu</span>
+        </button>
       </section>
     `
     this.pauseOverlay = overlay
@@ -707,7 +713,7 @@ export class GameApp {
           <div>
             <span class="setting-label"><span class="setting-icon info-setting">${uiIcon('info')}</span><span>About</span></span>
             <button class="setting-toggle neutral-toggle setting-action" data-action="about">
-              <span>Open</span>${uiIcon('back', 'ui-svg setting-chevron')}
+              <span>Open</span>${uiIcon('forward', 'ui-svg setting-chevron')}
             </button>
           </div>
           <div>
@@ -761,7 +767,10 @@ export class GameApp {
         <div class="privacy-summary">
           ${privacySummary().map((line) => `<p>• ${line}</p>`).join('')}
         </div>
-        <button class="modal-option" data-action="privacy">${uiIcon('info')} Privacy details</button>
+        <button class="modal-option" data-action="privacy">
+          <span class="modal-option-icon privacy-modal-icon">${uiIcon('privacy')}</span>
+          <span>Privacy details</span>
+        </button>
         <button class="primary-button" data-action="close">${uiIcon('check')} Done</button>
       </section>
     `
@@ -784,7 +793,10 @@ export class GameApp {
       <section class="modal-card">
         <h2>Reset progress?</h2>
         <p class="modal-copy">Stars, best times and unlocked levels on this device will be cleared.</p>
-        <button class="modal-option danger-option" data-action="confirm">${uiIcon('reset')} Reset progress</button>
+        <button class="modal-option danger-option" data-action="confirm">
+          <span class="modal-option-icon reset-modal-icon">${uiIcon('reset')}</span>
+          <span>Reset progress</span>
+        </button>
         <button class="primary-button" data-action="cancel">${uiIcon('check')} Keep progress</button>
       </section>
     `
