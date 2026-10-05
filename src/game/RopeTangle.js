@@ -104,7 +104,7 @@ export class RopeTangle {
       const radialBand = 0.12 + (((hash >>> 10) & 255) / 255) * 0.24
       const radius = geometry.boardRadius * radialBand
       const geometric = prior ? null : geometricKnot(pair, socketPositions)
-      if (!prior && !geometric) needsCenterRelax = true
+      if (!prior) needsCenterRelax = true
 
       // Logical chord intersections often land almost on the same center
       // point. A small deterministic spiral separates those contacts once,
@@ -112,7 +112,7 @@ export class RopeTangle {
       const density = clamp((sortedPairs.length - 1) / 10, 0, 1)
       const spiralRadius = geometric
         ? geometry.boardRadius
-          * (0.018 + density * (0.035 + (index % 5) * 0.018))
+          * (0.035 + density * (0.05 + (index % 5) * 0.022))
         : 0
       const spiralAngle = (
         index * goldenAngle
@@ -208,10 +208,10 @@ export class RopeTangle {
   }
 
   relaxCenters(geometry) {
-    const maxRadius = geometry.boardRadius * 0.58
-    const minDistance = Math.max(24, geometry.boardRadius * 0.12)
+    const maxRadius = geometry.boardRadius * 0.47
+    const minDistance = Math.max(28, geometry.boardRadius * 0.145)
 
-    for (let iteration = 0; iteration < 5; iteration++) {
+    for (let iteration = 0; iteration < 9; iteration++) {
       for (let i = 0; i < this.knots.length; i++) {
         const a = this.knots[i]
 
@@ -230,7 +230,7 @@ export class RopeTangle {
             distance = 1
           }
 
-          const push = (minDistance - distance) * 0.38
+          const push = (minDistance - distance) * 0.44
           const nx = dx / distance
           const ny = dy / distance
 
@@ -256,7 +256,7 @@ export class RopeTangle {
   }
 
   followPhysics(physics, geometry, { activeRopeId = null } = {}) {
-    const maxRadius = geometry.boardRadius * 0.58
+    const maxRadius = geometry.boardRadius * 0.47
     const activeLeash = Math.max(8, geometry.boardRadius * 0.055)
 
     const nearestT = (points, x, y, currentT) => {
@@ -362,7 +362,7 @@ export class RopeTangle {
       const dx = knot.x - geometry.cx
       const dy = knot.y - geometry.cy
       const distance = Math.hypot(dx, dy)
-      const maxRadius = geometry.boardRadius * 0.58
+      const maxRadius = geometry.boardRadius * 0.47
 
       if (distance > maxRadius) {
         const scale = maxRadius / distance
