@@ -300,7 +300,10 @@ export class RopePhysics {
 
       const midpointX = (a.x + b.x) / 2
       const midpointY = (a.y + b.y) / 2
-      const anchorStrength = 0.22
+      // Keep the two rope particles visibly tied to the stable knot anchor.
+      // A weak anchor lets every crossing collapse back toward the shared
+      // rope midpoint, which recreates the unreadable center bundle.
+      const anchorStrength = 0.62
       const targetX = midpointX + (knot.x - midpointX) * anchorStrength
       const targetY = midpointY + (knot.y - midpointY) * anchorStrength
       const stiffness = knot.stiffness ?? 0.18
