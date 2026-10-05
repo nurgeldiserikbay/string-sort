@@ -20,6 +20,15 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
 }
 
+function contactTFor(knot, ropeId) {
+  return knot.aId === ropeId ? knot.aT : knot.bT
+}
+
+function setContactT(knot, ropeId, value) {
+  if (knot.aId === ropeId) knot.aT = value
+  if (knot.bId === ropeId) knot.bT = value
+}
+
 function segmentIntersection(a0, a1, b0, b1) {
   const rX = a1.x - a0.x
   const rY = a1.y - a0.y
@@ -144,6 +153,7 @@ export class RopeTangle {
         stiffness: 0.16,
         drag: 0.82,
         seededFromGeometry: Boolean(geometric),
+        wasActive: prior?.wasActive ?? false,
       }
 
       nextMap.set(key, knot)
@@ -156,24 +166,25 @@ export class RopeTangle {
     })
 
     for (const [ropeId, knots] of ropeKnots) {
-      knots.sort((a, b) => {
-        const aa = Math.atan2(a.y - geometry.cy, a.x - geometry.cx)
-        const ba = Math.atan2(b.y - geometry.cy, b.x - geometry.cx)
-        return aa - ba
+      const ordered = [...knots].sort((a, b) => {
+        const delta = contactTFor(a, ropeId) - contactTFor(b, ropeId)
+        return Math.abs(delta) > 0.0001
+          ? delta
+          : a.key.localeCompare(b.key)
       })
 
-      knots.forEach((knot, index) => {
-        // Existing knot contacts keep their rope-relative position.
-        // Reassigning aT/bT every frame made the visible tie point jump
-        // between particles and was the main source of "swimming" knots.
-        if (previous.has(knot.key) || knot.seededFromGeometry) return
+      ordered.forEach((knot, index) => {
+        // A dense rope can participate in many logical knots. Mapping all
+        // those knots to the same middle particle creates the tiny loops
+        // visible in the old center bundle. Give each contact a distinct,
+        // ordered section of the rope instead.
+        if (previous.has(knot.key)) return
 
-        const spread = knots.length <= 1
+        const spread = ordered.length <= 1
           ? 0.5
-          : 0.24 + (index / (knots.length - 1)) * 0.52
+          : 0.2 + (index / (ordered.length - 1)) * 0.6
 
-        if (knot.aId === ropeId) knot.aT = spread
-        if (knot.bId === ropeId) knot.bT = 1 - spread
+        setContactT(knot, ropeId, spread)
       })
     }
 
@@ -257,7 +268,7 @@ export class RopeTangle {
 
   followPhysics(physics, geometry, { activeRopeId = null } = {}) {
     const maxRadius = geometry.boardRadius * 0.47
-    const activeLeash = Math.max(8, geometry.boardRadius * 0.055)
+    const activeLeash = Math.max(6, geometry.boardRadius * 0.035)
 
     const nearestT = (points, x, y, currentT) => {
       const last = points.length - 1
@@ -295,20 +306,18 @@ export class RopeTangle {
       const anchorY = knot.anchorY ?? knot.y
 
       if (!isActivelyPulled) {
-        // At rest the tie must read as a fixed physical connection.
-        // Settle extremely slowly back to its stable anchor instead of
-        // continuously following tiny solver vibrations.
-        const dx = anchorX - knot.x
-        const dy = anchorY - knot.y
-        const distance = Math.hypot(dx, dy)
-
-        if (distance > 0.7) {
-          const step = Math.min(0.09, distance * 0.025)
-          knot.x += (dx / distance) * step
-          knot.y += (dy / distance) * step
+        // The knot must be visually readable when the player is not
+        // touching it. Commit the last dragged position once, then freeze
+        // the contact completely instead of letting solver noise move it.
+        if (knot.wasActive) {
+          knot.anchorX = knot.x
+          knot.anchorY = knot.y
         }
+        knot.wasActive = false
         continue
       }
+
+      knot.wasActive = true
 
       const ropeA = physics.getPoints(knot.aId)
       const ropeB = physics.getPoints(knot.bId)
@@ -316,10 +325,10 @@ export class RopeTangle {
 
       const nextAT = nearestT(ropeA, knot.x, knot.y, knot.aT)
       const nextBT = nearestT(ropeB, knot.x, knot.y, knot.bT)
-      const maxTStep = 0.0007
+      const maxTStep = 0.00035
 
-      knot.aT += clamp((nextAT - knot.aT) * 0.012, -maxTStep, maxTStep)
-      knot.bT += clamp((nextBT - knot.bT) * 0.012, -maxTStep, maxTStep)
+      knot.aT += clamp((nextAT - knot.aT) * 0.008, -maxTStep, maxTStep)
+      knot.bT += clamp((nextBT - knot.bT) * 0.008, -maxTStep, maxTStep)
 
       const aIndex = clamp(
         Math.round((ropeA.length - 1) * knot.aT),
@@ -340,8 +349,8 @@ export class RopeTangle {
       const targetDy = targetY - knot.y
       const targetDistance = Math.hypot(targetDx, targetDy)
 
-      if (targetDistance > 2.5) {
-        const step = Math.min(0.28, (targetDistance - 2.5) * 0.018)
+      if (targetDistance > 3) {
+        const step = Math.min(0.12, (targetDistance - 3) * 0.012)
         knot.x += (targetDx / targetDistance) * step
         knot.y += (targetDy / targetDistance) * step
       }
