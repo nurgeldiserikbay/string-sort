@@ -14,11 +14,11 @@ const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
 
 const LEVEL_CHAPTERS = [
-  { title: 'First Knots', subtitle: 'Learn the empty-socket rhythm', start: 1, end: 20 },
-  { title: 'Twist Lab', subtitle: 'More ropes, tighter turns', start: 21, end: 40 },
-  { title: 'Tangle Garden', subtitle: 'Dense colorful bundles', start: 41, end: 60 },
-  { title: 'Knot Works', subtitle: 'Double wraps and longer routes', start: 61, end: 80 },
-  { title: 'Master Board', subtitle: 'The hardest tangles', start: 81, end: 100 },
+  { title: 'First Knots', subtitle: 'Learn the empty-socket rhythm', start: 1, end: 20, icon: 'knot' },
+  { title: 'Twist Lab', subtitle: 'More ropes, tighter turns', start: 21, end: 40, icon: 'twist' },
+  { title: 'Tangle Garden', subtitle: 'Dense colorful bundles', start: 41, end: 60, icon: 'garden' },
+  { title: 'Knot Works', subtitle: 'Tighter physical ties and longer routes', start: 61, end: 80, icon: 'weave' },
+  { title: 'Master Board', subtitle: 'The hardest tangles', start: 81, end: 100, icon: 'crown' },
 ]
 
 function formatTime(seconds) {
@@ -289,8 +289,8 @@ export class GameApp {
           ${unlocked ? '' : 'disabled'}
           aria-label="${item.title}${unlocked ? '' : ', locked'}"
         >
-          <span class="chapter-tab-icon">
-            ${uiIcon('levels')}
+          <span class="chapter-tab-icon chapter-icon-${index}">
+            ${uiIcon(item.icon)}
             <small>${index + 1}</small>
           </span>
           <b>${item.title}</b>
@@ -312,7 +312,7 @@ export class GameApp {
         <nav class="chapter-tabs" aria-label="Level chapters">${tabs}</nav>
 
         <section class="chapter-banner chapter-tone-${this.levelChapter}">
-          <span class="chapter-number">Chapter ${this.levelChapter + 1}</span>
+          <span class="chapter-banner-icon">${uiIcon(chapter.icon)}</span>
           <div>
             <h2>${chapter.title}</h2>
             <p>Levels ${chapter.start}–${chapter.end}</p>
@@ -617,6 +617,7 @@ export class GameApp {
     overlay.innerHTML = `
       <div class="confetti" aria-hidden="true"></div>
       <section class="complete-card">
+        <div class="complete-trophy">${uiIcon('trophy')}</div>
         ${starRow(stars, 'stars')}
         <div class="ribbon">Great!</div>
         <h2>Level ${this.levelNumber} Complete!</h2>
