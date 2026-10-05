@@ -82,8 +82,22 @@ describe('RopeTangle', () => {
       )),
     )
 
+    let minimumDistance = Infinity
+    for (let i = 0; i < knots.length; i++) {
+      for (let j = i + 1; j < knots.length; j++) {
+        minimumDistance = Math.min(
+          minimumDistance,
+          Math.hypot(
+            knots[i].anchorX - knots[j].anchorX,
+            knots[i].anchorY - knots[j].anchorY,
+          ),
+        )
+      }
+    }
+
     expect(knots.length).toBeGreaterThan(5)
     expect(distinctAnchors.size).toBeGreaterThan(4)
+    expect(minimumDistance).toBeGreaterThan(14)
 
     for (const knot of knots) {
       expect(knot.x).toBeCloseTo(knot.anchorX, 8)
