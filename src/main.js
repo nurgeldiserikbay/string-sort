@@ -1,4 +1,5 @@
 import './styles.css'
+import './ui/secondaryScreens.css'
 import { GameApp } from './game/GameApp.js'
 import { applyMonetizationLayout } from './game/MonetizationLayout.js'
 
