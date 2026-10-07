@@ -219,10 +219,13 @@ export class RopeTangle {
   }
 
   relaxCenters(geometry) {
-    const maxRadius = geometry.boardRadius * 0.47
-    const minDistance = Math.max(28, geometry.boardRadius * 0.145)
+    // Give every logical contact its own small piece of visual space.
+    // This is intentionally a one-time layout relaxation: it improves
+    // readability without introducing any continuous repulsion/jitter.
+    const maxRadius = geometry.boardRadius * 0.43
+    const minDistance = Math.max(34, geometry.boardRadius * 0.18)
 
-    for (let iteration = 0; iteration < 9; iteration++) {
+    for (let iteration = 0; iteration < 12; iteration++) {
       for (let i = 0; i < this.knots.length; i++) {
         const a = this.knots[i]
 
@@ -241,7 +244,7 @@ export class RopeTangle {
             distance = 1
           }
 
-          const push = (minDistance - distance) * 0.44
+          const push = (minDistance - distance) * 0.48
           const nx = dx / distance
           const ny = dy / distance
 
@@ -267,8 +270,8 @@ export class RopeTangle {
   }
 
   followPhysics(physics, geometry, { activeRopeId = null } = {}) {
-    const maxRadius = geometry.boardRadius * 0.47
-    const activeLeash = Math.max(6, geometry.boardRadius * 0.035)
+    const maxRadius = geometry.boardRadius * 0.43
+    const activeLeash = Math.max(5, geometry.boardRadius * 0.028)
 
     const nearestT = (points, x, y, currentT) => {
       const last = points.length - 1
@@ -325,10 +328,10 @@ export class RopeTangle {
 
       const nextAT = nearestT(ropeA, knot.x, knot.y, knot.aT)
       const nextBT = nearestT(ropeB, knot.x, knot.y, knot.bT)
-      const maxTStep = 0.00035
+      const maxTStep = 0.00024
 
-      knot.aT += clamp((nextAT - knot.aT) * 0.008, -maxTStep, maxTStep)
-      knot.bT += clamp((nextBT - knot.bT) * 0.008, -maxTStep, maxTStep)
+      knot.aT += clamp((nextAT - knot.aT) * 0.006, -maxTStep, maxTStep)
+      knot.bT += clamp((nextBT - knot.bT) * 0.006, -maxTStep, maxTStep)
 
       const aIndex = clamp(
         Math.round((ropeA.length - 1) * knot.aT),
@@ -350,7 +353,7 @@ export class RopeTangle {
       const targetDistance = Math.hypot(targetDx, targetDy)
 
       if (targetDistance > 3) {
-        const step = Math.min(0.12, (targetDistance - 3) * 0.012)
+        const step = Math.min(0.085, (targetDistance - 3) * 0.009)
         knot.x += (targetDx / targetDistance) * step
         knot.y += (targetDy / targetDistance) * step
       }
@@ -371,7 +374,7 @@ export class RopeTangle {
       const dx = knot.x - geometry.cx
       const dy = knot.y - geometry.cy
       const distance = Math.hypot(dx, dy)
-      const maxRadius = geometry.boardRadius * 0.47
+      const maxRadius = geometry.boardRadius * 0.43
 
       if (distance > maxRadius) {
         const scale = maxRadius / distance
