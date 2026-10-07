@@ -95,6 +95,7 @@ describe('GameApp interaction smoke tests', () => {
     expect(root.querySelector('.level-progress-card')).not.toBeNull()
     expect(root.querySelector('.level-progress-track')).not.toBeNull()
     expect(root.querySelector('.objective-pill')).not.toBeNull()
+    expect(root.querySelector('.game-star-pill .coin-star')).not.toBeNull()
     expect(root.querySelectorAll('.premium-status .game-stat-card')).toHaveLength(2)
     expect(root.querySelector('.moves-stat .status-icon .ui-svg')).not.toBeNull()
     expect(root.querySelector('.knots-stat .status-icon .ui-svg')).not.toBeNull()
