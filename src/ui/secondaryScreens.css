@@ -506,6 +506,10 @@
 .privacy-summary p {
   margin: 0;
   padding: 9px 11px;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 8px;
+  align-items: start;
   border-radius: 14px;
   background: rgba(255,255,255,.58);
   border: 1.5px solid rgba(255,255,255,.62);
@@ -513,6 +517,18 @@
   font-size: 12px;
   font-weight: 700;
   line-height: 1.35;
+}
+
+.privacy-check {
+  width: 22px;
+  height: 22px;
+  padding: 4px;
+  border-radius: 8px;
+  color: #31945c;
+  background: linear-gradient(180deg, #e8f9ed, #ccefd8);
+  border: 1.5px solid rgba(255,255,255,.72);
+  box-shadow: 0 2px 0 rgba(66,126,85,.1);
+  stroke-width: 2.5;
 }
 
 /* Reset confirmation */
