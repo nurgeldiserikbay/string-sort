@@ -396,7 +396,7 @@ export class GameApp {
             <strong data-moves>0</strong>
           </div>
           <div class="game-stat-card knots-stat" data-crossing-card>
-            <span class="status-icon">${uiIcon('crossings')}</span>
+            <span class="status-icon">${uiIcon('knot')}</span>
             <span class="game-stat-copy">
               <span>Knots remaining</span>
               <small>Clear every crossing</small>
