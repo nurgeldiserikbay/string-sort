@@ -74,6 +74,35 @@ describe('RopeBoard pointer interaction', () => {
     expect(board.dragIndex).toBe(-1)
   })
 
+  it('eases a moved rope endpoint into the empty socket', () => {
+    board = new RopeBoard(canvas, {
+      onSwap: vi.fn(),
+      onSolved: vi.fn(),
+      graphics: 'battery',
+    })
+
+    const now = vi.spyOn(performance, 'now')
+    now.mockReturnValue(1000)
+    board.setOrder([0, 1, 0, 1, null], { animate: false })
+
+    const from = board.socketPosition(1)
+    const target = board.socketPosition(4)
+
+    board.setOrder([0, null, 0, 1, 1])
+    const start = board.transitionedSocketPosition(4, 1, 1000)
+
+    expect(start.x).toBeCloseTo(from.x, 5)
+    expect(start.y).toBeCloseTo(from.y, 5)
+
+    const middle = board.transitionedSocketPosition(4, 1, 1120)
+    expect(Math.hypot(middle.x - target.x, middle.y - target.y))
+      .toBeLessThan(Math.hypot(from.x - target.x, from.y - target.y))
+
+    const end = board.transitionedSocketPosition(4, 1, 1240)
+    expect(end.x).toBeCloseTo(target.x, 5)
+    expect(end.y).toBeCloseTo(target.y, 5)
+  })
+
   it('cancels a pointer-cancel gesture without moving a peg', () => {
     const onSwap = vi.fn()
     board = new RopeBoard(canvas, {
