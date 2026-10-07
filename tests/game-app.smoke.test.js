@@ -71,6 +71,22 @@ describe('GameApp interaction smoke tests', () => {
     vi.restoreAllMocks()
   })
 
+  it('renders the premium main-menu hierarchy', () => {
+    expect(root.querySelector('.menu-screen .logo-polished')).not.toBeNull()
+    expect(root.querySelector('.video-board-preview [data-menu-preview]')).not.toBeNull()
+    expect(root.querySelector('.glossy-play')).not.toBeNull()
+    expect(root.querySelectorAll('.menu-action-grid .menu-action-card')).toHaveLength(3)
+    expect(root.querySelectorAll('.menu-action-card .ui-svg')).toHaveLength(3)
+  })
+
+  it('uses semantic icons throughout How to Play', () => {
+    root.querySelector('[data-action="how-to-play"]').click()
+
+    expect(root.querySelector('.how-to-card')).not.toBeNull()
+    expect(root.querySelectorAll('.how-step-icon .ui-svg')).toHaveLength(3)
+    expect(root.querySelector('.how-to-card .primary-button .ui-svg')).not.toBeNull()
+  })
+
   it('uses dedicated vector icons across level and settings pages', () => {
     root.querySelector('[data-action="levels"]').click()
     expect(root.querySelectorAll('.chapter-tab-icon .ui-svg')).toHaveLength(5)
