@@ -1,0 +1,289 @@
+/*
+ * Main menu visual system
+ * Keeps the home screen in the same polished toy-like language as gameplay.
+ */
+
+.menu-screen {
+  --menu-ink: #17365f;
+  --menu-brown: #684426;
+  background:
+    radial-gradient(ellipse at 6% 15%, rgba(132, 193, 75, .15) 0 7%, transparent 18%),
+    radial-gradient(ellipse at 94% 9%, rgba(117, 184, 74, .14) 0 7%, transparent 18%),
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.9), transparent 31%),
+    linear-gradient(180deg, #fff8e8 0%, #f7dfb2 100%);
+}
+
+.menu-screen .topbar {
+  height: 76px;
+  padding: max(14px, env(safe-area-inset-top)) 18px 6px;
+}
+
+.menu-screen .topbar .soft-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  border: 2px solid rgba(255,255,255,.82);
+  color: #405875;
+  background: linear-gradient(180deg, #fffefa 0%, #f0e2c9 100%);
+  box-shadow:
+    inset 0 3px 2px rgba(255,255,255,.78),
+    0 5px 0 #d3ba91,
+    0 10px 18px rgba(82,55,30,.13);
+}
+
+.menu-screen .topbar .coin-pill {
+  min-width: 78px;
+  min-height: 46px;
+  border: 2px solid rgba(255,255,255,.82);
+  border-radius: 18px;
+  color: #20385d;
+  background: linear-gradient(180deg, #fffefa, #f3e7d2);
+  box-shadow:
+    inset 0 2px rgba(255,255,255,.72),
+    0 4px 0 #d6bf9b,
+    0 8px 14px rgba(79,55,32,.1);
+}
+
+.menu-screen .hero-card {
+  height: calc(100% - 108px);
+  padding: 1vh 18px 22px;
+}
+
+.menu-screen .logo-polished {
+  position: relative;
+  z-index: 2;
+  line-height: .8;
+  letter-spacing: -3.5px;
+  filter:
+    drop-shadow(0 4px 0 #17365a)
+    drop-shadow(0 11px 12px rgba(76,48,24,.18));
+}
+
+.menu-screen .logo-polished span {
+  font-size: clamp(56px, 14.5vw, 82px);
+  color: #ffbd27;
+  -webkit-text-stroke: 4px #17365a;
+  text-shadow: 0 3px 0 #e98c12;
+}
+
+.menu-screen .logo-polished strong {
+  font-size: clamp(58px, 15.5vw, 88px);
+  color: #f6f9ff;
+  -webkit-text-stroke: 4px #17365a;
+  text-shadow: 0 3px 0 #a9c3e6;
+}
+
+.menu-screen .menu-tagline {
+  margin: 17px 0 5px !important;
+  padding: 7px 17px !important;
+  border: 2px solid rgba(225,178,103,.48);
+  border-radius: 999px !important;
+  color: #704720;
+  background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(250,235,208,.82)) !important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.7),
+    0 4px 0 rgba(209,158,84,.24);
+  font-size: 13px;
+  letter-spacing: .055em;
+}
+
+.menu-screen .video-board-preview {
+  width: min(67vw, 316px);
+  margin: 1.2vh 0 auto;
+  filter: drop-shadow(0 17px 19px rgba(75,48,26,.17));
+}
+
+.menu-screen .resume-label {
+  min-width: 128px;
+  margin: 3px 0 9px;
+  padding: 6px 14px;
+  border: 2px solid rgba(255,255,255,.74);
+  border-radius: 999px;
+  color: #704a2b;
+  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(246,228,197,.86));
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.7),
+    0 3px 0 rgba(207,171,116,.4);
+}
+
+.menu-screen .glossy-play {
+  width: min(82vw, 370px);
+  min-height: 72px;
+  border: 3px solid rgba(255,255,255,.72);
+  border-radius: 26px;
+  background: linear-gradient(180deg, #6bf456 0%, #2ed448 54%, #17b238 100%);
+  box-shadow:
+    inset 0 4px 3px rgba(255,255,255,.42),
+    0 8px 0 #118b2b,
+    0 15px 23px rgba(27,133,50,.23);
+  font-size: clamp(28px, 8vw, 35px);
+}
+
+.menu-screen .glossy-play .play-svg {
+  width: 38px;
+  height: 38px;
+  padding: 7px;
+  border: 2px solid rgba(255,255,255,.75);
+  border-radius: 50%;
+  color: #28b543;
+  background: linear-gradient(180deg, #fffefa, #f3e9d2);
+  box-shadow: 0 3px 0 rgba(20,119,40,.22);
+}
+
+.menu-screen .menu-action-grid {
+  width: min(92vw, 440px);
+  gap: 10px;
+  margin-top: 17px;
+}
+
+.menu-screen .menu-action-card {
+  min-height: 100px;
+  padding: 12px 7px 11px;
+  border: 2px solid rgba(255,255,255,.8);
+  border-radius: 23px;
+  color: var(--menu-ink);
+  background: linear-gradient(180deg, #fffefa 0%, #f5e5cb 100%);
+  box-shadow:
+    inset 0 3px 2px rgba(255,255,255,.7),
+    0 5px 0 #d8bd91,
+    0 10px 17px rgba(82,54,29,.11);
+}
+
+.menu-screen .menu-action-card:active {
+  transform: translateY(3px) scale(.985);
+  box-shadow: 0 2px 0 #d8bd91;
+}
+
+.menu-screen .menu-action-icon {
+  width: 52px;
+  height: 52px;
+  border: 2px solid rgba(255,255,255,.78);
+  border-radius: 17px;
+  box-shadow:
+    inset 0 2px rgba(255,255,255,.64),
+    0 3px 0 rgba(80,60,40,.11);
+}
+
+.menu-screen .menu-action-icon .ui-svg {
+  width: 29px;
+  height: 29px;
+  stroke-width: 2.2;
+}
+
+.menu-screen .levels-icon {
+  color: #e8a000;
+  background: linear-gradient(180deg, #fff7bd, #ffe071);
+}
+
+.menu-screen .settings-icon {
+  color: #58708f;
+  background: linear-gradient(180deg, #f2f6fb, #d8e2ef);
+}
+
+.menu-screen .hint-icon {
+  color: #e69c00;
+  background: linear-gradient(180deg, #fff5bc, #ffdf75);
+}
+
+.menu-screen .menu-action-card b {
+  font-size: 13px;
+  letter-spacing: -.01em;
+}
+
+.menu-screen .menu-footer {
+  bottom: max(15px, env(safe-area-inset-bottom));
+  color: rgba(91,61,37,.72);
+  font-size: 13px;
+}
+
+.menu-screen .menu-footer::before,
+.menu-screen .menu-footer::after {
+  content: '✦';
+  margin: 0 8px;
+  color: rgba(107,155,59,.7);
+  font-size: 10px;
+}
+
+@media (max-width: 380px) {
+  .menu-screen .topbar {
+    padding-inline: 13px;
+  }
+
+  .menu-screen .topbar .soft-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .menu-screen .video-board-preview {
+    width: min(70vw, 286px);
+  }
+
+  .menu-screen .menu-action-grid {
+    width: calc(100% - 10px);
+    gap: 7px;
+  }
+
+  .menu-screen .menu-action-card {
+    min-height: 92px;
+    border-radius: 20px;
+  }
+
+  .menu-screen .menu-action-icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .menu-screen .menu-action-icon .ui-svg {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+@media (max-height: 760px) {
+  .menu-screen .topbar {
+    height: 66px;
+    padding-top: max(9px, env(safe-area-inset-top));
+  }
+
+  .menu-screen .hero-card {
+    height: calc(100% - 92px);
+    padding-top: 0;
+  }
+
+  .menu-screen .logo-polished span {
+    font-size: clamp(48px, 13vw, 68px);
+  }
+
+  .menu-screen .logo-polished strong {
+    font-size: clamp(50px, 14vw, 72px);
+  }
+
+  .menu-screen .menu-tagline {
+    margin-top: 12px !important;
+    padding-block: 5px !important;
+  }
+
+  .menu-screen .video-board-preview {
+    width: min(53vh, 265px);
+    margin-top: 5px;
+  }
+
+  .menu-screen .glossy-play {
+    min-height: 62px;
+  }
+
+  .menu-screen .menu-action-grid {
+    margin-top: 11px;
+  }
+
+  .menu-screen .menu-action-card {
+    min-height: 84px;
+    padding-block: 9px;
+  }
+
+  .menu-screen .menu-action-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
+}
