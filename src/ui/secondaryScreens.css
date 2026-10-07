@@ -231,6 +231,16 @@
   overflow-x: hidden;
 }
 
+
+.settings-screen .page-header {
+  grid-template-columns: 48px 1fr 48px;
+}
+
+.settings-screen .page-header > span:last-child {
+  width: 48px;
+  height: 1px;
+}
+
 .settings-screen .page-header h1 {
   font-size: 27px;
 }
