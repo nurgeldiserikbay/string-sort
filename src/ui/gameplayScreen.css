@@ -113,6 +113,36 @@
   color: #3e85c7;
 }
 
+
+.game-header-premium .game-star-pill {
+  min-width: 76px;
+  min-height: 46px;
+  margin: 0;
+  padding: 8px 12px;
+  justify-self: end;
+  gap: 7px;
+  border: 2px solid rgba(255,255,255,.82);
+  border-radius: 18px;
+  color: #20385d;
+  background: linear-gradient(180deg, #fffefa, #f3e7d2);
+  box-shadow:
+    inset 0 2px rgba(255,255,255,.72),
+    0 4px 0 #d6bf9b,
+    0 8px 14px rgba(79,55,32,.1);
+}
+
+.game-header-premium .game-star-pill .coin-star {
+  width: 23px;
+  height: 23px;
+  color: #ffb400;
+}
+
+.game-header-premium .game-star-pill strong {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1;
+}
+
 .game-objective.objective-pill {
   width: max-content;
   max-width: calc(100% - 70px);
@@ -375,7 +405,8 @@
     font-size: 12px;
   }
 
-  .game-header-premium .compact-timer {
+  .game-header-premium .compact-timer,
+  .game-header-premium .game-star-pill {
     min-width: 70px;
     padding-inline: 8px;
     font-size: 13px;
