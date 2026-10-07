@@ -358,6 +358,10 @@ export class GameApp {
     )
     const bestTime = this.progress.bestTimes[this.levelNumber]
     const bestTimeLabel = bestTime ? formatTime(bestTime) : '--'
+    const totalStars = Object.values(this.progress.stars).reduce(
+      (sum, value) => sum + value,
+      0,
+    )
 
     this.shell(`
       <main class="screen game-screen">
@@ -369,7 +373,10 @@ export class GameApp {
               <i style="width: ${levelProgressPercent}%"></i>
             </i>
           </div>
-          <div class="timer-pill compact-timer">${uiIcon('timer')} <strong data-timer>00:00</strong></div>
+          <div class="coin-pill game-star-pill" aria-label="${totalStars} stars">
+            ${uiIcon('star', 'ui-svg coin-star')}
+            <strong>${totalStars}</strong>
+          </div>
         </header>
 
         <div class="game-objective objective-pill">Untie all the knots</div>
