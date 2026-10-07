@@ -913,6 +913,23 @@ export class RopeBoard {
     ctx.stroke()
     ctx.setLineDash([])
 
+    if (isActiveTarget) {
+      ctx.strokeStyle = isHintTarget
+        ? 'rgba(121, 220, 255, .58)'
+        : 'rgba(116, 246, 155, .62)'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(position.x, position.y, radius * 1.28, 0, TAU)
+      ctx.stroke()
+
+      ctx.fillStyle = isHintTarget
+        ? 'rgba(184, 236, 255, .28)'
+        : 'rgba(174, 255, 198, .3)'
+      ctx.beginPath()
+      ctx.arc(position.x, position.y, radius * 0.24, 0, TAU)
+      ctx.fill()
+    }
+
     ctx.restore()
   }
 
