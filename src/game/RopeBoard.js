@@ -635,6 +635,15 @@ export class RopeBoard {
       const p0 = points[index - 1]
       const p1 = points[index]
       const p2 = points[index + 1]
+      const bridgeReach = 0.58
+      const from = {
+        x: p1.x + (p0.x - p1.x) * bridgeReach,
+        y: p1.y + (p0.y - p1.y) * bridgeReach,
+      }
+      const to = {
+        x: p1.x + (p2.x - p1.x) * bridgeReach,
+        y: p1.y + (p2.y - p1.y) * bridgeReach,
+      }
       const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
       const tension = clamp(this.physics.getTension(ropeId), 0, 0.32)
       const width = clamp(g.size * 0.0172, 6.2, 10.8) * (1 - tension * 0.1)
@@ -644,8 +653,8 @@ export class RopeBoard {
       ctx.lineJoin = 'round'
 
       ctx.beginPath()
-      ctx.moveTo(p0.x, p0.y)
-      ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
+      ctx.moveTo(from.x, from.y)
+      ctx.quadraticCurveTo(p1.x, p1.y, to.x, to.y)
       // A compact dark separator under the upper rope makes the topology
       // readable at a glance without drawing a fake knot capsule.
       ctx.strokeStyle = 'rgba(27,30,37,.96)'
@@ -657,15 +666,15 @@ export class RopeBoard {
 
       ctx.shadowColor = 'transparent'
       ctx.beginPath()
-      ctx.moveTo(p0.x, p0.y)
-      ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
+      ctx.moveTo(from.x, from.y)
+      ctx.quadraticCurveTo(p1.x, p1.y, to.x, to.y)
       ctx.strokeStyle = color
       ctx.lineWidth = width
       ctx.stroke()
 
       ctx.beginPath()
-      ctx.moveTo(p0.x, p0.y)
-      ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
+      ctx.moveTo(from.x, from.y)
+      ctx.quadraticCurveTo(p1.x, p1.y, to.x, to.y)
       ctx.strokeStyle = 'rgba(255,255,255,.38)'
       ctx.lineWidth = Math.max(1.2, width * 0.18)
       ctx.stroke()
