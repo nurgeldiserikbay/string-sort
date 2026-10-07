@@ -59,7 +59,9 @@ export class RopePhysics {
     const nx = -dy * inv
     const ny = dx * inv
     const direction = id % 2 === 0 ? 1 : -1
-    const bend = Math.min(44, chord * 0.13) * direction
+    // Keep the idle rope shape broad and readable. Large seeded bends and
+    // secondary waves made the rope look like it was already vibrating.
+    const bend = Math.min(30, chord * 0.085) * direction
     const phase = (id * 1.61803398875) % (Math.PI * 2)
 
     const points = Array.from({ length: segmentCount + 1 }, (_, index) => {
@@ -69,7 +71,7 @@ export class RopePhysics {
       const secondaryArc = (
         Math.sin(t * Math.PI * 2 + phase)
         * envelope
-        * Math.min(12, Math.abs(bend) * 0.28)
+        * Math.min(4.5, Math.abs(bend) * 0.14)
       )
       const arc = mainArc + secondaryArc
 
@@ -181,7 +183,7 @@ export class RopePhysics {
 
     for (let step = 0; step < substeps; step++) {
       for (const rope of this.ropes.values()) {
-        rope.segmentLength = lerp(rope.segmentLength, rope.targetSegmentLength, 0.09)
+        rope.segmentLength = lerp(rope.segmentLength, rope.targetSegmentLength, 0.075)
         this.integrate(rope, dt, now)
       }
 
