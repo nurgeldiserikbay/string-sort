@@ -409,7 +409,7 @@ export class GameApp {
           <button class="round-action hint" data-action="hint">
             <span>${uiIcon('hint')}</span><b>Hint</b>
           </button>
-          <button class="round-action undo" data-action="undo">
+          <button class="round-action undo" data-action="undo" disabled aria-label="Undo last move">
             <span>${uiIcon('undo')}</span><b>Undo</b>
           </button>
           <button class="round-action restart" data-action="restart">
@@ -498,8 +498,10 @@ export class GameApp {
   updateHud() {
     const moves = this.root.querySelector('[data-moves]')
     const crossings = this.root.querySelector('[data-crossings]')
+    const undoButton = this.root.querySelector('[data-action="undo"]')
     if (moves) moves.textContent = this.moves
     if (crossings) crossings.textContent = getCrossingCount(this.order)
+    if (undoButton) undoButton.disabled = this.history.length === 0
   }
 
   showCrossingFeedback(previousCrossings, currentCrossings) {
