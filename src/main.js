@@ -1,4 +1,5 @@
 import './styles.css'
+import './ui/mainMenu.css'
 import './ui/secondaryScreens.css'
 import './ui/gameplayScreen.css'
 import { GameApp } from './game/GameApp.js'
