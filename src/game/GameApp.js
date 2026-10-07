@@ -684,12 +684,12 @@ export class GameApp {
             <p>Drag a colored peg into the single empty socket.</p>
           </div>
           <div>
-            <span class="how-step-icon">${uiIcon('crossings')}</span>
+            <span class="how-step-icon">${uiIcon('knot')}</span>
             <b>Untie the ropes</b>
             <p>The old peg position becomes the next empty socket.</p>
           </div>
           <div>
-            <span class="how-step-icon">${uiIcon('levels')}</span>
+            <span class="how-step-icon">${uiIcon('check')}</span>
             <b>Release every knot</b>
             <p>Move the free peg until every physical knot releases.</p>
           </div>
