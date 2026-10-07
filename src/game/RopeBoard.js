@@ -63,9 +63,12 @@ export class RopeBoard {
       ? new FrameGovernor({ profileId: this.performanceProfile.id })
       : null
     this.physics = new RopePhysics({
-      damping: 0.982,
+      // The puzzle should feel tactile when dragged, but fully settled when
+      // released. High velocity retention/ambient sway made tied ropes look
+      // nervous and obscured the actual over/under structure.
+      damping: 0.94,
       gravity: 0,
-      ambientMotion: 0.15,
+      ambientMotion: 0,
       constraintIterations: this.performanceProfile.constraintIterations,
     })
 
@@ -344,7 +347,7 @@ export class RopeBoard {
         : this.tangle.getKnots().filter(
           (knot) => knot.aId === draggedRopeId || knot.bId === draggedRopeId,
         ).length
-      const follow = clamp(0.46 - boundKnots * 0.035, 0.19, 0.42)
+      const follow = clamp(0.38 - boundKnots * 0.03, 0.16, 0.34)
 
       this.dragVisualPoint.x += (this.dragPoint.x - this.dragVisualPoint.x) * follow
       this.dragVisualPoint.y += (this.dragPoint.y - this.dragVisualPoint.y) * follow
@@ -354,7 +357,7 @@ export class RopeBoard {
     const logicalKnotCount = getCrossingCount(this.order)
     // Extra slack used to create decorative curls in the center. Keep the
     // ropes slightly relaxed, but taut enough that every tie is readable.
-    const ropeSlack = clamp(1.058 + logicalKnotCount * 0.00135, 1.06, 1.095)
+    const ropeSlack = clamp(1.04 + logicalKnotCount * 0.0012, 1.045, 1.075)
     const segmentCounts = new Map()
 
     this.physics.removeMissing(ropeIds)
@@ -541,18 +544,18 @@ export class RopeBoard {
     const ctx = this.ctx
     const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
     const tension = clamp(this.physics.getTension(ropeId), 0, 0.32)
-    const baseWidth = clamp(g.size * 0.0148, 5.2, 9.4) * (1 - tension * 0.12)
+    const baseWidth = clamp(g.size * 0.0172, 6.2, 10.8) * (1 - tension * 0.1)
 
     ctx.save()
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
 
     this.smoothPath(points)
-    ctx.strokeStyle = 'rgba(0,0,0,.38)'
-    ctx.lineWidth = baseWidth + 5
-    ctx.shadowColor = 'rgba(0,0,0,.42)'
-    ctx.shadowBlur = 7
-    ctx.shadowOffsetY = 4
+    ctx.strokeStyle = 'rgba(22,25,31,.62)'
+    ctx.lineWidth = baseWidth + 4.8
+    ctx.shadowColor = 'rgba(0,0,0,.34)'
+    ctx.shadowBlur = 5
+    ctx.shadowOffsetY = 3
     ctx.stroke()
 
     ctx.shadowColor = 'transparent'
@@ -562,8 +565,8 @@ export class RopeBoard {
     ctx.stroke()
 
     this.smoothPath(points)
-    ctx.strokeStyle = 'rgba(255,255,255,.22)'
-    ctx.lineWidth = Math.max(1, baseWidth * 0.18)
+    ctx.strokeStyle = 'rgba(255,255,255,.34)'
+    ctx.lineWidth = Math.max(1.2, baseWidth * 0.18)
     ctx.setLineDash([])
     ctx.stroke()
 
@@ -634,7 +637,7 @@ export class RopeBoard {
       const p2 = points[index + 1]
       const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
       const tension = clamp(this.physics.getTension(ropeId), 0, 0.32)
-      const width = clamp(g.size * 0.0148, 5.2, 9.4) * (1 - tension * 0.12)
+      const width = clamp(g.size * 0.0172, 6.2, 10.8) * (1 - tension * 0.1)
 
       ctx.save()
       ctx.lineCap = 'round'
@@ -643,11 +646,13 @@ export class RopeBoard {
       ctx.beginPath()
       ctx.moveTo(p0.x, p0.y)
       ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
-      ctx.strokeStyle = 'rgba(33,36,43,.94)'
-      ctx.lineWidth = width + 5
-      ctx.shadowColor = 'rgba(0,0,0,.24)'
-      ctx.shadowBlur = 2
-      ctx.shadowOffsetY = 1.2
+      // A compact dark separator under the upper rope makes the topology
+      // readable at a glance without drawing a fake knot capsule.
+      ctx.strokeStyle = 'rgba(27,30,37,.96)'
+      ctx.lineWidth = width + 6.5
+      ctx.shadowColor = 'rgba(0,0,0,.34)'
+      ctx.shadowBlur = 4
+      ctx.shadowOffsetY = 2.2
       ctx.stroke()
 
       ctx.shadowColor = 'transparent'
@@ -661,8 +666,8 @@ export class RopeBoard {
       ctx.beginPath()
       ctx.moveTo(p0.x, p0.y)
       ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y)
-      ctx.strokeStyle = 'rgba(255,255,255,.26)'
-      ctx.lineWidth = Math.max(1.1, width * 0.17)
+      ctx.strokeStyle = 'rgba(255,255,255,.38)'
+      ctx.lineWidth = Math.max(1.2, width * 0.18)
       ctx.stroke()
 
       ctx.restore()
