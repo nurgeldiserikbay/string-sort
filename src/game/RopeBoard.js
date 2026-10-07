@@ -352,6 +352,14 @@ export class RopeBoard {
     // an actual drag that fails to reach the empty socket.
     if (dragDistance <= tapThreshold) return
 
+    this.endpointTransitions.set(`${ropeId}:${from}`, {
+      ropeId,
+      targetIndex: from,
+      from: dropVisualPoint,
+      to: this.socketPosition(from),
+      startedAt: performance.now(),
+      duration: 190,
+    })
     this.invalidDropIndex = from
     this.invalidDropUntil = performance.now() + 280
     this.onInvalidDrop?.(from)
@@ -1018,11 +1026,12 @@ export class RopeBoard {
   drawPeg(index, time) {
     const g = this.geometry()
     const ctx = this.ctx
-    let position = index === this.dragIndex && this.dragVisualPoint
-      ? this.dragVisualPoint
-      : this.socketPosition(index)
     const ropeId = this.order[index]
     if (ropeId == null) return
+
+    let position = index === this.dragIndex && this.dragVisualPoint
+      ? this.dragVisualPoint
+      : this.transitionedSocketPosition(index, ropeId, time)
     const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
 
     if (index === this.invalidDropIndex && performance.now() < this.invalidDropUntil) {
