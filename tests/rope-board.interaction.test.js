@@ -103,6 +103,27 @@ describe('RopeBoard pointer interaction', () => {
     expect(end.y).toBeCloseTo(target.y, 5)
   })
 
+  it('replaces stale endpoint transitions on a quick second move', () => {
+    board = new RopeBoard(canvas, {
+      onSwap: vi.fn(),
+      onSolved: vi.fn(),
+      graphics: 'battery',
+    })
+
+    const now = vi.spyOn(performance, 'now')
+    now.mockReturnValue(1000)
+    board.setOrder([0, 1, 0, 1, null], { animate: false })
+    board.setOrder([0, null, 0, 1, 1])
+
+    expect(board.endpointTransitions.has('1:4')).toBe(true)
+
+    now.mockReturnValue(1080)
+    board.setOrder([0, 1, 0, null, 1])
+
+    expect(board.endpointTransitions.has('1:4')).toBe(false)
+    expect(board.endpointTransitions.has('1:1')).toBe(true)
+  })
+
   it('cancels a pointer-cancel gesture without moving a peg', () => {
     const onSwap = vi.fn()
     board = new RopeBoard(canvas, {
