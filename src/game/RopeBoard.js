@@ -1085,6 +1085,18 @@ export class RopeBoard {
     ctx.fill()
 
     ctx.shadowColor = 'transparent'
+    ctx.strokeStyle = 'rgba(255,255,255,.22)'
+    ctx.lineWidth = 1.8
+    ctx.beginPath()
+    ctx.arc(position.x, position.y, radius * 0.94, 0, TAU)
+    ctx.stroke()
+
+    ctx.strokeStyle = 'rgba(15,19,27,.34)'
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.arc(position.x, position.y, radius * 0.99, Math.PI * 0.08, Math.PI * 0.92)
+    ctx.stroke()
+
     ctx.strokeStyle = 'rgba(255,255,255,.38)'
     ctx.lineWidth = 2
     ctx.beginPath()
@@ -1097,7 +1109,19 @@ export class RopeBoard {
     )
     ctx.stroke()
 
-    ctx.fillStyle = 'rgba(24,27,33,.34)'
+    const holeGradient = ctx.createRadialGradient(
+      position.x - radius * 0.08,
+      position.y - radius * 0.1,
+      radius * 0.05,
+      position.x,
+      position.y,
+      radius * 0.36,
+    )
+    holeGradient.addColorStop(0, 'rgba(62,67,77,.72)')
+    holeGradient.addColorStop(0.72, 'rgba(26,30,38,.74)')
+    holeGradient.addColorStop(1, 'rgba(9,12,18,.86)')
+
+    ctx.fillStyle = holeGradient
     ctx.beginPath()
     ctx.arc(position.x, position.y, radius * 0.34, 0, TAU)
     ctx.fill()
