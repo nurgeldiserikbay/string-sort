@@ -89,6 +89,18 @@ describe('GameApp interaction smoke tests', () => {
     expect(root.querySelector('.tutorial-chip').textContent).toContain('empty socket')
   })
 
+  it('renders the polished gameplay HUD and controls', () => {
+    root.querySelector('[data-action="play"]').click()
+
+    expect(root.querySelector('.level-progress-card')).not.toBeNull()
+    expect(root.querySelector('.level-progress-track')).not.toBeNull()
+    expect(root.querySelector('.objective-pill')).not.toBeNull()
+    expect(root.querySelectorAll('.premium-status .game-stat-card')).toHaveLength(2)
+    expect(root.querySelector('.moves-stat .status-icon .ui-svg')).not.toBeNull()
+    expect(root.querySelector('.knots-stat .status-icon .ui-svg')).not.toBeNull()
+    expect(root.querySelectorAll('.premium-actions .round-action')).toHaveLength(3)
+  })
+
   it('can pause and resume a running level while suspending rope simulation', () => {
     root.querySelector('[data-action="play"]').click()
     const stopSpy = vi.spyOn(app.board, 'stop')
@@ -97,6 +109,8 @@ describe('GameApp interaction smoke tests', () => {
     root.querySelector('[data-action="pause"]').click()
 
     expect(root.querySelector('.modal-card')).not.toBeNull()
+    expect(root.querySelector('.pause-card')).not.toBeNull()
+    expect(root.querySelector('.pause-primary')).not.toBeNull()
     expect(root.textContent).toContain('Paused')
     expect(root.querySelectorAll('.modal-option-icon .ui-svg')).toHaveLength(2)
     expect(stopSpy).toHaveBeenCalled()
