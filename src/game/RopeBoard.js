@@ -33,6 +33,8 @@ export class RopeBoard {
     this.dragVisualPoint = null
     this.dragStartPoint = null
     this.hoverIndex = -1
+    this.pendingDropTransition = null
+    this.endpointTransitions = new Map()
     this.activePointerId = null
     this.invalidDropIndex = -1
     this.invalidDropUntil = 0
@@ -86,9 +88,50 @@ export class RopeBoard {
     this.resize()
   }
 
-  setOrder(order) {
-    const topologyChanged = this.order.length !== order.length
+  setOrder(order, { animate = true } = {}) {
+    const previousOrder = [...this.order]
+    const topologyChanged = previousOrder.length !== order.length
     this.order = [...order]
+
+    if (!topologyChanged && animate && previousOrder.length) {
+      const ropeIds = [...new Set(order.filter((ropeId) => ropeId != null))]
+
+      for (const ropeId of ropeIds) {
+        const previousIndexes = previousOrder
+          .map((id, index) => id === ropeId ? index : -1)
+          .filter((index) => index >= 0)
+        const nextIndexes = order
+          .map((id, index) => id === ropeId ? index : -1)
+          .filter((index) => index >= 0)
+        const fromIndex = previousIndexes.find((index) => !nextIndexes.includes(index))
+        const toIndex = nextIndexes.find((index) => !previousIndexes.includes(index))
+
+        if (fromIndex == null || toIndex == null) continue
+
+        const pending = this.pendingDropTransition
+        const from = (
+          pending
+          && pending.ropeId === ropeId
+          && pending.toIndex === toIndex
+        )
+          ? pending.point
+          : this.socketPosition(fromIndex)
+        const to = this.socketPosition(toIndex)
+
+        this.endpointTransitions.set(`${ropeId}:${toIndex}`, {
+          ropeId,
+          targetIndex: toIndex,
+          from: { ...from },
+          to: { ...to },
+          startedAt: performance.now(),
+          duration: 240,
+        })
+      }
+    } else if (!animate) {
+      this.endpointTransitions.clear()
+    }
+
+    this.pendingDropTransition = null
 
     if (topologyChanged) {
       this.depthSeed = (
@@ -100,6 +143,8 @@ export class RopeBoard {
       this.knotConstraints = []
       this.releaseBursts = []
       this.needsKnotPrime = true
+      this.pendingDropTransition = null
+      this.endpointTransitions.clear()
       this.physics.clear()
     }
   }
@@ -269,7 +314,11 @@ export class RopeBoard {
     ) return
 
     const from = this.dragIndex
+    const ropeId = this.order[from]
     const point = this.constrainDragPoint(this.eventPoint(event))
+    const dropVisualPoint = this.dragVisualPoint
+      ? { ...this.dragVisualPoint }
+      : { ...point }
     const to = this.findSocket(point.x, point.y, 2.65)
     const start = this.dragStartPoint
     const dragDistance = start
@@ -282,6 +331,11 @@ export class RopeBoard {
     if (to >= 0 && to !== from && this.order[to] == null) {
       this.invalidDropIndex = -1
       this.invalidDropUntil = 0
+      this.pendingDropTransition = {
+        ropeId,
+        toIndex: to,
+        point: dropVisualPoint,
+      }
       this.onSwap?.(from, to)
       if (getCrossingCount(this.order) === 0) this.onSolved?.()
       return
@@ -322,14 +376,38 @@ export class RopeBoard {
     this.activePointerId = null
   }
 
-  endpointEntries(ropeId) {
+  transitionedSocketPosition(index, ropeId, time = performance.now()) {
+    const key = `${ropeId}:${index}`
+    const transition = this.endpointTransitions.get(key)
+    if (!transition) return this.socketPosition(index)
+
+    const progress = clamp(
+      (time - transition.startedAt) / transition.duration,
+      0,
+      1,
+    )
+    const eased = 1 - Math.pow(1 - progress, 3)
+
+    if (progress >= 1) {
+      this.endpointTransitions.delete(key)
+      return { ...transition.to }
+    }
+
+    return {
+      x: transition.from.x + (transition.to.x - transition.from.x) * eased,
+      y: transition.from.y + (transition.to.y - transition.from.y) * eased,
+      angle: transition.to.angle,
+    }
+  }
+
+  endpointEntries(ropeId, time = performance.now()) {
     const entries = []
 
     this.order.forEach((id, index) => {
       if (id !== ropeId) return
       const position = index === this.dragIndex && this.dragVisualPoint
         ? this.dragVisualPoint
-        : this.socketPosition(index)
+        : this.transitionedSocketPosition(index, ropeId, time)
       entries.push({ index, position })
     })
 
@@ -363,7 +441,7 @@ export class RopeBoard {
     this.physics.removeMissing(ropeIds)
 
     for (const ropeId of ropeIds) {
-      const endpoints = this.endpointEntries(ropeId)
+      const endpoints = this.endpointEntries(ropeId, time)
       if (!endpoints) continue
 
       const segmentCount = g.size < 360
