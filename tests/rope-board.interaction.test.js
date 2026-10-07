@@ -263,6 +263,11 @@ describe('RopeBoard pointer interaction', () => {
     expect(onSwap).not.toHaveBeenCalled()
     expect(onInvalidDrop).toHaveBeenCalledWith(0)
     expect(board.invalidDropIndex).toBe(0)
+
+    const returnTransition = board.endpointTransitions.get('0:0')
+    expect(returnTransition).toBeDefined()
+    expect(returnTransition.targetIndex).toBe(0)
+    expect(returnTransition.duration).toBeGreaterThan(0)
   })
 
   it('renders each rope only once even when ropes cross', () => {
