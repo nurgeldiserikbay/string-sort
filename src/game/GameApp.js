@@ -353,35 +353,52 @@ export class GameApp {
     this.isCompleting = false
     this.screen = 'game'
 
+    const levelProgressPercent = Math.round(
+      (this.levelNumber / TOTAL_LEVELS) * 100,
+    )
+    const bestTime = this.progress.bestTimes[this.levelNumber]
+    const bestTimeLabel = bestTime ? formatTime(bestTime) : '--'
+
     this.shell(`
       <main class="screen game-screen">
-        <header class="game-header">
+        <header class="game-header game-header-premium">
           <button class="icon-button soft-icon" data-action="pause" aria-label="Pause">${uiIcon('pause')}</button>
-          <div class="level-pill">Level ${this.levelNumber}</div>
+          <div class="level-pill level-progress-card">
+            <span>Level ${this.levelNumber} of ${TOTAL_LEVELS}</span>
+            <i class="level-progress-track" aria-hidden="true">
+              <i style="width: ${levelProgressPercent}%"></i>
+            </i>
+          </div>
           <div class="timer-pill compact-timer">${uiIcon('timer')} <strong data-timer>00:00</strong></div>
         </header>
 
-        <div class="game-objective">Untie all the knots</div>
+        <div class="game-objective objective-pill">Untie all the knots</div>
         ${this.level.tutorial ? `<div class="tutorial-chip" data-tutorial>${this.level.tutorial}</div>` : ''}
 
-        <section class="board-wrap board-wrap-video">
+        <section class="board-wrap board-wrap-video board-wrap-premium">
           <canvas id="game-board" aria-label="String Sort game board"></canvas>
         </section>
 
-        <div class="status-row video-status">
-          <div>
+        <div class="status-row video-status premium-status">
+          <div class="game-stat-card moves-stat">
             <span class="status-icon">${uiIcon('moves')}</span>
-            <span>Moves</span>
+            <span class="game-stat-copy">
+              <span>Moves</span>
+              <small>Best ${bestTimeLabel}</small>
+            </span>
             <strong data-moves>0</strong>
           </div>
-          <div data-crossing-card>
+          <div class="game-stat-card knots-stat" data-crossing-card>
             <span class="status-icon">${uiIcon('crossings')}</span>
-            <span>Knots</span>
+            <span class="game-stat-copy">
+              <span>Knots remaining</span>
+              <small>Clear every crossing</small>
+            </span>
             <strong data-crossings>${getCrossingCount(this.order)}</strong>
           </div>
         </div>
 
-        <nav class="game-actions video-actions">
+        <nav class="game-actions video-actions premium-actions">
           <button class="round-action hint" data-action="hint">
             <span>${uiIcon('hint')}</span><b>Hint</b>
           </button>
@@ -549,10 +566,10 @@ export class GameApp {
     const overlay = document.createElement('div')
     overlay.className = 'modal-layer'
     overlay.innerHTML = `
-      <section class="modal-card">
+      <section class="modal-card pause-card">
         <button class="modal-close" data-action="resume" aria-label="Resume">${uiIcon('close')}</button>
         <h2>Paused</h2>
-        <button class="primary-button" data-action="resume">${uiIcon('play')} Resume</button>
+        <button class="primary-button pause-primary" data-action="resume">${uiIcon('play')} Resume</button>
         <button class="modal-option" data-action="restart">
           <span class="modal-option-icon restart-modal-icon">${uiIcon('restart')}</span>
           <span>Restart</span>
