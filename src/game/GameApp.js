@@ -694,7 +694,7 @@ export class GameApp {
             <p>Move the free peg until every physical knot releases.</p>
           </div>
         </div>
-        <button class="primary-button" data-action="close">${uiIcon('play')} Got it</button>
+        <button class="primary-button" data-action="close">${uiIcon('check')} Got it</button>
       </section>
     `
     this.root.appendChild(overlay)
@@ -791,7 +791,12 @@ export class GameApp {
         <h2>String Sort</h2>
         <p class="version-label">Version ${APP_VERSION}</p>
         <div class="privacy-summary">
-          ${privacySummary().map((line) => `<p>• ${line}</p>`).join('')}
+          ${privacySummary().map((line) => `
+            <p>
+              ${uiIcon('check', 'ui-svg privacy-check')}
+              <span>${line}</span>
+            </p>
+          `).join('')}
         </div>
         <button class="modal-option" data-action="privacy">
           <span class="modal-option-icon privacy-modal-icon">${uiIcon('privacy')}</span>
