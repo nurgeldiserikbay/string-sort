@@ -94,6 +94,7 @@ export class RopeBoard {
     this.order = [...order]
 
     if (!topologyChanged && animate && previousOrder.length) {
+      const transitionTime = performance.now()
       const ropeIds = [...new Set(order.filter((ropeId) => ropeId != null))]
 
       for (const ropeId of ropeIds) {
@@ -115,7 +116,7 @@ export class RopeBoard {
           && pending.toIndex === toIndex
         )
           ? pending.point
-          : this.socketPosition(fromIndex)
+          : this.transitionedSocketPosition(fromIndex, ropeId, transitionTime)
         const to = this.socketPosition(toIndex)
 
         this.endpointTransitions.set(`${ropeId}:${toIndex}`, {
@@ -123,9 +124,15 @@ export class RopeBoard {
           targetIndex: toIndex,
           from: { ...from },
           to: { ...to },
-          startedAt: performance.now(),
+          startedAt: transitionTime,
           duration: 240,
         })
+      }
+
+      for (const [key, transition] of this.endpointTransitions) {
+        if (order[transition.targetIndex] !== transition.ropeId) {
+          this.endpointTransitions.delete(key)
+        }
       }
     } else if (!animate) {
       this.endpointTransitions.clear()
