@@ -566,9 +566,9 @@ export class RopeBoard {
       g.cy,
       g.boardRadius,
     )
-    boardGradient.addColorStop(0, '#676a73')
-    boardGradient.addColorStop(0.52, '#555861')
-    boardGradient.addColorStop(1, '#41444d')
+    boardGradient.addColorStop(0, '#596171')
+    boardGradient.addColorStop(0.5, '#414854')
+    boardGradient.addColorStop(1, '#282e38')
 
     ctx.fillStyle = boardGradient
     boardPath()
@@ -576,14 +576,19 @@ export class RopeBoard {
     ctx.restore()
 
     ctx.save()
-    boardPath(0.96)
-    ctx.strokeStyle = 'rgba(255,255,255,.075)'
-    ctx.lineWidth = 2
+    boardPath(0.972)
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'
+    ctx.lineWidth = 3.2
     ctx.stroke()
 
-    boardPath(0.91)
-    ctx.strokeStyle = 'rgba(20,22,27,.16)'
-    ctx.lineWidth = 2
+    boardPath(0.94)
+    ctx.strokeStyle = 'rgba(11,15,22,.34)'
+    ctx.lineWidth = 3
+    ctx.stroke()
+
+    boardPath(0.915)
+    ctx.strokeStyle = 'rgba(255,255,255,.045)'
+    ctx.lineWidth = 1.5
     ctx.stroke()
 
     const sheen = ctx.createRadialGradient(
@@ -594,7 +599,7 @@ export class RopeBoard {
       g.cy - g.boardRadius * 0.22,
       g.boardRadius * 0.76,
     )
-    sheen.addColorStop(0, 'rgba(255,255,255,.07)')
+    sheen.addColorStop(0, 'rgba(255,255,255,.095)')
     sheen.addColorStop(1, 'rgba(255,255,255,0)')
     ctx.fillStyle = sheen
     boardPath(0.9)
@@ -842,7 +847,7 @@ export class RopeBoard {
     const pulse = isHintTarget
       ? 1 + Math.sin(performance.now() * 0.012) * 0.08
       : 1
-    const radius = g.socketRadius * (isActiveTarget ? 1.16 : 0.9) * pulse
+    const radius = g.socketRadius * (isActiveTarget ? 1.18 : 0.98) * pulse
 
     ctx.save()
     ctx.shadowColor = isActiveTarget
@@ -860,9 +865,10 @@ export class RopeBoard {
         position.y,
         radius,
       )
-      rim.addColorStop(0, '#aeb2bb')
-      rim.addColorStop(0.45, '#737780')
-      rim.addColorStop(1, '#444850')
+      rim.addColorStop(0, '#d2d7e0')
+      rim.addColorStop(0.32, '#8e96a3')
+      rim.addColorStop(0.72, '#59616d')
+      rim.addColorStop(1, '#303640')
 
       ctx.fillStyle = rim
       ctx.beginPath()
@@ -870,10 +876,16 @@ export class RopeBoard {
       ctx.fill()
 
       ctx.shadowColor = 'transparent'
-      ctx.fillStyle = '#2f3239'
+      ctx.fillStyle = '#20252d'
       ctx.beginPath()
-      ctx.arc(position.x, position.y, radius * 0.58, 0, TAU)
+      ctx.arc(position.x, position.y, radius * 0.56, 0, TAU)
       ctx.fill()
+
+      ctx.strokeStyle = 'rgba(0,0,0,.34)'
+      ctx.lineWidth = 1.6
+      ctx.beginPath()
+      ctx.arc(position.x, position.y, radius * 0.57, 0, TAU)
+      ctx.stroke()
     } else {
       ctx.fillStyle = '#4d5058'
       ctx.beginPath()
