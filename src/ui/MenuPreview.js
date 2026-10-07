@@ -38,6 +38,20 @@ function drawCord(ctx, points, color, width) {
   ctx.lineWidth = width
   ctx.stroke()
 
+  ctx.beginPath()
+  ctx.moveTo(points[0].x, points[0].y)
+  for (let index = 1; index < points.length - 1; index++) {
+    const current = points[index]
+    const next = points[index + 1]
+    const midX = (current.x + next.x) / 2
+    const midY = (current.y + next.y) / 2
+    ctx.quadraticCurveTo(current.x, current.y, midX, midY)
+  }
+  ctx.lineTo(points.at(-1).x, points.at(-1).y)
+  ctx.strokeStyle = 'rgba(255,255,255,.3)'
+  ctx.lineWidth = Math.max(1.1, width * .17)
+  ctx.stroke()
+
   ctx.restore()
 }
 
@@ -82,14 +96,28 @@ export function installMenuPreview(canvas) {
       cy,
       boardRadius,
     )
-    board.addColorStop(0, '#676a73')
-    board.addColorStop(0.58, '#50535c')
-    board.addColorStop(1, '#3c3f48')
+    board.addColorStop(0, '#596171')
+    board.addColorStop(0.5, '#414854')
+    board.addColorStop(1, '#282e38')
 
     ctx.fillStyle = board
     ctx.beginPath()
     ctx.arc(cx, cy, boardRadius, 0, Math.PI * 2)
     ctx.fill()
+    ctx.restore()
+
+    ctx.save()
+    ctx.strokeStyle = 'rgba(255,255,255,.11)'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(cx, cy, boardRadius * .965, 0, Math.PI * 2)
+    ctx.stroke()
+
+    ctx.strokeStyle = 'rgba(10,14,21,.32)'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(cx, cy, boardRadius * .91, 0, Math.PI * 2)
+    ctx.stroke()
     ctx.restore()
 
     const ringRadius = boardRadius * 0.82
@@ -149,23 +177,48 @@ export function installMenuPreview(canvas) {
         gradient.addColorStop(.72, color)
         gradient.addColorStop(1, '#171a20')
 
+        const pegRadius = socketRadius * 1.12
         ctx.fillStyle = gradient
         ctx.beginPath()
-        ctx.arc(point.x, point.y, socketRadius * 1.1, 0, Math.PI * 2)
+        ctx.arc(point.x, point.y, pegRadius, 0, Math.PI * 2)
+        ctx.fill()
+
+        ctx.strokeStyle = 'rgba(255,255,255,.22)'
+        ctx.lineWidth = 1.3
+        ctx.beginPath()
+        ctx.arc(point.x, point.y, pegRadius * .92, 0, Math.PI * 2)
+        ctx.stroke()
+
+        ctx.fillStyle = 'rgba(19,23,31,.68)'
+        ctx.beginPath()
+        ctx.arc(point.x, point.y, pegRadius * .3, 0, Math.PI * 2)
         ctx.fill()
       }
     })
 
     const empty = socketPoints.at(-1)
-    ctx.fillStyle = '#5b5e67'
+    const emptyRadius = socketRadius * .92
+    const emptyRim = ctx.createRadialGradient(
+      empty.x - emptyRadius * .3,
+      empty.y - emptyRadius * .3,
+      1,
+      empty.x,
+      empty.y,
+      emptyRadius,
+    )
+    emptyRim.addColorStop(0, '#d2d7e0')
+    emptyRim.addColorStop(.4, '#848c98')
+    emptyRim.addColorStop(1, '#303640')
+
+    ctx.fillStyle = emptyRim
     ctx.beginPath()
-    ctx.arc(empty.x, empty.y, socketRadius * .86, 0, Math.PI * 2)
+    ctx.arc(empty.x, empty.y, emptyRadius, 0, Math.PI * 2)
     ctx.fill()
-    ctx.strokeStyle = 'rgba(255,255,255,.16)'
-    ctx.lineWidth = 1.5
+
+    ctx.fillStyle = '#20252d'
     ctx.beginPath()
-    ctx.arc(empty.x, empty.y, socketRadius * .62, 0, Math.PI * 2)
-    ctx.stroke()
+    ctx.arc(empty.x, empty.y, emptyRadius * .55, 0, Math.PI * 2)
+    ctx.fill()
   }
 
   render()
