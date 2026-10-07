@@ -118,7 +118,7 @@ describe('RopeBoard pointer interaction', () => {
     expect(board.endpointTransitions.has('1:4')).toBe(true)
 
     now.mockReturnValue(1080)
-    board.setOrder([0, 1, 0, null, 1])
+    board.setOrder([0, 1, 0, 1, null])
 
     expect(board.endpointTransitions.has('1:4')).toBe(false)
     expect(board.endpointTransitions.has('1:1')).toBe(true)
