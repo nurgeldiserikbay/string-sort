@@ -99,6 +99,10 @@ describe('GameApp interaction smoke tests', () => {
     expect(root.querySelector('.moves-stat .status-icon .ui-svg')).not.toBeNull()
     expect(root.querySelector('.knots-stat .status-icon .ui-svg')).not.toBeNull()
     expect(root.querySelectorAll('.premium-actions .round-action')).toHaveLength(3)
+    expect(root.querySelector('[data-action="undo"]').disabled).toBe(true)
+
+    app.handleSwap(1, 6)
+    expect(root.querySelector('[data-action="undo"]').disabled).toBe(false)
   })
 
   it('can pause and resume a running level while suspending rope simulation', () => {
