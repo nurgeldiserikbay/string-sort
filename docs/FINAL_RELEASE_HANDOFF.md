@@ -92,19 +92,14 @@ Before production:
 
 ```bash
 npm install
-npm test
-npm run build
-npm run verify:release
+npm run verify
 ```
 
 For local Android development:
 
 ```bash
-npm run build
-npx cap add android
-npm run assets:android
-npx cap sync android
-npx cap open android
+npm run build:android        # test build, opens Android Studio
+npm run android:aab          # production AAB for Play (see docs/ANDROID.md)
 ```
 
 ## Release recommendation

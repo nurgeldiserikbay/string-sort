@@ -1,14 +1,17 @@
-// Android build helper: one command from web sources to an installed app.
+// Android build helper: same commands for test and production builds.
 //
-//   npm run android:apk      debug APK (build web, sync, gradle assembleDebug)
-//   npm run android:install  debug APK + install and launch on a connected device
-//   npm run android:aab      unsigned release AAB for Play (sign in Android Studio)
-//   npm run android:open     sync and open the project in Android Studio
+//   npm run build:android        test web build -> sync -> open Android Studio
+//   npm run build:android:prod   production web build -> sync -> open Android Studio
+//   npm run android:apk[:prod]       debug APK -> build-output/string-sort-<mode>.apk
+//   npm run android:install[:prod]   same APK, installed and launched on a USB device
+//   npm run android:aab          production release AAB -> build-output/ (unsigned)
+//   npm run assets               icons and splash from resources/*.svg
 //
+// Test = vite --mode development, prod = vite --mode production (.env.* files).
 // The android/ platform and its icons/splash are created on first run.
 
 import { spawnSync } from 'node:child_process'
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dirname, '..')
@@ -78,8 +81,9 @@ function ensureLocalProperties() {
   if (!existsSync(file)) writeFileSync(file, `sdk.dir=${sdkDir().replace(/\\/g, '/')}\n`)
 }
 
-function prepare() {
-  run('npx', ['vite', 'build'])
+function prepare(mode) {
+  console.log(`\n=== ${mode === 'production' ? 'PROD' : 'TEST'} build (vite --mode ${mode}) ===`)
+  run('npx', ['vite', 'build', '--mode', mode])
   if (!existsSync(ANDROID)) {
     run('npx', ['cap', 'add', 'android'])
     run('npx', ASSET_ARGS)
@@ -98,38 +102,54 @@ function gradle(task) {
 const DEBUG_APK = join(ANDROID, 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk')
 const RELEASE_AAB = join(ANDROID, 'app', 'build', 'outputs', 'bundle', 'release', 'app-release.aab')
 
-const command = process.argv[2]
+const OUTPUT = join(ROOT, 'build-output')
+
+function keep(file, name) {
+  mkdirSync(OUTPUT, { recursive: true })
+  const target = join(OUTPUT, name)
+  copyFileSync(file, target)
+  return target
+}
+
+function installOnDevice(apk) {
+  const adb = join(sdkDir(), 'platform-tools', IS_WIN ? 'adb.exe' : 'adb')
+  run(adb, ['install', '-r', apk])
+  run(adb, ['shell', 'monkey', '-p', APP_ID, '-c', 'android.intent.category.LAUNCHER', '1'])
+  console.log(`\nInstalled and launched ${APP_ID}`)
+}
+
+const [command, ...flags] = process.argv.slice(2)
+const mode = flags.includes('--prod') ? 'production' : 'development'
+const tag = mode === 'production' ? 'prod' : 'test'
 
 switch (command) {
   case 'apk':
-    prepare()
-    gradle('assembleDebug')
-    console.log(`\nAPK: ${DEBUG_APK}`)
-    break
   case 'install': {
-    prepare()
+    prepare(mode)
     gradle('assembleDebug')
-    const adb = join(sdkDir(), 'platform-tools', IS_WIN ? 'adb.exe' : 'adb')
-    run(adb, ['install', '-r', DEBUG_APK])
-    run(adb, ['shell', 'monkey', '-p', APP_ID, '-c', 'android.intent.category.LAUNCHER', '1'])
-    console.log(`\nInstalled and launched ${APP_ID}`)
+    const apk = keep(DEBUG_APK, `string-sort-${tag}.apk`)
+    console.log(`\nAPK (${tag}): ${apk}`)
+    if (command === 'install') installOnDevice(apk)
     break
   }
-  case 'aab':
-    prepare()
+  case 'aab': {
+    // Play only ever gets production web code.
+    prepare('production')
     gradle('bundleRelease')
-    console.log(`\nUnsigned AAB: ${RELEASE_AAB}\nSign it in Android Studio: Build > Generate Signed App Bundle.`)
+    const aab = keep(RELEASE_AAB, 'string-sort-prod.aab')
+    console.log(`\nUnsigned AAB: ${aab}\nSign it in Android Studio: Build > Generate Signed App Bundle.`)
     break
+  }
   case 'assets':
     if (!existsSync(ANDROID)) run('npx', ['cap', 'add', 'android'])
     run('npx', ASSET_ARGS)
     break
   case 'open':
-    prepare()
+    prepare(mode)
     ensureStudioPath()
     run('npx', ['cap', 'open', 'android'])
     break
   default:
-    console.log('Usage: node scripts/android.mjs <apk|install|aab|assets|open>')
+    console.log('Usage: node scripts/android.mjs <apk|install|aab|assets|open> [--prod]')
     process.exit(command ? 1 : 0)
 }
