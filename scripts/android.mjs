@@ -61,6 +61,18 @@ function sdkDir() {
   return dir
 }
 
+// Capacitor only looks in the default install dir; here Studio may live in "Android Studio1".
+function ensureStudioPath() {
+  if (!IS_WIN || process.env.CAPACITOR_ANDROID_STUDIO_PATH) return
+  const base = 'C:/Program Files/Android'
+  if (!existsSync(base)) return
+  const exe = readdirSync(base)
+    .filter((d) => /^Android Studio/i.test(d))
+    .map((d) => join(base, d, 'bin', 'studio64.exe'))
+    .find((p) => existsSync(p))
+  if (exe) process.env.CAPACITOR_ANDROID_STUDIO_PATH = exe
+}
+
 function ensureLocalProperties() {
   const file = join(ANDROID, 'local.properties')
   if (!existsSync(file)) writeFileSync(file, `sdk.dir=${sdkDir().replace(/\\/g, '/')}\n`)
@@ -114,6 +126,7 @@ switch (command) {
     break
   case 'open':
     prepare()
+    ensureStudioPath()
     run('npx', ['cap', 'open', 'android'])
     break
   default:
