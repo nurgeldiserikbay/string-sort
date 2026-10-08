@@ -8,6 +8,7 @@ import { createBannerSafeSlot } from './MonetizationLayout.js'
 import { normalizeProgress, normalizeSettings, safeReadJson, safeWriteJson } from './SaveData.js'
 import { APP_VERSION, privacySummary } from './AppInfo.js'
 import { uiIcon } from '../ui/icons.js'
+import { artIcon } from '../ui/artIcons.js'
 import { installMenuPreview } from '../ui/MenuPreview.js'
 import logoUrl from '../assets/logo.webp'
 
@@ -177,9 +178,9 @@ export class GameApp {
       <main class="screen menu-screen">
         <div class="topbar">
           <button class="icon-button soft-icon" data-action="settings" aria-label="Settings">
-            ${uiIcon('settings')}
+            ${artIcon('settings')}
           </button>
-          <div class="coin-pill">${uiIcon('star', 'ui-svg coin-star')}<b>${totalStars}</b></div>
+          <div class="coin-pill">${artIcon('star', 'art-svg coin-star')}<b>${totalStars}</b></div>
         </div>
 
         <section class="hero-card">
@@ -200,15 +201,15 @@ export class GameApp {
 
           <div class="menu-action-grid">
             <button class="menu-action-card" data-action="levels">
-              <span class="menu-action-icon levels-icon">${uiIcon('levels')}</span>
+              <span class="menu-action-icon levels-icon">${artIcon('levels')}</span>
               <b>Levels</b>
             </button>
             <button class="menu-action-card" data-action="settings">
-              <span class="menu-action-icon settings-icon">${uiIcon('settings')}</span>
+              <span class="menu-action-icon settings-icon">${artIcon('settings')}</span>
               <b>Settings</b>
             </button>
             <button class="menu-action-card" data-action="how-to-play">
-              <span class="menu-action-icon hint-icon">${uiIcon('hint')}</span>
+              <span class="menu-action-icon hint-icon">${artIcon('hint')}</span>
               <b>How to Play</b>
             </button>
           </div>
@@ -306,7 +307,7 @@ export class GameApp {
             <h1>Levels</h1>
             <p>${chapter.subtitle}</p>
           </div>
-          <div class="coin-pill">${uiIcon('star', 'ui-svg coin-star')}<b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
+          <div class="coin-pill">${artIcon('star', 'art-svg coin-star')}<b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
         </header>
 
         <nav class="chapter-tabs" aria-label="Level chapters">${tabs}</nav>
@@ -374,7 +375,7 @@ export class GameApp {
             </i>
           </div>
           <div class="coin-pill game-star-pill" aria-label="${totalStars} stars">
-            ${uiIcon('star', 'ui-svg coin-star')}
+            ${artIcon('star', 'art-svg coin-star')}
             <strong>${totalStars}</strong>
           </div>
         </header>
@@ -388,7 +389,7 @@ export class GameApp {
 
         <div class="status-row video-status premium-status">
           <div class="game-stat-card moves-stat">
-            <span class="status-icon">${uiIcon('moves')}</span>
+            <span class="status-icon">${artIcon('moves')}</span>
             <span class="game-stat-copy">
               <span>Moves</span>
               <small>Best ${bestTimeLabel}</small>
@@ -396,7 +397,7 @@ export class GameApp {
             <strong data-moves>0</strong>
           </div>
           <div class="game-stat-card knots-stat" data-crossing-card>
-            <span class="status-icon">${uiIcon('knot')}</span>
+            <span class="status-icon">${artIcon('knot')}</span>
             <span class="game-stat-copy">
               <span>Knots remaining</span>
               <small>Clear every crossing</small>
@@ -407,13 +408,13 @@ export class GameApp {
 
         <nav class="game-actions video-actions premium-actions">
           <button class="round-action hint" data-action="hint">
-            <span>${uiIcon('hint')}</span><b>Hint</b>
+            <span>${artIcon('hint')}</span><b>Hint</b>
           </button>
           <button class="round-action undo" data-action="undo" disabled aria-label="Undo last move">
-            <span>${uiIcon('undo')}</span><b>Undo</b>
+            <span>${artIcon('undo')}</span><b>Undo</b>
           </button>
           <button class="round-action restart" data-action="restart">
-            <span>${uiIcon('restart')}</span><b>Restart</b>
+            <span>${artIcon('restart')}</span><b>Restart</b>
           </button>
         </nav>
 
@@ -679,12 +680,12 @@ export class GameApp {
         <h2>How to Play</h2>
         <div class="how-to-steps">
           <div>
-            <span class="how-step-icon">${uiIcon('moves')}</span>
+            <span class="how-step-icon">${artIcon('moves')}</span>
             <b>Move one peg</b>
             <p>Drag a colored peg into the single empty socket.</p>
           </div>
           <div>
-            <span class="how-step-icon">${uiIcon('knot')}</span>
+            <span class="how-step-icon">${artIcon('knot')}</span>
             <b>Untie the ropes</b>
             <p>The old peg position becomes the next empty socket.</p>
           </div>

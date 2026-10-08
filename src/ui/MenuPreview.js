@@ -122,7 +122,7 @@ export function installMenuPreview(canvas) {
 
     const ringRadius = boardRadius * 0.82
     const sockets = 11
-    const socketRadius = Math.max(5, size * 0.025)
+    const socketRadius = Math.max(6, size * 0.032)
     const socketPoints = Array.from({ length: sockets }, (_, index) => (
       pointOnRing(
         cx,
@@ -155,7 +155,7 @@ export function installMenuPreview(canvas) {
         ctx,
         [socketPoints[startIndex], a, b, socketPoints[endIndex]],
         COLORS[ropeId],
-        Math.max(5.5, size * 0.022),
+        Math.max(6.5, size * 0.03),
       )
     })
 

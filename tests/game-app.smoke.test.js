@@ -76,14 +76,14 @@ describe('GameApp interaction smoke tests', () => {
     expect(root.querySelector('.video-board-preview [data-menu-preview]')).not.toBeNull()
     expect(root.querySelector('.glossy-play')).not.toBeNull()
     expect(root.querySelectorAll('.menu-action-grid .menu-action-card')).toHaveLength(3)
-    expect(root.querySelectorAll('.menu-action-card .ui-svg')).toHaveLength(3)
+    expect(root.querySelectorAll('.menu-action-card .art-svg')).toHaveLength(3)
   })
 
   it('uses semantic icons throughout How to Play', () => {
     root.querySelector('[data-action="how-to-play"]').click()
 
     expect(root.querySelector('.how-to-card')).not.toBeNull()
-    expect(root.querySelectorAll('.how-step-icon .ui-svg')).toHaveLength(3)
+    expect(root.querySelectorAll('.how-step-icon .art-svg, .how-step-icon .ui-svg')).toHaveLength(3)
     expect(root.querySelector('.how-to-card .primary-button .ui-svg')).not.toBeNull()
   })
 
@@ -113,9 +113,10 @@ describe('GameApp interaction smoke tests', () => {
     expect(root.querySelector('.objective-pill')).not.toBeNull()
     expect(root.querySelector('.game-star-pill .coin-star')).not.toBeNull()
     expect(root.querySelectorAll('.premium-status .game-stat-card')).toHaveLength(2)
-    expect(root.querySelector('.moves-stat .status-icon .ui-svg')).not.toBeNull()
-    expect(root.querySelector('.knots-stat .status-icon .ui-svg')).not.toBeNull()
+    expect(root.querySelector('.moves-stat .status-icon .art-svg')).not.toBeNull()
+    expect(root.querySelector('.knots-stat .status-icon .art-svg')).not.toBeNull()
     expect(root.querySelectorAll('.premium-actions .round-action')).toHaveLength(3)
+    expect(root.querySelectorAll('.premium-actions .round-action .art-svg')).toHaveLength(3)
     expect(root.querySelector('[data-action="undo"]').disabled).toBe(true)
 
     app.handleSwap(1, 6)

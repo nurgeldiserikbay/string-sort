@@ -47,7 +47,7 @@
 .menu-screen .logo-polished {
   position: relative;
   z-index: 2;
-  width: min(78vw, 360px);
+  width: min(66vw, 310px);
   margin: 0;
   line-height: 0;
   filter: drop-shadow(0 10px 12px rgba(76,48,24,.2));
@@ -239,7 +239,7 @@
   }
 
   .menu-screen .logo-polished {
-    width: min(68vw, 290px);
+    width: min(58vw, 250px);
   }
 
   .menu-screen .menu-tagline {
@@ -269,5 +269,68 @@
     width: 42px;
     height: 42px;
     border-radius: 14px;
+  }
+}
+
+/* Drawn colour icons */
+.menu-screen .menu-action-icon .art-svg {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 2px 1px rgba(47,40,32,.14));
+}
+
+.menu-screen .topbar .soft-icon .art-svg {
+  width: 30px;
+  height: 30px;
+}
+
+.menu-screen .coin-pill .coin-star {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-height: 760px) {
+  .menu-screen .menu-action-icon .art-svg {
+    width: 31px;
+    height: 31px;
+  }
+}
+
+/* The preview gives up height first, so the buttons never slide over the footer */
+.menu-screen .hero-card {
+  padding-bottom: 34px;
+}
+
+.menu-screen .video-board-preview {
+  width: auto;
+  height: min(67vw, 316px);
+  min-height: 150px;
+  flex: 0 1 auto;
+  aspect-ratio: 1;
+}
+
+@media (max-height: 760px) {
+  .menu-screen .video-board-preview {
+    width: auto;
+    height: min(53vh, 265px);
+  }
+}
+
+.menu-screen .menu-footer {
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(255,248,232,.78);
+  opacity: 1;
+}
+
+/* Tall screens (tablets): keep the menu as one centred group instead of a gap */
+@media (min-height: 900px) {
+  .menu-screen .hero-card {
+    justify-content: center;
+  }
+
+  .menu-screen .video-board-preview {
+    height: min(67vw, 400px);
+    margin: 3vh 0;
   }
 }

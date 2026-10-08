@@ -1,3 +1,6 @@
+import '@fontsource/fredoka/latin-500.css'
+import '@fontsource/fredoka/latin-600.css'
+import '@fontsource/fredoka/latin-700.css'
 import './styles.css'
 import './ui/mainMenu.css'
 import './ui/secondaryScreens.css'

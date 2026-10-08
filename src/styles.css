@@ -1,7 +1,8 @@
 :root {
-  font-family: 'Trebuchet MS', system-ui, sans-serif;
+  font-family: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
+  font-weight: 500;
   --banner-safe-height: 0px;
-  --font-display: 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif;
+  --font-display: 'Fredoka', 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif;
   color: #3d2c20;
   background: #f7e8c8;
   font-synthesis: none;
@@ -2281,4 +2282,9 @@ html[data-banner-mode="preview"] .game-actions {
     height: 36px;
     border-radius: 12px;
   }
+}
+
+.how-step-icon .art-svg {
+  width: 30px;
+  height: 30px;
 }

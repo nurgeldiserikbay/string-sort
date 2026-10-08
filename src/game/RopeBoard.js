@@ -221,7 +221,7 @@ export class RopeBoard {
     const cx = width / 2
     const cy = height / 2 + size * 0.012
     const boardRadius = size * 0.445
-    const socketRadius = clamp(size * 0.028, 10, 17)
+    const socketRadius = clamp(size * 0.032, 11, 19)
 
     return { width, height, size, cx, cy, boardRadius, socketRadius }
   }
@@ -642,7 +642,7 @@ export class RopeBoard {
     const ctx = this.ctx
     const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
     const tension = clamp(this.physics.getTension(ropeId), 0, 0.32)
-    const baseWidth = clamp(g.size * 0.0172, 6.2, 10.8) * (1 - tension * 0.1)
+    const baseWidth = clamp(g.size * 0.0215, 7.4, 13) * (1 - tension * 0.1)
 
     ctx.save()
     ctx.lineCap = 'round'
@@ -744,7 +744,7 @@ export class RopeBoard {
       }
       const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
       const tension = clamp(this.physics.getTension(ropeId), 0, 0.32)
-      const width = clamp(g.size * 0.0172, 6.2, 10.8) * (1 - tension * 0.1)
+      const width = clamp(g.size * 0.0215, 7.4, 13) * (1 - tension * 0.1)
 
       ctx.save()
       ctx.lineCap = 'round'
