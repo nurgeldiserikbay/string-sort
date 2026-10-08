@@ -6,11 +6,37 @@ import { FrameGovernor } from './FrameGovernor.js'
 import { RopeTangle } from './RopeTangle.js'
 
 const TAU = Math.PI * 2
+const PEG_SCALE = 1.34
 const BOARD_RADII = [
   0.985, 1, 0.976, 0.995, 0.982, 1,
   0.972, 0.992, 0.98, 0.997, 0.974, 1,
   0.981, 0.993, 0.97, 0.998, 0.978, 0.992,
 ]
+
+const toneCache = new Map()
+
+function mix(hex, target, amount) {
+  const value = parseInt(hex.slice(1), 16)
+  const channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255]
+  return `rgb(${channels.map((c) => Math.round(c + (target - c) * amount)).join(',')})`
+}
+
+function ropeTones(hex) {
+  let tones = toneCache.get(hex)
+  if (!tones) {
+    tones = {
+      edge: mix(hex, 0, 0.38),
+      base: hex,
+      light: mix(hex, 255, 0.55),
+    }
+    toneCache.set(hex, tones)
+  }
+  return tones
+}
+
+function ropeWidth(g, tension = 0) {
+  return clamp(g.size * 0.029, 9, 17) * (1 - tension * 0.1)
+}
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
@@ -85,6 +111,7 @@ export class RopeBoard {
       gravity: 0,
       ambientMotion: 0,
       constraintIterations: this.performanceProfile.constraintIterations,
+      bendStiffness: 0.16,
     })
 
     this.onPointerDown = this.onPointerDown.bind(this)
@@ -585,7 +612,7 @@ export class RopeBoard {
         return {
           x: position.x,
           y: position.y,
-          radius: g.socketRadius * 1.08,
+          radius: g.socketRadius * (PEG_SCALE - 0.08),
           ropeId,
         }
       })
@@ -715,6 +742,44 @@ export class RopeBoard {
     }
   }
 
+
+  // A rope is a glossy tube: soft drop shadow, a darker edge of its own hue,
+  // the body colour and a thin highlight, with no black outline.
+  strokeTube(ctx, trace, width, color, { shadow = true, cap = 'round' } = {}) {
+    const tones = ropeTones(color)
+    ctx.lineCap = cap
+    ctx.lineJoin = 'round'
+
+    if (shadow) {
+      ctx.save()
+      ctx.translate(0, width * 0.3)
+      trace()
+      ctx.strokeStyle = 'rgba(6,8,14,.34)'
+      ctx.lineWidth = width * 1.1
+      ctx.stroke()
+      ctx.restore()
+    }
+
+    trace()
+    ctx.strokeStyle = tones.edge
+    ctx.lineWidth = width
+    ctx.stroke()
+
+    trace()
+    ctx.strokeStyle = tones.base
+    ctx.lineWidth = width * 0.7
+    ctx.stroke()
+
+    ctx.save()
+    ctx.translate(-width * 0.06, -width * 0.13)
+    trace()
+    ctx.strokeStyle = tones.light
+    ctx.globalAlpha = 0.85
+    ctx.lineWidth = width * 0.24
+    ctx.stroke()
+    ctx.restore()
+  }
+
   drawRope(ropeId, time) {
     const points = this.physics.getPoints(ropeId)
     if (points.length < 2) return
@@ -723,35 +788,9 @@ export class RopeBoard {
     const ctx = this.ctx
     const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
     const tension = clamp(this.physics.getTension(ropeId), 0, 0.32)
-    const baseWidth = clamp(g.size * 0.0215, 7.4, 13) * (1 - tension * 0.1)
 
     ctx.save()
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
-
-    ctx.translate(0, 3)
-    this.smoothPath(points)
-    ctx.strokeStyle = 'rgba(0,0,0,.24)'
-    ctx.lineWidth = baseWidth + 6
-    ctx.stroke()
-    ctx.translate(0, -3)
-
-    this.smoothPath(points)
-    ctx.strokeStyle = 'rgba(22,25,31,.62)'
-    ctx.lineWidth = baseWidth + 4.8
-    ctx.stroke()
-
-    this.smoothPath(points)
-    ctx.strokeStyle = color
-    ctx.lineWidth = baseWidth
-    ctx.stroke()
-
-    this.smoothPath(points)
-    ctx.strokeStyle = 'rgba(255,255,255,.34)'
-    ctx.lineWidth = Math.max(1.2, baseWidth * 0.18)
-    ctx.setLineDash([])
-    ctx.stroke()
-
+    this.strokeTube(ctx, () => this.smoothPath(points), ropeWidth(g, tension), color)
     ctx.restore()
   }
 
@@ -804,61 +843,110 @@ export class RopeBoard {
     })
   }
 
+
+  // At each knot the upper rope is redrawn over the lower one, clipped to a
+  // small disc. The redraw follows exactly the same curve as the rope itself
+  // (smoothPath is local, so a long enough slice matches the full path inside
+  // the disc), which leaves no seam. No shadow here: it would darken the
+  // board in a hard-edged disc around the crossing.
   drawKnotOverpasses() {
     const ctx = this.ctx
     const g = this.geometry()
 
+    // The logical knot's anchor particle is not always where the two ropes
+    // visibly cross, so everything is drawn at the real geometric crossing.
+    const contactsByPair = new Map()
+    for (const contact of this.physics.getContacts()) {
+      const list = contactsByPair.get(contact.pair)
+      if (list) list.push(contact)
+      else contactsByPair.set(contact.pair, [contact])
+    }
+
+    const wraps = []
+
     for (const knot of this.knotConstraints) {
+      const pair = knot.aId < knot.bId ? `${knot.aId}:${knot.bId}` : `${knot.bId}:${knot.aId}`
+      const contacts = contactsByPair.get(pair)
+      if (!contacts) continue
+
       const ropeId = knot.topId
       const points = this.physics.getPoints(ropeId)
-      const index = ropeId === knot.aId ? knot.aIndex : knot.bIndex
-      if (!points.length || index < 2 || index > points.length - 3) continue
+      if (points.length < 3) continue
 
-      const p0 = points[index - 1]
-      const p1 = points[index]
-      const p2 = points[index + 1]
-      const bridgeReach = 0.58
-      const from = {
-        x: p1.x + (p0.x - p1.x) * bridgeReach,
-        y: p1.y + (p0.y - p1.y) * bridgeReach,
+      const anchor = points[ropeId === knot.aId ? knot.aIndex : knot.bIndex] ?? points[0]
+      let contact = contacts[0]
+      let best = Infinity
+      for (const candidate of contacts) {
+        const distance = (candidate.x - anchor.x) ** 2 + (candidate.y - anchor.y) ** 2
+        if (distance < best) {
+          best = distance
+          contact = candidate
+        }
       }
-      const to = {
-        x: p1.x + (p2.x - p1.x) * bridgeReach,
-        y: p1.y + (p2.y - p1.y) * bridgeReach,
-      }
+
+      const segment = contact.aId === ropeId ? contact.aSegment : contact.bSegment
       const color = ROPE_COLORS[ropeId % ROPE_COLORS.length]
       const tension = clamp(this.physics.getTension(ropeId), 0, 0.32)
-      const width = clamp(g.size * 0.0215, 7.4, 13) * (1 - tension * 0.1)
+      const width = ropeWidth(g, tension)
+      const slice = points.slice(Math.max(0, segment - 6), segment + 8)
 
       ctx.save()
-      ctx.lineCap = 'round'
-      ctx.lineJoin = 'round'
-
       ctx.beginPath()
-      ctx.moveTo(from.x, from.y)
-      ctx.quadraticCurveTo(p1.x, p1.y, to.x, to.y)
-      // A compact dark separator under the upper rope makes the topology
-      // readable at a glance without drawing a fake knot capsule.
-      ctx.strokeStyle = 'rgba(27,30,37,.96)'
-      ctx.lineWidth = width + 6.5
-      ctx.stroke()
-
-      ctx.beginPath()
-      ctx.moveTo(from.x, from.y)
-      ctx.quadraticCurveTo(p1.x, p1.y, to.x, to.y)
-      ctx.strokeStyle = color
-      ctx.lineWidth = width
-      ctx.stroke()
-
-      ctx.beginPath()
-      ctx.moveTo(from.x, from.y)
-      ctx.quadraticCurveTo(p1.x, p1.y, to.x, to.y)
-      ctx.strokeStyle = 'rgba(255,255,255,.38)'
-      ctx.lineWidth = Math.max(1.2, width * 0.18)
-      ctx.stroke()
-
+      ctx.arc(contact.x, contact.y, width * 1.7, 0, TAU)
+      ctx.clip()
+      this.strokeTube(ctx, () => this.smoothPath(slice), width, color, { shadow: false })
       ctx.restore()
+
+      // Where several knots meet, one wrap per spot reads as a knot; more
+      // read as loose rope pieces.
+      const crowded = wraps.some((p) => (p.x - contact.x) ** 2 + (p.y - contact.y) ** 2 < (width * 2.2) ** 2)
+      if (!crowded) {
+        wraps.push(contact)
+        this.drawKnotWrap(knot, points, segment, contact, width)
+      }
     }
+  }
+
+  // A tied knot, not just a crossing: next to the crossing the lower rope
+  // comes back over the upper one in a short wrap, as in the mockups.
+  drawKnotWrap(knot, points, segment, contact, width) {
+    const ctx = this.ctx
+    const lowerId = knot.topId === knot.aId ? knot.bId : knot.aId
+    const before = points[segment]
+    const after = points[segment + 1]
+    if (!before || !after) return
+    const tx = after.x - before.x
+    const ty = after.y - before.y
+    const length = Math.hypot(tx, ty)
+    if (length < 0.001) return
+
+    const ux = tx / length
+    const uy = ty / length
+    const nx = -uy
+    const ny = ux
+    // Alternate the side per knot so neighbouring wraps don't stack up.
+    const side = (knot.aId + knot.bId) % 2 === 0 ? 1 : -1
+    const cx = contact.x + ux * width * 1.05 * side
+    const cy = contact.y + uy * width * 1.05 * side
+    const reach = width * 1.05
+    const bow = width * 0.55 * side
+    const wrapWidth = width * 0.86
+    const color = ROPE_COLORS[lowerId % ROPE_COLORS.length]
+
+    const trace = () => {
+      ctx.beginPath()
+      ctx.moveTo(cx - nx * reach, cy - ny * reach)
+      ctx.quadraticCurveTo(
+        cx + ux * bow,
+        cy + uy * bow,
+        cx + nx * reach,
+        cy + ny * reach,
+      )
+    }
+
+    ctx.save()
+    this.strokeTube(ctx, trace, wrapWidth, color, { cap: 'butt' })
+    ctx.restore()
   }
 
   drawHintGuide(time) {
@@ -1151,8 +1239,8 @@ export class RopeBoard {
       && this.order[index] == null
     ) scale += 0.08
 
-    const radius = g.socketRadius * 1.18 * scale
-    const sprite = this.pegSprite(color, g.socketRadius * 1.18, ropeId)
+    const radius = g.socketRadius * PEG_SCALE * scale
+    const sprite = this.pegSprite(color, g.socketRadius * PEG_SCALE, ropeId)
 
     if (sprite) {
       const half = sprite.cssSize / 2 * scale
@@ -1187,80 +1275,57 @@ export class RopeBoard {
     return sprite
   }
 
+  // A glossy ball the rope disappears into, with a small rivet in the
+  // middle (the old dark hole read as a ring rather than a bead).
   paintPeg(ctx, x, y, radius, color, ropeId) {
     const mainCtx = this.ctx
     this.ctx = ctx
+    const tones = ropeTones(color)
     ctx.save()
-    ctx.fillStyle = 'rgba(0,0,0,.3)'
+
+    ctx.fillStyle = 'rgba(6,8,14,.34)'
     ctx.beginPath()
-    ctx.arc(x, y + radius * 0.16, radius * 1.04, 0, TAU)
+    ctx.ellipse(x, y + radius * 0.24, radius * 1.02, radius * 0.96, 0, 0, TAU)
     ctx.fill()
 
-    const gradient = ctx.createRadialGradient(
-      x - radius * 0.34,
-      y - radius * 0.44,
-      radius * 0.1,
+    const body = ctx.createRadialGradient(
+      x - radius * 0.32,
+      y - radius * 0.38,
+      radius * 0.08,
       x,
       y,
       radius,
     )
-    gradient.addColorStop(0, '#ffffff')
-    gradient.addColorStop(0.1, color)
-    gradient.addColorStop(0.72, color)
-    gradient.addColorStop(1, '#252932')
+    body.addColorStop(0, tones.light)
+    body.addColorStop(0.42, color)
+    body.addColorStop(0.86, tones.edge)
+    body.addColorStop(1, mix(color, 0, 0.55))
 
-    ctx.fillStyle = gradient
+    ctx.fillStyle = body
     ctx.beginPath()
     ctx.arc(x, y, radius, 0, TAU)
     ctx.fill()
 
-    ctx.shadowColor = 'transparent'
-    ctx.strokeStyle = 'rgba(255,255,255,.22)'
-    ctx.lineWidth = 1.8
+    ctx.fillStyle = 'rgba(255,255,255,.78)'
     ctx.beginPath()
-    ctx.arc(x, y, radius * 0.94, 0, TAU)
-    ctx.stroke()
-
-    ctx.strokeStyle = 'rgba(15,19,27,.34)'
-    ctx.lineWidth = 1.5
-    ctx.beginPath()
-    ctx.arc(x, y, radius * 0.99, Math.PI * 0.08, Math.PI * 0.92)
-    ctx.stroke()
-
-    ctx.strokeStyle = 'rgba(255,255,255,.38)'
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.arc(
-      x - radius * 0.08,
-      y - radius * 0.12,
-      radius * 0.68,
-      Math.PI * 1.08,
-      Math.PI * 1.82,
-    )
-    ctx.stroke()
-
-    const holeGradient = ctx.createRadialGradient(
-      x - radius * 0.08,
-      y - radius * 0.1,
-      radius * 0.05,
-      x,
-      y,
-      radius * 0.36,
-    )
-    holeGradient.addColorStop(0, 'rgba(62,67,77,.72)')
-    holeGradient.addColorStop(0.72, 'rgba(26,30,38,.74)')
-    holeGradient.addColorStop(1, 'rgba(9,12,18,.86)')
-
-    ctx.fillStyle = holeGradient
-    ctx.beginPath()
-    ctx.arc(x, y, radius * 0.34, 0, TAU)
+    ctx.ellipse(x - radius * 0.36, y - radius * 0.42, radius * 0.26, radius * 0.16, -0.6, 0, TAU)
     ctx.fill()
 
-    ctx.strokeStyle = 'rgba(255,255,255,.12)'
-    ctx.lineWidth = 1.2
+    const rivet = ctx.createRadialGradient(
+      x - radius * 0.06,
+      y - radius * 0.08,
+      radius * 0.02,
+      x,
+      y,
+      radius * 0.24,
+    )
+    rivet.addColorStop(0, tones.light)
+    rivet.addColorStop(0.45, tones.edge)
+    rivet.addColorStop(1, mix(color, 0, 0.6))
+    ctx.fillStyle = rivet
     ctx.beginPath()
-    ctx.arc(x, y, radius * 0.39, 0, TAU)
-    ctx.stroke()
+    ctx.arc(x, y, radius * 0.24, 0, TAU)
+    ctx.fill()
 
     if (this.pegMarkers) {
       this.drawPegMarker(x, y, radius, ropeId)

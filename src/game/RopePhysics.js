@@ -26,7 +26,9 @@ export class RopePhysics {
     gravity = 22,
     ambientMotion = 1.2,
     constraintIterations = 8,
+    bendStiffness = 0,
   } = {}) {
+    this.bendStiffness = bendStiffness
     this.damping = damping
     this.gravity = gravity
     this.ambientMotion = ambientMotion
@@ -196,6 +198,7 @@ export class RopePhysics {
         for (const rope of this.ropes.values()) {
           this.pinEndpoints(rope)
           this.solveDistanceConstraints(rope)
+          this.solveBending(rope)
         }
 
         this.solveKnotConstraints(knots)
@@ -263,6 +266,9 @@ export class RopePhysics {
       const dx = b.x - a.x
       const dy = b.y - a.y
       const current = Math.max(EPSILON, Math.hypot(dx, dy))
+      // Rope resists stretching, not compression: pushing particles apart made
+      // the spare length buckle into S-waves around every knot.
+      if (current <= rope.segmentLength) continue
       const error = (current - rope.segmentLength) / current
 
       const aWeight = a.pinned ? 0 : 1
@@ -281,6 +287,20 @@ export class RopePhysics {
         b.x -= correctionX * (bWeight / totalWeight)
         b.y -= correctionY * (bWeight / totalWeight)
       }
+    }
+  }
+
+  // Real cord resists sharp bends. Without this the knot anchors pulled single
+  // particles into zigzags and tiny curls, like a bead chain rather than a rope.
+  solveBending(rope, stiffness = this.bendStiffness) {
+    const points = rope.points
+    for (let index = 1; index < points.length - 1; index++) {
+      const point = points[index]
+      if (point.pinned) continue
+      const prev = points[index - 1]
+      const next = points[index + 1]
+      point.x += ((prev.x + next.x) / 2 - point.x) * stiffness
+      point.y += ((prev.y + next.y) / 2 - point.y) * stiffness
     }
   }
 
