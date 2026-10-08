@@ -549,25 +549,30 @@ export class GameApp {
   }
 
   startTimer() {
+    clearInterval(this.timerRaf)
     this.timerStartedAt = performance.now() - this.elapsed * 1000
+    // A coarse tick is enough for a seconds counter; a per-frame loop kept the
+    // main thread busy next to the board render.
     const tick = () => {
       if (this.screen !== 'game') return
       this.elapsed = (performance.now() - this.timerStartedAt) / 1000
       const el = this.root.querySelector('[data-timer]')
       if (el) el.textContent = formatTime(this.elapsed)
-      this.timerRaf = requestAnimationFrame(tick)
     }
-    this.timerRaf = requestAnimationFrame(tick)
+    this.timerRaf = setInterval(tick, 250)
   }
 
   stopTimer() {
-    cancelAnimationFrame(this.timerRaf)
+    if (this.screen === 'game' && this.timerStartedAt != null) {
+      this.elapsed = (performance.now() - this.timerStartedAt) / 1000
+    }
+    clearInterval(this.timerRaf)
   }
 
   showPause() {
     if (this.screen !== 'game') return
-    this.screen = 'pause'
     this.stopTimer()
+    this.screen = 'pause'
     this.board?.cancelDrag?.()
     this.board?.stop()
     clearTimeout(this.completionTimer)

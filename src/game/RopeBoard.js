@@ -6,6 +6,11 @@ import { FrameGovernor } from './FrameGovernor.js'
 import { RopeTangle } from './RopeTangle.js'
 
 const TAU = Math.PI * 2
+const BOARD_RADII = [
+  0.985, 1, 0.976, 0.995, 0.982, 1,
+  0.972, 0.992, 0.98, 0.997, 0.974, 1,
+  0.981, 0.993, 0.97, 0.998, 0.978, 0.992,
+]
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
@@ -42,6 +47,14 @@ export class RopeBoard {
     this.hintUntil = 0
     this.running = false
     this.raf = 0
+    // Render caches: layout is measured once per resize, the board and idle
+    // sockets are painted once per move, and the loop sleeps once ropes settle.
+    this.geom = null
+    this.socketCache = null
+    this.staticLayer = null
+    this.staticKey = ''
+    this.sleeping = false
+    this.quietFrames = 0
     this.depthSeed = (
       0x51f15e
       ^ Math.imul(this.visualSeed + 1, 0x9e3779b1)
@@ -85,6 +98,11 @@ export class RopeBoard {
     canvas.addEventListener('pointerup', this.onPointerUp)
     canvas.addEventListener('pointercancel', this.onPointerCancel)
     window.addEventListener('resize', this.resize)
+    // The canvas can change size without a window resize (fonts, banner slot).
+    this.resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(() => this.resize())
+      : null
+    this.resizeObserver?.observe(canvas)
     this.resize()
   }
 
@@ -154,18 +172,24 @@ export class RopeBoard {
       this.endpointTransitions.clear()
       this.physics.clear()
     }
+
+    this.socketCache = null
+    this.wake()
   }
 
   flashHint(from, to) {
     this.hint = { from, to }
     this.hintUntil = performance.now() + 2200
+    this.wake()
   }
 
   start() {
     if (this.running) return
     this.running = true
+    this.sleeping = false
+    this.quietFrames = 0
 
-    const tick = (time) => {
+    this.tick = (time) => {
       if (!this.running) return
 
       this.updateDiagnostics(time)
@@ -179,14 +203,43 @@ export class RopeBoard {
       }
 
       this.draw(time)
-      this.raf = requestAnimationFrame(tick)
+
+      // Nothing moves on a settled board, so stop burning frames (and battery,
+      // which throttles the CPU) until the player touches it or the order changes.
+      this.quietFrames = this.isAnimating() ? 0 : this.quietFrames + 1
+      if (this.quietFrames > 24) {
+        this.sleeping = true
+        this.frameGovernor?.reset(0)
+        return
+      }
+
+      this.raf = requestAnimationFrame(this.tick)
     }
 
-    this.raf = requestAnimationFrame(tick)
+    this.raf = requestAnimationFrame(this.tick)
+  }
+
+  wake() {
+    this.quietFrames = 0
+    if (!this.running || !this.sleeping) return
+    this.sleeping = false
+    this.physics.lastTime = 0
+    this.raf = requestAnimationFrame(this.tick)
+  }
+
+  isAnimating(now = performance.now()) {
+    return this.dragIndex >= 0
+      || this.endpointTransitions.size > 0
+      || this.releaseBursts.length > 0
+      || (this.hint != null && now < this.hintUntil)
+      || now < this.invalidDropUntil
+      || getCrossingCount(this.order) === 0
+      || this.physics.getMotion() > 0.03
   }
 
   stop() {
     this.running = false
+    this.sleeping = false
     cancelAnimationFrame(this.raf)
   }
 
@@ -198,6 +251,7 @@ export class RopeBoard {
     this.canvas.removeEventListener('pointerup', this.onPointerUp)
     this.canvas.removeEventListener('pointercancel', this.onPointerCancel)
     window.removeEventListener('resize', this.resize)
+    this.resizeObserver?.disconnect()
   }
 
   resize() {
@@ -206,15 +260,29 @@ export class RopeBoard {
       window.devicePixelRatio || 1,
       this.performanceProfile.dprCap,
     )
-    this.canvas.width = Math.round(rect.width * dpr)
-    this.canvas.height = Math.round(rect.height * dpr)
+    const pixelWidth = Math.round(rect.width * dpr)
+    const pixelHeight = Math.round(rect.height * dpr)
+    const sameSize = this.geom
+      && this.canvas.width === pixelWidth
+      && this.canvas.height === pixelHeight
+      && this.geom.width === rect.width
+      && this.geom.height === rect.height
+    // ResizeObserver fires once on observe(); don't reset the ropes for it.
+    if (sameSize) return
+
+    this.dpr = dpr
+    this.canvas.width = pixelWidth
+    this.canvas.height = pixelHeight
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    this.geom = this.measureGeometry(rect)
+    this.socketCache = null
+    this.staticKey = ''
     this.physics.clear()
     this.needsKnotPrime = true
+    this.wake()
   }
 
-  geometry() {
-    const rect = this.canvas.getBoundingClientRect()
+  measureGeometry(rect) {
     const width = rect.width
     const height = rect.height
     const size = Math.min(width, height)
@@ -226,20 +294,29 @@ export class RopeBoard {
     return { width, height, size, cx, cy, boardRadius, socketRadius }
   }
 
-  socketPosition(index) {
-    const g = this.geometry()
-    const count = this.order.length || 1
-    const seedRotation = (
-      ((this.depthSeed >>> 9) & 1023) / 1023 - 0.5
-    ) * 0.08
-    const angle = -Math.PI / 2 + seedRotation + (index / count) * TAU
-    const radius = g.boardRadius * 0.89
+  geometry() {
+    return this.geom ?? this.measureGeometry(this.canvas.getBoundingClientRect())
+  }
 
-    return {
-      x: g.cx + Math.cos(angle) * radius,
-      y: g.cy + Math.sin(angle) * radius,
-      angle,
+  socketPosition(index) {
+    const count = this.order.length || 1
+    if (!this.socketCache || this.socketCache.length !== count) {
+      const g = this.geometry()
+      const seedRotation = (
+        ((this.depthSeed >>> 9) & 1023) / 1023 - 0.5
+      ) * 0.08
+      const radius = g.boardRadius * 0.89
+      this.socketCache = Array.from({ length: count }, (_, i) => {
+        const angle = -Math.PI / 2 + seedRotation + (i / count) * TAU
+        return {
+          x: g.cx + Math.cos(angle) * radius,
+          y: g.cy + Math.sin(angle) * radius,
+          angle,
+        }
+      })
     }
+
+    return this.socketCache[index]
   }
 
   constrainDragPoint(point) {
@@ -287,6 +364,7 @@ export class RopeBoard {
   }
 
   onPointerDown(event) {
+    this.wake()
     if (this.activePointerId != null) return
 
     const point = this.eventPoint(event)
@@ -303,6 +381,7 @@ export class RopeBoard {
   }
 
   onPointerMove(event) {
+    this.wake()
     if (
       this.dragIndex < 0
       || this.activePointerId == null
@@ -314,6 +393,7 @@ export class RopeBoard {
   }
 
   onPointerUp(event) {
+    this.wake()
     if (
       this.dragIndex < 0
       || this.activePointerId == null
@@ -545,28 +625,9 @@ export class RopeBoard {
     ctx.lineTo(last.x, last.y)
   }
 
-  drawBoard(g) {
-    const ctx = this.ctx
-    const radii = [
-      0.985, 1, 0.976, 0.995, 0.982, 1,
-      0.972, 0.992, 0.98, 0.997, 0.974, 1,
-      0.981, 0.993, 0.97, 0.998, 0.978, 0.992,
-    ]
-
-    const boardPath = (scale = 1) => {
-      ctx.beginPath()
-      const phase = this.depthSeed % radii.length
-      radii.forEach((_, index) => {
-        const factor = radii[(index + phase) % radii.length]
-        const angle = -Math.PI / 2 + (index / radii.length) * TAU
-        const radius = g.boardRadius * factor * scale
-        const x = g.cx + Math.cos(angle) * radius
-        const y = g.cy + Math.sin(angle) * radius
-        if (index === 0) ctx.moveTo(x, y)
-        else ctx.lineTo(x, y)
-      })
-      ctx.closePath()
-    }
+  drawBoard(g, ctx = this.ctx) {
+    const radii = BOARD_RADII
+    const boardPath = (scale = 1) => this.traceBoardPath(ctx, g, scale, radii)
 
     ctx.save()
     ctx.shadowColor = 'rgba(58, 38, 20, .26)'
@@ -620,6 +681,26 @@ export class RopeBoard {
     boardPath(0.9)
     ctx.fill()
     ctx.restore()
+  }
+
+  traceBoardPath(ctx, g, scale = 1, radii = BOARD_RADII) {
+    ctx.beginPath()
+    const phase = this.depthSeed % radii.length
+    radii.forEach((_, index) => {
+      const factor = radii[(index + phase) % radii.length]
+      const angle = -Math.PI / 2 + (index / radii.length) * TAU
+      const radius = g.boardRadius * factor * scale
+      const x = g.cx + Math.cos(angle) * radius
+      const y = g.cy + Math.sin(angle) * radius
+      if (index === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    })
+    ctx.closePath()
+  }
+
+  drawSolvedGlow(g) {
+    const ctx = this.ctx
+    const boardPath = (scale) => this.traceBoardPath(ctx, g, scale)
 
     if (getCrossingCount(this.order) === 0) {
       const pulse = 0.58 + Math.sin(performance.now() * 0.012) * 0.18
@@ -648,15 +729,18 @@ export class RopeBoard {
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
 
+    ctx.translate(0, 3)
+    this.smoothPath(points)
+    ctx.strokeStyle = 'rgba(0,0,0,.24)'
+    ctx.lineWidth = baseWidth + 6
+    ctx.stroke()
+    ctx.translate(0, -3)
+
     this.smoothPath(points)
     ctx.strokeStyle = 'rgba(22,25,31,.62)'
     ctx.lineWidth = baseWidth + 4.8
-    ctx.shadowColor = 'rgba(0,0,0,.34)'
-    ctx.shadowBlur = 5
-    ctx.shadowOffsetY = 3
     ctx.stroke()
 
-    ctx.shadowColor = 'transparent'
     this.smoothPath(points)
     ctx.strokeStyle = color
     ctx.lineWidth = baseWidth
@@ -757,12 +841,8 @@ export class RopeBoard {
       // readable at a glance without drawing a fake knot capsule.
       ctx.strokeStyle = 'rgba(27,30,37,.96)'
       ctx.lineWidth = width + 6.5
-      ctx.shadowColor = 'rgba(0,0,0,.34)'
-      ctx.shadowBlur = 4
-      ctx.shadowOffsetY = 2.2
       ctx.stroke()
 
-      ctx.shadowColor = 'transparent'
       ctx.beginPath()
       ctx.moveTo(from.x, from.y)
       ctx.quadraticCurveTo(p1.x, p1.y, to.x, to.y)
@@ -846,10 +926,7 @@ export class RopeBoard {
     ctx.restore()
   }
 
-  drawSocket(index) {
-    const g = this.geometry()
-    const ctx = this.ctx
-    const position = this.socketPosition(index)
+  isSocketActive(index) {
     const isEmpty = this.order[index] == null
     const isDropTarget = isEmpty
       && this.dragIndex >= 0
@@ -858,6 +935,17 @@ export class RopeBoard {
       && this.hint
       && performance.now() < this.hintUntil
       && this.hint.to === index
+    return { isEmpty, isDropTarget, isHintTarget: Boolean(isHintTarget) }
+  }
+
+  drawSocket(index, neutral = false) {
+    const g = this.geometry()
+    const ctx = this.ctx
+    const position = this.socketPosition(index)
+    const state = this.isSocketActive(index)
+    const isEmpty = state.isEmpty
+    const isDropTarget = !neutral && state.isDropTarget
+    const isHintTarget = !neutral && state.isHintTarget
     const isActiveTarget = isDropTarget || isHintTarget
     const pulse = isHintTarget
       ? 1 + Math.sin(performance.now() * 0.012) * 0.08
@@ -1064,23 +1152,56 @@ export class RopeBoard {
     ) scale += 0.08
 
     const radius = g.socketRadius * 1.18 * scale
+    const sprite = this.pegSprite(color, g.socketRadius * 1.18, ropeId)
 
+    if (sprite) {
+      const half = sprite.cssSize / 2 * scale
+      ctx.drawImage(sprite.canvas, position.x - half, position.y - half, half * 2, half * 2)
+      return
+    }
+
+    this.paintPeg(ctx, position.x, position.y, radius, color, ropeId)
+  }
+
+  // Pegs are identical for a given colour, so each one is painted once into a
+  // small sprite (three gradients and five arcs per peg per frame otherwise).
+  pegSprite(color, radius, ropeId) {
+    if (typeof this.ctx.drawImage !== 'function') return null
+    const dpr = this.dpr || 1
+    const key = `${color}|${radius.toFixed(2)}|${dpr}|${this.pegMarkers ? ropeId : ''}`
+    this.pegSprites ??= new Map()
+    const cached = this.pegSprites.get(key)
+    if (cached) return cached
+
+    const cssSize = Math.ceil(radius * 2.6)
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.ceil(cssSize * dpr)
+    canvas.height = Math.ceil(cssSize * dpr)
+    const spriteCtx = canvas.getContext('2d')
+    if (!spriteCtx) return null
+
+    spriteCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    this.paintPeg(spriteCtx, cssSize / 2, cssSize / 2, radius, color, ropeId)
+    const sprite = { canvas, cssSize }
+    this.pegSprites.set(key, sprite)
+    return sprite
+  }
+
+  paintPeg(ctx, x, y, radius, color, ropeId) {
+    const mainCtx = this.ctx
+    this.ctx = ctx
     ctx.save()
     ctx.fillStyle = 'rgba(0,0,0,.3)'
     ctx.beginPath()
-    ctx.arc(position.x, position.y + radius * 0.16, radius * 1.04, 0, TAU)
+    ctx.arc(x, y + radius * 0.16, radius * 1.04, 0, TAU)
     ctx.fill()
 
-    ctx.shadowColor = 'rgba(0,0,0,.32)'
-    ctx.shadowBlur = 7
-    ctx.shadowOffsetY = 4
-
     const gradient = ctx.createRadialGradient(
-      position.x - radius * 0.34,
-      position.y - radius * 0.44,
+      x - radius * 0.34,
+      y - radius * 0.44,
       radius * 0.1,
-      position.x,
-      position.y,
+      x,
+      y,
       radius,
     )
     gradient.addColorStop(0, '#ffffff')
@@ -1090,28 +1211,28 @@ export class RopeBoard {
 
     ctx.fillStyle = gradient
     ctx.beginPath()
-    ctx.arc(position.x, position.y, radius, 0, TAU)
+    ctx.arc(x, y, radius, 0, TAU)
     ctx.fill()
 
     ctx.shadowColor = 'transparent'
     ctx.strokeStyle = 'rgba(255,255,255,.22)'
     ctx.lineWidth = 1.8
     ctx.beginPath()
-    ctx.arc(position.x, position.y, radius * 0.94, 0, TAU)
+    ctx.arc(x, y, radius * 0.94, 0, TAU)
     ctx.stroke()
 
     ctx.strokeStyle = 'rgba(15,19,27,.34)'
     ctx.lineWidth = 1.5
     ctx.beginPath()
-    ctx.arc(position.x, position.y, radius * 0.99, Math.PI * 0.08, Math.PI * 0.92)
+    ctx.arc(x, y, radius * 0.99, Math.PI * 0.08, Math.PI * 0.92)
     ctx.stroke()
 
     ctx.strokeStyle = 'rgba(255,255,255,.38)'
     ctx.lineWidth = 2
     ctx.beginPath()
     ctx.arc(
-      position.x - radius * 0.08,
-      position.y - radius * 0.12,
+      x - radius * 0.08,
+      y - radius * 0.12,
       radius * 0.68,
       Math.PI * 1.08,
       Math.PI * 1.82,
@@ -1119,11 +1240,11 @@ export class RopeBoard {
     ctx.stroke()
 
     const holeGradient = ctx.createRadialGradient(
-      position.x - radius * 0.08,
-      position.y - radius * 0.1,
+      x - radius * 0.08,
+      y - radius * 0.1,
       radius * 0.05,
-      position.x,
-      position.y,
+      x,
+      y,
       radius * 0.36,
     )
     holeGradient.addColorStop(0, 'rgba(62,67,77,.72)')
@@ -1132,19 +1253,20 @@ export class RopeBoard {
 
     ctx.fillStyle = holeGradient
     ctx.beginPath()
-    ctx.arc(position.x, position.y, radius * 0.34, 0, TAU)
+    ctx.arc(x, y, radius * 0.34, 0, TAU)
     ctx.fill()
 
     ctx.strokeStyle = 'rgba(255,255,255,.12)'
     ctx.lineWidth = 1.2
     ctx.beginPath()
-    ctx.arc(position.x, position.y, radius * 0.39, 0, TAU)
+    ctx.arc(x, y, radius * 0.39, 0, TAU)
     ctx.stroke()
 
     if (this.pegMarkers) {
-      this.drawPegMarker(position.x, position.y, radius, ropeId)
+      this.drawPegMarker(x, y, radius, ropeId)
     }
     ctx.restore()
+    this.ctx = mainCtx
   }
 
   drawCenterHub(g, time) {
@@ -1243,13 +1365,63 @@ export class RopeBoard {
     ctx.restore()
   }
 
+  // Board and idle sockets only change when the order or size changes, so
+  // they are painted once into an offscreen canvas (the board's blurred
+  // shadow is the single most expensive thing on the screen).
+  drawStaticLayer(g) {
+    const key = [
+      this.order.map((id) => (id == null ? '_' : id)).join(','),
+      this.canvas.width,
+      this.canvas.height,
+      this.depthSeed,
+    ].join('|')
+
+    if (typeof this.ctx.drawImage !== 'function') {
+      this.drawBoard(g)
+      this.order.forEach((_, index) => this.drawSocket(index, true))
+      return
+    }
+
+    if (this.staticKey !== key) {
+      const layer = this.staticLayer ?? document.createElement('canvas')
+      layer.width = this.canvas.width
+      layer.height = this.canvas.height
+      const layerCtx = layer.getContext('2d')
+      if (!layerCtx) {
+        this.drawBoard(g)
+        this.order.forEach((_, index) => this.drawSocket(index, true))
+        return
+      }
+
+      const dpr = this.dpr || 1
+      layerCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      layerCtx.clearRect(0, 0, g.width, g.height)
+      const mainCtx = this.ctx
+      this.ctx = layerCtx
+      try {
+        this.drawBoard(g)
+        this.order.forEach((_, index) => this.drawSocket(index, true))
+      } finally {
+        this.ctx = mainCtx
+      }
+      this.staticLayer = layer
+      this.staticKey = key
+    }
+
+    this.ctx.drawImage(this.staticLayer, 0, 0, g.width, g.height)
+  }
+
   draw(time = 0) {
     const ctx = this.ctx
     const g = this.geometry()
     ctx.clearRect(0, 0, g.width, g.height)
 
-    this.drawBoard(g)
-    this.order.forEach((_, index) => this.drawSocket(index))
+    this.drawStaticLayer(g)
+    this.drawSolvedGlow(g)
+    this.order.forEach((_, index) => {
+      const state = this.isSocketActive(index)
+      if (state.isDropTarget || state.isHintTarget) this.drawSocket(index)
+    })
     this.syncPhysics(time, g)
 
     const ropeIds = [...new Set(this.order.filter((ropeId) => ropeId != null))]

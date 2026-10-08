@@ -34,12 +34,14 @@ export class RopePhysics {
     this.ropes = new Map()
     this.lastTime = 0
     this.contacts = []
+    this.motion = Infinity
   }
 
   clear() {
     this.ropes.clear()
     this.lastTime = 0
     this.contacts = []
+    this.motion = Infinity
   }
 
   removeMissing(validIds) {
@@ -178,8 +180,11 @@ export class RopePhysics {
     const frameSeconds = Math.min(1 / 30, Math.max(1 / 120, (now - this.lastTime) / 1000 || 1 / 60))
     this.lastTime = now
 
-    const substeps = frameSeconds > 1 / 50 ? 2 : 1
+    // One step per frame: doubling the work on slow frames made a slow
+    // device slower still. frameSeconds is already clamped to 1/30.
+    const substeps = 1
     const dt = frameSeconds / substeps
+    this.motion = 0
 
     for (let step = 0; step < substeps; step++) {
       for (const rope of this.ropes.values()) {
@@ -233,6 +238,7 @@ export class RopePhysics {
 
       point.oldX = point.x
       point.oldY = point.y
+      this.motion = Math.max(this.motion, Math.abs(velocityX) + Math.abs(velocityY))
 
       const weight = Math.sin((index / rope.segmentCount) * Math.PI)
       point.x += velocityX + wind * weight * dtSquared
@@ -373,6 +379,11 @@ export class RopePhysics {
       dampPoint(ropeB.points[contact.bSegment])
       dampPoint(ropeB.points[contact.bSegment + 1])
     }
+  }
+
+  // Largest per-frame particle movement in the last update, in CSS pixels.
+  getMotion() {
+    return this.motion
   }
 
   getContacts() {

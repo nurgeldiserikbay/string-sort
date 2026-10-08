@@ -156,7 +156,6 @@
   height: min(58vh, 540px);
   margin-top: 1px;
   padding: 0 4px;
-  filter: drop-shadow(0 17px 20px rgba(77,49,25,.14));
 }
 
 .premium-status {

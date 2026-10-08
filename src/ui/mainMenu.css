@@ -78,7 +78,6 @@
 .menu-screen .video-board-preview {
   width: min(67vw, 316px);
   margin: 1.2vh 0 auto;
-  filter: drop-shadow(0 17px 19px rgba(75,48,26,.17));
 }
 
 .menu-screen .resume-label {
