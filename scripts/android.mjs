@@ -11,7 +11,7 @@
 // The android/ platform and its icons/splash are created on first run.
 
 import { spawnSync } from 'node:child_process'
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dirname, '..')
@@ -81,12 +81,36 @@ function ensureLocalProperties() {
   if (!existsSync(file)) writeFileSync(file, `sdk.dir=${sdkDir().replace(/\\/g, '/')}\n`)
 }
 
-function prepare(mode) {
+// 26 splash PNGs (densities x orientation x night) weigh more than the game itself;
+// WebP under the same resource name keeps the look at a fraction of the size.
+async function shrinkSplash() {
+  const sharp = (await import('sharp')).default
+  const res = join(ANDROID, 'app', 'src', 'main', 'res')
+  let before = 0
+  let after = 0
+  for (const dir of readdirSync(res).filter((d) => d.startsWith('drawable'))) {
+    const png = join(res, dir, 'splash.png')
+    if (!existsSync(png)) continue
+    const webp = join(res, dir, 'splash.webp')
+    before += statSync(png).size
+    await sharp(png).webp({ quality: 86 }).toFile(webp)
+    after += statSync(webp).size
+    unlinkSync(png)
+  }
+  if (before) console.log(`Splash PNG -> WebP: ${(before / 1e6).toFixed(1)} MB -> ${(after / 1e6).toFixed(1)} MB`)
+}
+
+async function generateAssets() {
+  run('npx', ASSET_ARGS)
+  await shrinkSplash()
+}
+
+async function prepare(mode) {
   console.log(`\n=== ${mode === 'production' ? 'PROD' : 'TEST'} build (vite --mode ${mode}) ===`)
   run('npx', ['vite', 'build', '--mode', mode])
   if (!existsSync(ANDROID)) {
     run('npx', ['cap', 'add', 'android'])
-    run('npx', ASSET_ARGS)
+    await generateAssets()
   }
   run('npx', ['cap', 'sync', 'android'])
   ensureLocalProperties()
@@ -125,7 +149,7 @@ const tag = mode === 'production' ? 'prod' : 'test'
 switch (command) {
   case 'apk':
   case 'install': {
-    prepare(mode)
+    await prepare(mode)
     gradle('assembleDebug')
     const apk = keep(DEBUG_APK, `string-sort-${tag}.apk`)
     console.log(`\nAPK (${tag}): ${apk}`)
@@ -134,7 +158,7 @@ switch (command) {
   }
   case 'aab': {
     // Play only ever gets production web code.
-    prepare('production')
+    await prepare('production')
     gradle('bundleRelease')
     const aab = keep(RELEASE_AAB, 'string-sort-prod.aab')
     console.log(`\nUnsigned AAB: ${aab}\nSign it in Android Studio: Build > Generate Signed App Bundle.`)
@@ -142,10 +166,10 @@ switch (command) {
   }
   case 'assets':
     if (!existsSync(ANDROID)) run('npx', ['cap', 'add', 'android'])
-    run('npx', ASSET_ARGS)
+    await generateAssets()
     break
   case 'open':
-    prepare(mode)
+    await prepare(mode)
     ensureStudioPath()
     run('npx', ['cap', 'open', 'android'])
     break
