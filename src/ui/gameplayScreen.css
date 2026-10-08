@@ -8,18 +8,6 @@
   --game-ink: #17365f;
   --game-brown: #5f4027;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 8% 18%, rgba(151, 205, 91, .14) 0 7%, transparent 18%),
-    radial-gradient(ellipse at 94% 12%, rgba(116, 181, 72, .13) 0 7%, transparent 18%),
-    radial-gradient(ellipse at 6% 88%, rgba(126, 190, 77, .12) 0 8%, transparent 20%),
-    radial-gradient(circle at 50% 2%, rgba(255,255,255,.86), transparent 30%),
-    linear-gradient(180deg, #fff8e8 0%, #f9e4bb 100%);
-}
-
-.game-screen::before,
-.game-screen::after {
-  opacity: .45;
-  filter: blur(9px);
 }
 
 .game-header.game-header-premium {

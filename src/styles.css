@@ -27,25 +27,8 @@ button { font: inherit; }
   margin: 0 auto;
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 18% 18%, rgba(255,255,255,.85) 0 5%, transparent 18%),
-    radial-gradient(circle at 86% 28%, rgba(132,203,134,.22) 0 10%, transparent 21%),
-    linear-gradient(180deg, #fff4dc 0%, #f7dfb9 100%);
+  background: #f7e8c8 url('./assets/bg.webp') center / cover no-repeat;
 }
-
-.screen::before,
-.screen::after {
-  content: '';
-  position: absolute;
-  width: 170px;
-  height: 170px;
-  border-radius: 50% 25% 50% 25%;
-  background: rgba(69, 157, 73, .12);
-  filter: blur(2px);
-  pointer-events: none;
-}
-.screen::before { left: -85px; bottom: 12%; transform: rotate(25deg); }
-.screen::after { right: -95px; top: 12%; transform: rotate(-35deg); }
 
 .topbar, .game-header, .page-header {
   height: 82px;
@@ -418,8 +401,13 @@ button { font: inherit; }
 }
 
 @media (min-width: 700px) {
-  body { background:linear-gradient(135deg,#edd6aa,#f9efd9); }
-  .screen { box-shadow:0 0 60px rgba(71,45,25,.18); }
+  body {
+    background:
+      url('./assets/leaves-top-left.webp') left top / min(42vw, 420px) no-repeat,
+      url('./assets/leaves-bottom-right.webp') right bottom / min(42vw, 420px) no-repeat,
+      #f7e8c8 url('./assets/bg.webp') center / cover no-repeat;
+  }
+  .screen { background: transparent; }
 }
 
 
@@ -629,18 +617,6 @@ html[data-banner-mode="preview"] .game-actions {
   vertical-align: -0.14em;
 }
 
-.screen {
-  background:
-    radial-gradient(circle at 12% 10%, rgba(255,255,255,.92) 0 5%, transparent 23%),
-    radial-gradient(circle at 92% 13%, rgba(177,217,130,.2) 0 9%, transparent 24%),
-    linear-gradient(180deg, #fff3d8 0%, #f5dfb8 100%);
-}
-
-.screen::before,
-.screen::after {
-  opacity: .45;
-}
-
 .soft-icon {
   display: grid;
   place-items: center;
@@ -803,12 +779,6 @@ html[data-banner-mode="preview"] .game-actions {
   width: 36px;
   height: 36px;
   color: #898989;
-}
-
-.game-screen {
-  background:
-    radial-gradient(circle at 50% 0%, rgba(255,255,255,.82), transparent 34%),
-    linear-gradient(180deg, #fff1d4 0%, #f6dfb9 100%);
 }
 
 .game-header {

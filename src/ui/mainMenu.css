@@ -6,11 +6,6 @@
 .menu-screen {
   --menu-ink: #17365f;
   --menu-brown: #684426;
-  background:
-    radial-gradient(ellipse at 6% 15%, rgba(132, 193, 75, .15) 0 7%, transparent 18%),
-    radial-gradient(ellipse at 94% 9%, rgba(117, 184, 74, .14) 0 7%, transparent 18%),
-    radial-gradient(circle at 50% 0%, rgba(255,255,255,.9), transparent 31%),
-    linear-gradient(180deg, #fff8e8 0%, #f7dfb2 100%);
 }
 
 .menu-screen .topbar {
@@ -52,25 +47,18 @@
 .menu-screen .logo-polished {
   position: relative;
   z-index: 2;
-  line-height: .8;
-  letter-spacing: -3.5px;
-  filter:
-    drop-shadow(0 4px 0 #17365a)
-    drop-shadow(0 11px 12px rgba(76,48,24,.18));
+  width: min(78vw, 360px);
+  margin: 0;
+  line-height: 0;
+  filter: drop-shadow(0 10px 12px rgba(76,48,24,.2));
 }
 
-.menu-screen .logo-polished span {
-  font-size: clamp(56px, 14.5vw, 82px);
-  color: #ffbd27;
-  -webkit-text-stroke: 4px #17365a;
-  text-shadow: 0 3px 0 #e98c12;
-}
-
-.menu-screen .logo-polished strong {
-  font-size: clamp(58px, 15.5vw, 88px);
-  color: #f6f9ff;
-  -webkit-text-stroke: 4px #17365a;
-  text-shadow: 0 3px 0 #a9c3e6;
+.menu-screen .logo-polished img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .menu-screen .menu-tagline {
@@ -250,12 +238,8 @@
     padding-top: 0;
   }
 
-  .menu-screen .logo-polished span {
-    font-size: clamp(48px, 13vw, 68px);
-  }
-
-  .menu-screen .logo-polished strong {
-    font-size: clamp(50px, 14vw, 72px);
+  .menu-screen .logo-polished {
+    width: min(68vw, 290px);
   }
 
   .menu-screen .menu-tagline {

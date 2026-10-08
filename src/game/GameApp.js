@@ -9,6 +9,7 @@ import { normalizeProgress, normalizeSettings, safeReadJson, safeWriteJson } fro
 import { APP_VERSION, privacySummary } from './AppInfo.js'
 import { uiIcon } from '../ui/icons.js'
 import { installMenuPreview } from '../ui/MenuPreview.js'
+import logoUrl from '../assets/logo.webp'
 
 const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
@@ -182,10 +183,9 @@ export class GameApp {
         </div>
 
         <section class="hero-card">
-          <div class="logo logo-polished">
-            <span>STRING</span>
-            <strong>SORT</strong>
-          </div>
+          <h1 class="logo logo-polished">
+            <img src="${logoUrl}" alt="String Sort" width="900" height="460" draggable="false">
+          </h1>
           <p class="menu-tagline">Untangle · Sort · Feel Good</p>
 
           <div class="mini-board video-board-preview" aria-hidden="true">

@@ -17,15 +17,6 @@
 }
 
 /* Shared page chrome */
-.levels-screen,
-.settings-screen {
-  background:
-    radial-gradient(circle at 13% 10%, rgba(255,255,255,.9) 0 4%, transparent 20%),
-    radial-gradient(circle at 90% 23%, rgba(101,185,255,.12) 0 8%, transparent 23%),
-    radial-gradient(circle at 10% 86%, rgba(102,203,111,.11) 0 9%, transparent 24%),
-    linear-gradient(180deg, #fff6e5 0%, #f7dfbc 100%);
-}
-
 .page-header {
   min-height: 84px;
   height: auto;
