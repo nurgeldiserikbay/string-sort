@@ -106,3 +106,19 @@ jobs:
           name: string-sort-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # Exercises the same production web payload / Gradle bundle task
+      # as the manual signed release, without requiring owner signing secrets.
+      # This unsigned output is deliberately NOT uploaded to avoid confusion
+      # with the Play-ready signed bundle.
+      - name: Build production web payload for AAB smoke test
+        run: npm run build:prod
+
+      - name: Sync production payload into Android
+        run: npx cap sync android
+
+      - name: Assemble unsigned production AAB
+        run: |
+          cd android
+          ./gradlew bundleRelease --no-daemon
+          test -s app/build/outputs/bundle/release/app-release.aab
