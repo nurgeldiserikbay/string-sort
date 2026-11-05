@@ -40,6 +40,8 @@ Write **Pass / Fail / Not tested** for every row. For failures, include a reprod
 | Back: Complete → Levels; Menu → Exit | | |
 | System bars, cutout, safe areas, gesture navigation | | |
 | Progress and preferences survive restart | | |
+| Clearing app data resets progress (only after backup/consent) | | |
+| Progress and settings remain correct after force-close/relaunch | | |
 | Offline launch and play | | |
 | Banner-safe preview does not cover controls (if tested) | | |
 
