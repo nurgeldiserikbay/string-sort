@@ -68,10 +68,13 @@ jobs:
       - name: Build web app
         env:
           VITE_APP_VERSION: ${{ inputs.version_name }}
-        run: npm run build
+        run: npm run build:prod
 
-      - name: Generate Capacitor Android project
-        run: npx cap add android
+      - name: Verify committed Capacitor Android project
+        run: |
+          test -f android/settings.gradle
+          test -f android/app/build.gradle
+          test -f android/gradlew
 
       - name: Verify Android 16 / API 36 target
         run: node scripts/verify-android-target.mjs
@@ -80,7 +83,7 @@ jobs:
         run: node scripts/prepare-android-manifest.mjs
 
       - name: Generate Android launcher and splash assets
-        run: npm run assets:android
+        run: npm run assets
 
       - name: Sync Capacitor
         run: npx cap sync android
