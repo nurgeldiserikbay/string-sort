@@ -15,9 +15,17 @@ on:
 permissions:
   contents: read
 
+# Never cancel or overlap signing jobs for the same application.
+concurrency:
+  group: string-sort-android-release
+  cancel-in-progress: false
+
 jobs:
   release:
+    # Signing credentials must never be used for feature branch dispatches.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     env:
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
