@@ -118,10 +118,38 @@ async function captureProfile(profile) {
     await capture('02-levels')
 
     await page.click('[data-action="back"]')
+    await page.waitForSelector('.menu-screen')
+    await page.click('[data-action="settings"]')
+    await page.waitForSelector('.settings-screen')
+    await page.waitForTimeout(250)
+    await capture('03-settings')
+
+    await page.click('[data-action="about"]')
+    await page.waitForSelector('.about-card')
+    await page.waitForTimeout(180)
+    await capture('04-about')
+    await page.click('.about-card [data-action="close"]')
+    await page.click('[data-action="back"]')
+    await page.waitForSelector('.menu-screen')
+
+    await page.click('[data-action="how-to-play"]')
+    await page.waitForSelector('.how-to-card')
+    await page.waitForTimeout(180)
+    await capture('05-how-to-play')
+    await page.click('.how-to-card [data-action="close"]')
+
     await page.click('[data-action="play"]')
     await page.waitForSelector('#game-board')
     await page.waitForTimeout(900)
-    await capture('03-gameplay')
+    await capture('06-gameplay')
+
+    await page.click('[data-action="pause"]')
+    await page.waitForSelector('.modal-card')
+    await page.waitForTimeout(180)
+    await capture('07-pause')
+    await page.click('.modal-card .primary-button[data-action="resume"]')
+    await page.waitForSelector('#game-board')
+    await page.waitForTimeout(160)
 
     // Handcrafted level 1 starts as:
     // [0, 1, 0, 1, 2, 2, null]
@@ -130,9 +158,9 @@ async function captureProfile(profile) {
 
     await page.waitForSelector('.complete-card', { timeout: 5000 })
     await page.waitForTimeout(450)
-    await capture('04-level-complete')
+    await capture('08-level-complete')
 
-    // Internal/store preview of the dense late-game tangle.
+    // Internal/store preview of a readable dense late-game tangle.
     await page.evaluate(() => {
       localStorage.setItem('string-sort-progress-v1', JSON.stringify({
         unlocked: 100,
@@ -149,7 +177,7 @@ async function captureProfile(profile) {
     await page.click('[data-level="80"]')
     await page.waitForSelector('#game-board')
     await page.waitForTimeout(1200)
-    await capture('05-hard-tangle')
+    await capture('09-hard-tangle')
 
     console.log(
       `Captured ${profile.id} screenshots at ${profile.pixelLabel}`,
