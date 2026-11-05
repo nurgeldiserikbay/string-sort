@@ -76,8 +76,11 @@ jobs:
       - name: Build web app
         run: npm run build
 
-      - name: Generate Capacitor Android project
-        run: npx cap add android
+      - name: Verify committed Capacitor Android project
+        run: |
+          test -f android/settings.gradle
+          test -f android/app/build.gradle
+          test -f android/gradlew
 
       - name: Verify Android 16 / API 36 target
         run: node scripts/verify-android-target.mjs
