@@ -126,11 +126,16 @@ npm run build
 The pull-request CI additionally:
 
 - generates Play Store static graphics;
-- generates the Capacitor Android project;
+- verifies the already-committed Capacitor Android project;
 - verifies target/compile SDK 36;
 - generates launcher/splash resources;
 - assembles a debug APK;
-- uploads the APK as an artifact.
+- uploads the APK as the `string-sort-debug-apk` artifact.
+
+The successful PR #18 CI run (2026-11-05) produced a debug APK artifact:
+https://github.com/nurgeldiserikbay/string-sort/actions/runs/41979296700
+Download from a **successful main-branch run** for the final device QA pass;
+CI success does not replace real-device installation or Play-delivered validation.
 
 ## Release blockers
 
