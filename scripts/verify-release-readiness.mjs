@@ -93,6 +93,10 @@ for (const required of [
   'Assemble unsigned production AAB',
   './gradlew bundleRelease --no-daemon',
   'test -s app/build/outputs/bundle/release/app-release.aab',
+  'Verify signed AAB with disposable CI key',
+  'keytool -genkeypair -noprompt',
+  'node scripts/prepare-android-signing.mjs',
+  "grep -Fq 'jar verified.' <<<",
 ]) {
   if (!ciWorkflow.includes(required)) {
     throw new Error(`Unsigned production AAB smoke gate missing: ${required}`)
