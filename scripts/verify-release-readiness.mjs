@@ -66,4 +66,27 @@ for (const required of [
   }
 }
 
+// Keep both Android workflows aligned with the committed Capacitor project.
+// A successful web build alone does not validate Android-specific steps.
+for (const workflowPath of [
+  '.github/workflows/ci.yml',
+  '.github/workflows/android-release.yml',
+]) {
+  const workflow = await readFile(workflowPath, 'utf8')
+  if (workflow.includes('npx cap add android')) {
+    throw new Error(`Android workflow must reuse tracked android/: ${workflowPath}`)
+  }
+  if (!workflow.includes('test -f android/app/build.gradle') ||
+      !workflow.includes('run: npm run assets') ||
+      workflow.includes('run: npm run assets:android') ||
+      !workflow.includes('run: npx cap sync android')) {
+    throw new Error(`Android workflow asset/sync configuration has drifted: ${workflowPath}`)
+  }
+}
+
+const releaseWorkflow = await readFile('.github/workflows/android-release.yml', 'utf8')
+if (!releaseWorkflow.includes('run: npm run build:prod')) {
+  throw new Error('Signed AAB must package production-mode web assets')
+}
+
 console.log('Release readiness static checks passed')
