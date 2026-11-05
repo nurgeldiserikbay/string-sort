@@ -89,4 +89,16 @@ if (!releaseWorkflow.includes('run: npm run build:prod')) {
   throw new Error('Signed AAB must package production-mode web assets')
 }
 
+for (const required of [
+  'keytool -list -keystore',
+  'jarsigner -verify',
+  "grep -Fq 'jar verified.'",
+  'if: always()',
+  'rm -f "$ANDROID_KEYSTORE_FILE"',
+]) {
+  if (!releaseWorkflow.includes(required)) {
+    throw new Error(`AAB verification/keystore cleanup gate is missing: ${required}`)
+  }
+}
+
 console.log('Release readiness static checks passed')
