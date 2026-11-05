@@ -71,8 +71,10 @@ export function safeReadJson(storage, key, fallback) {
 }
 
 export function safeWriteJson(storage, key, value) {
+  if (typeof storage?.setItem !== 'function') return false
+
   try {
-    storage?.setItem?.(key, JSON.stringify(value))
+    storage.setItem(key, JSON.stringify(value))
     return true
   } catch {
     return false
