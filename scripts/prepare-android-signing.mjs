@@ -20,14 +20,14 @@ if (gradle.includes(marker)) {
 }
 
 // Do not silently leave the default package version in the signed bundle.
-const versionCodeMatches = [...gradle.matchAll(/\bversionCode\s+\d+\\b/g)]
+const versionCodeMatches = [...gradle.matchAll(/\bversionCode\s+\d+\b/g)]
 const versionNameMatches = [...gradle.matchAll(/\bversionName\s+["'][^"']+["']/g)]
 if (versionCodeMatches.length !== 1 || versionNameMatches.length !== 1) {
   throw new Error('Expected exactly one versionCode and versionName in Gradle')
 }
 
 gradle = gradle
-  .replace(/\bversionCode\s+\d+\\b/, `versionCode ${versionCode}`)
+  .replace(/\bversionCode\s+\d+\b/, `versionCode ${versionCode}`)
   .replace(/\bversionName\s+["'][^"']+["']/, `versionName "${versionName}"`)
 
 if (!gradle.includes('android {')) {
