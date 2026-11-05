@@ -2,11 +2,19 @@ import { readFileSync, writeFileSync } from 'node:fs'
 
 const gradlePath = 'android/app/build.gradle'
 const marker = '// STRING_SORT_RELEASE_SIGNING'
-const versionCode = Number(process.env.RELEASE_VERSION_CODE || '1')
-const versionName = process.env.RELEASE_VERSION_NAME || '0.1.0'
+const codeInput = process.env.RELEASE_VERSION_CODE
+const versionName = process.env.RELEASE_VERSION_NAME
 
-if (!Number.isSafeInteger(versionCode) || versionCode < 1 || versionCode > 2100000000) {
+// Never silently sign a release using fallback version metadata.
+if (!codeInput || !/^[1-9][0-9]*$/.test(codeInput)) {
+  throw new Error('RELEASE_VERSION_CODE must be an explicit positive decimal integer')
+}
+const versionCode = Number(codeInput)
+if (!Number.isSafeInteger(versionCode) || versionCode > 2100000000) {
   throw new Error('RELEASE_VERSION_CODE must be an integer from 1 to 2100000000')
+}
+if (!versionName) {
+  throw new Error('RELEASE_VERSION_NAME must be explicitly supplied')
 }
 
 if (!/^[0-9]+(?:\.[0-9]+){1,3}(?:[-+][0-9A-Za-z.-]+)?$/.test(versionName)) {
