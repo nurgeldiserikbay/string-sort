@@ -15,3 +15,6 @@ keystore.properties
 android/key.properties
 .env
 .env.local
+
+# Android build outputs (npm run android:*)
+build-output/

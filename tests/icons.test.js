@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { uiIcon } from '../src/ui/icons.js'
+import { hasUiIcon, uiIcon } from '../src/ui/icons.js'
 
 describe('uiIcon', () => {
   it('renders the polished gameplay icon set as accessible decorative SVG', () => {
@@ -14,12 +14,7 @@ describe('uiIcon', () => {
       'pause',
       'home',
       'back',
-      'chevronRight',
-      'chapterStart',
-      'chapterTwist',
-      'chapterGarden',
-      'chapterKnot',
-      'chapterMaster',
+      'forward',
       'timer',
       'crossings',
       'moves',
@@ -28,7 +23,14 @@ describe('uiIcon', () => {
       'graphics',
       'markers',
       'info',
+      'privacy',
       'reset',
+      'knot',
+      'twist',
+      'garden',
+      'weave',
+      'crown',
+      'trophy',
       'close',
     ]) {
       const svg = uiIcon(name)
@@ -39,7 +41,52 @@ describe('uiIcon', () => {
     }
   })
 
+
+  it('defines every icon used outside the main menu', () => {
+    for (const name of [
+      'back',
+      'forward',
+      'pause',
+      'timer',
+      'moves',
+      'crossings',
+      'hint',
+      'undo',
+      'restart',
+      'lock',
+      'knot',
+      'twist',
+      'garden',
+      'weave',
+      'crown',
+      'trophy',
+      'home',
+      'sound',
+      'haptics',
+      'graphics',
+      'markers',
+      'info',
+      'privacy',
+      'reset',
+      'close',
+      'check',
+    ]) {
+      expect(hasUiIcon(name), `${name} should not fall back to help`).toBe(true)
+    }
+  })
+
   it('falls back to the help icon for an unknown name', () => {
     expect(uiIcon('missing-icon')).toContain('<circle cx="12" cy="12" r="8.1"/>')
   })
+
+  it('keeps the five chapter icons distinct after the UI conflict resolution', () => {
+    const chapterIcons = ['knot', 'twist', 'garden', 'weave', 'crown']
+      .map((name) => {
+        expect(hasUiIcon(name), name).toBe(true)
+        return uiIcon(name)
+      })
+
+    expect(new Set(chapterIcons).size).toBe(5)
+  })
+
 })

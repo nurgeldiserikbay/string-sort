@@ -71,12 +71,56 @@ describe('GameApp interaction smoke tests', () => {
     vi.restoreAllMocks()
   })
 
+  it('renders the premium main-menu hierarchy', () => {
+    expect(root.querySelector('.menu-screen .logo-polished')).not.toBeNull()
+    expect(root.querySelector('.video-board-preview [data-menu-preview]')).not.toBeNull()
+    expect(root.querySelector('.glossy-play')).not.toBeNull()
+    expect(root.querySelectorAll('.menu-action-grid .menu-action-card')).toHaveLength(3)
+    expect(root.querySelectorAll('.menu-action-card .art-svg')).toHaveLength(3)
+  })
+
+  it('uses semantic icons throughout How to Play', () => {
+    root.querySelector('[data-action="how-to-play"]').click()
+
+    expect(root.querySelector('.how-to-card')).not.toBeNull()
+    expect(root.querySelectorAll('.how-step-icon .art-svg, .how-step-icon .ui-svg')).toHaveLength(3)
+    expect(root.querySelector('.how-to-card .primary-button .ui-svg')).not.toBeNull()
+  })
+
+  it('uses dedicated vector icons across level and settings pages', () => {
+    root.querySelector('[data-action="levels"]').click()
+    expect(root.querySelectorAll('.chapter-tab-icon .ui-svg')).toHaveLength(5)
+    expect(root.querySelector('.chapter-banner-icon .ui-svg')).not.toBeNull()
+
+    app.showSettings()
+    expect(root.querySelectorAll('.setting-icon .ui-svg')).toHaveLength(6)
+    expect(root.querySelector('.setting-chevron')).not.toBeNull()
+  })
+
   it('opens the first playable level from the menu', () => {
     root.querySelector('[data-action="play"]').click()
 
     expect(root.querySelector('#game-board')).not.toBeNull()
     expect(root.querySelector('.level-pill').textContent).toContain('Level 1')
     expect(root.querySelector('.tutorial-chip').textContent).toContain('empty socket')
+  })
+
+  it('renders the polished gameplay HUD and controls', () => {
+    root.querySelector('[data-action="play"]').click()
+
+    expect(root.querySelector('.level-progress-card')).not.toBeNull()
+    expect(root.querySelector('.level-progress-track')).not.toBeNull()
+    expect(root.querySelector('.objective-pill')).not.toBeNull()
+    expect(root.querySelector('.game-star-pill .coin-star')).not.toBeNull()
+    expect(root.querySelectorAll('.premium-status .game-stat-card')).toHaveLength(2)
+    expect(root.querySelector('.moves-stat .status-icon .art-svg')).not.toBeNull()
+    expect(root.querySelector('.knots-stat .status-icon .art-svg')).not.toBeNull()
+    expect(root.querySelectorAll('.premium-actions .round-action')).toHaveLength(3)
+    expect(root.querySelectorAll('.premium-actions .round-action .art-svg')).toHaveLength(3)
+    expect(root.querySelector('[data-action="undo"]').disabled).toBe(true)
+
+    app.handleSwap(1, 6)
+    expect(root.querySelector('[data-action="undo"]').disabled).toBe(false)
   })
 
   it('can pause and resume a running level while suspending rope simulation', () => {
@@ -87,7 +131,10 @@ describe('GameApp interaction smoke tests', () => {
     root.querySelector('[data-action="pause"]').click()
 
     expect(root.querySelector('.modal-card')).not.toBeNull()
+    expect(root.querySelector('.pause-card')).not.toBeNull()
+    expect(root.querySelector('.pause-primary')).not.toBeNull()
     expect(root.textContent).toContain('Paused')
+    expect(root.querySelectorAll('.modal-option-icon .ui-svg')).toHaveLength(2)
     expect(stopSpy).toHaveBeenCalled()
 
     root.querySelector('.modal-card [data-action="resume"]').click()
@@ -170,6 +217,7 @@ describe('GameApp interaction smoke tests', () => {
     root.querySelector('[data-action="about"]').click()
 
     expect(root.querySelector('.about-card')).not.toBeNull()
+    expect(root.querySelector('.privacy-modal-icon .ui-svg')).not.toBeNull()
     expect(root.textContent).toContain('Version 0.1.0')
     expect(root.textContent).toContain('works offline')
   })
@@ -228,6 +276,7 @@ describe('GameApp interaction smoke tests', () => {
     vi.advanceTimersByTime(700)
 
     expect(root.querySelector('.complete-card')).not.toBeNull()
+    expect(root.querySelector('.complete-trophy .ui-svg')).not.toBeNull()
     expect(root.textContent).toContain('Level 1 Complete!')
     expect(app.progress.unlocked).toBeGreaterThanOrEqual(2)
 
