@@ -127,6 +127,19 @@ if (!releaseWorkflow.includes('run: npm run build:prod')) {
   throw new Error('Signed AAB must package production-mode web assets')
 }
 
+// Manual signing is restricted to the protected release source branch.
+// The concurrency group must not cancel an already-running signing job.
+for (const required of [
+  "if: github.ref == 'refs/heads/main'",
+  'group: string-sort-android-release',
+  'cancel-in-progress: false',
+  'timeout-minutes: 90',
+]) {
+  if (!releaseWorkflow.includes(required)) {
+    throw new Error(`Release branch/concurrency guard is missing: ${required}`)
+  }
+}
+
 for (const required of [
   'keytool -list -keystore',
   'jarsigner -verify',
