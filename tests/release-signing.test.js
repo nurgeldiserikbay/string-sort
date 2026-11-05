@@ -53,11 +53,21 @@ describe('Android release signing preparation', () => {
   })
 
   it('rejects invalid Play version codes without modifying Gradle', () => {
-    for (const code of ['0', '-1', '1.1', '2100000001', 'NaN', '9007199254740992']) {
+    for (const code of [undefined, '', '0', '01', '-1', '1.1', '1e2', ' 42', '2100000001', 'NaN', '9007199254740992']) {
       const { result, output } = runSigning(originalGradle, {
         RELEASE_VERSION_CODE: code,
       })
       expect(result.status, code).not.toBe(0)
+      expect(output).toBe(originalGradle)
+    }
+  })
+
+  it('refuses missing or invalid version names without modifying Gradle', () => {
+    for (const name of [undefined, '', 'latest', '1.0\\nmalicious']) {
+      const { result, output } = runSigning(originalGradle, {
+        RELEASE_VERSION_NAME: name,
+      })
+      expect(result.status, String(name)).not.toBe(0)
       expect(output).toBe(originalGradle)
     }
   })

@@ -60,6 +60,8 @@ The workflow asks for:
 - `version_code` — integer from 1 through 2,100,000,000. It must increase for every Play Store release.
 - `version_name` — human-readable version such as `0.1.0`.
 
+Both values must be entered explicitly and are validated before signing. `version_code` accepts only ordinary decimal digits (no scientific notation, negative values, leading zeros or fallback defaults). The workflow must fail rather than accidentally reuse an old store version.
+
 Example:
 
 ```text
