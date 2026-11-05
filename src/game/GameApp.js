@@ -65,6 +65,7 @@ export class GameApp {
     this.screen = 'menu'
     this.backButtonHandle = null
     this.appStateHandle = null
+    this.nativeListenerGeneration = 0
     this.pauseOverlay = null
     this.isCompleting = false
     this.onVisibilityChange = () => {
@@ -102,21 +103,37 @@ export class GameApp {
   }
 
   mount() {
+    const generation = ++this.nativeListenerGeneration
     this.showMenu()
-    installNativeBackHandler(() => this.handleNativeBack()).then((handle) => {
-      this.backButtonHandle = handle
+
+    installNativeBackHandler(() => {
+      if (generation === this.nativeListenerGeneration) return this.handleNativeBack()
+    }).then((handle) => {
+      if (generation !== this.nativeListenerGeneration) {
+        handle?.remove?.()
+      } else {
+        this.backButtonHandle = handle
+      }
     })
 
     installNativeAppStateHandler(({ isActive }) => {
-      if (!isActive && this.screen === 'game') this.showPause()
+      if (generation === this.nativeListenerGeneration
+        && !isActive && this.screen === 'game') this.showPause()
     }).then((handle) => {
-      this.appStateHandle = handle
+      if (generation !== this.nativeListenerGeneration) {
+        handle?.remove?.()
+      } else {
+        this.appStateHandle = handle
+      }
     })
 
     document.addEventListener('visibilitychange', this.onVisibilityChange)
   }
 
   destroy() {
+    // Native listener installation is asynchronous. Invalidate pending installs
+    // so late completions remove their handles rather than leaking listeners.
+    ++this.nativeListenerGeneration
     this.stopTimer()
     clearTimeout(this.tutorialHintTimer)
     clearTimeout(this.completionTimer)
