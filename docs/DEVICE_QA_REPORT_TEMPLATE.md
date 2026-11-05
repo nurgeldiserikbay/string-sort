@@ -14,7 +14,8 @@ Complete this report for each physical device tested. Copy it into an issue comm
 | Navigation mode (gestures/buttons) | |
 | System appearance (light/dark) | |
 | Installation source (CI debug APK / Play Internal testing) | |
-| CI run URL / commit SHA | |
+| CI run URL / commit SHA (from build-info.txt) | |
+| APK SHA-256 verified against artifact checksum (yes/no) | |
 | Installed versionCode / versionName | |
 | Graphics setting (Auto/other) | |
 
