@@ -122,3 +122,31 @@ jobs:
           cd android
           ./gradlew bundleRelease --no-daemon
           test -s app/build/outputs/bundle/release/app-release.aab
+
+      # Verify the full signing/configuration path with a disposable key.
+      # Never use or upload the real Play Console upload key in pull-request CI.
+      # The signed smoke bundle is intentionally not published as an artifact.
+      - name: Verify signed AAB with disposable CI key
+        run: |
+          set -euo pipefail
+          keydir="$(mktemp -d)"
+          trap 'rm -rf "$keydir"' EXIT
+          export ANDROID_KEYSTORE_FILE="$keydir/smoke-upload.jks"
+          export ANDROID_KEYSTORE_PASSWORD="$(openssl rand -hex 16)"
+          export ANDROID_KEY_ALIAS="string-sort-ci"
+          export ANDROID_KEY_PASSWORD="$ANDROID_KEYSTORE_PASSWORD"
+          export RELEASE_VERSION_CODE="42"
+          export RELEASE_VERSION_NAME="0.1.0-ci"
+          keytool -genkeypair -noprompt -storetype PKCS12 \
+            -keystore "$ANDROID_KEYSTORE_FILE" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -keypass "$ANDROID_KEY_PASSWORD" \
+            -alias "$ANDROID_KEY_ALIAS" \
+            -dname "CN=String Sort CI, OU=Automated Tests, O=Local Test" \
+            -keyalg RSA -keysize 2048 -validity 1
+          node scripts/prepare-android-signing.mjs
+          (cd android && ./gradlew bundleRelease --no-daemon)
+          bundle="android/app/build/outputs/bundle/release/app-release.aab"
+          test -s "$bundle"
+          verification="$(jarsigner -verify "$bundle" 2>&1)"
+          grep -Fq 'jar verified.' <<< "$verification"
