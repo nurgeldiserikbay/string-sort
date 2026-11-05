@@ -137,6 +137,32 @@ https://github.com/nurgeldiserikbay/string-sort/actions/runs/41979296700
 Download from a **successful main-branch run** for the final device QA pass;
 CI success does not replace real-device installation or Play-delivered validation.
 
+### Verify the APK belongs to the expected CI run
+
+New CI APK artifacts include three files: `app-debug.apk`, `app-debug.apk.sha256`, and `build-info.txt`.
+After extracting the ZIP, verify its SHA-256 digest **before installing**:
+
+Linux/macOS:
+
+```bash
+sha256sum -c app-debug.apk.sha256
+```
+
+Windows PowerShell:
+
+```powershell
+Get-FileHash .\\app-debug.apk -Algorithm SHA256
+Get-Content .\\app-debug.apk.sha256
+```
+
+Compare the two printed 64-character SHA-256 values. Read `source_commit` and
+`workflow_run` from `build-info.txt`; record both in the physical QA report.
+For PR runs the checkout may be a test merge commit rather than the PR head;
+for release QA choose a successful `main` run to avoid ambiguous provenance.
+If any file is missing, or checksums differ, do not use the APK as QA evidence.
+This check detects accidental file mismatch or corruption; it is not a cryptographic
+attestation of the GitHub runner or a substitute for Play-delivered build QA.
+
 ## Release blockers
 
 Do not publish if any of these remain:
