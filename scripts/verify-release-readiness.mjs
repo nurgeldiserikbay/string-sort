@@ -84,6 +84,21 @@ for (const workflowPath of [
   }
 }
 
+// Smoke-test the production AAB Gradle task on every pull request without
+// requiring keystore secrets or distributing an unsigned release bundle.
+const ciWorkflow = await readFile('.github/workflows/ci.yml', 'utf8')
+for (const required of [
+  'Build production web payload for AAB smoke test',
+  'run: npm run build:prod',
+  'Assemble unsigned production AAB',
+  './gradlew bundleRelease --no-daemon',
+  'test -s app/build/outputs/bundle/release/app-release.aab',
+]) {
+  if (!ciWorkflow.includes(required)) {
+    throw new Error(`Unsigned production AAB smoke gate missing: ${required}`)
+  }
+}
+
 const releaseWorkflow = await readFile('.github/workflows/android-release.yml', 'utf8')
 if (!releaseWorkflow.includes('run: npm run build:prod')) {
   throw new Error('Signed AAB must package production-mode web assets')
