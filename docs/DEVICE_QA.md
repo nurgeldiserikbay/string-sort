@@ -98,7 +98,8 @@ On Android 16 / API 36 devices verify:
 - bottom controls are not under the gesture-navigation area;
 - gameplay remains usable in both short and tall phone aspect ratios;
 - launcher icon is centered in adaptive masks;
-- splash screen is centered in light and dark system appearance.
+- splash screen is centered in light and dark system appearance;
+- local progress survives app restart but should not be assumed to transfer or restore from cloud backup.
 
 ## Banner-safe preview
 
