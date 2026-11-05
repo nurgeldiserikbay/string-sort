@@ -46,6 +46,13 @@ for (const requiredIgnore of [
   }
 }
 
+// Local game progress is not a cloud-save feature. Fail if Android's default
+// app-data backup is re-enabled without a deliberate privacy review.
+const androidManifest = await readFile('android/app/src/main/AndroidManifest.xml', 'utf8')
+if (!/<application\\b[^>]*\\bandroid:allowBackup=["']false["']/s.test(androidManifest)) {
+  throw new Error('Android application must explicitly disable automatic backup of local progress')
+}
+
 const privacy = await readFile('public/privacy.html', 'utf8')
 for (const forbidden of ['TODO', 'YOUR_EMAIL', 'example@example.com']) {
   if (privacy.includes(forbidden)) {
