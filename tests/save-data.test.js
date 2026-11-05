@@ -55,6 +55,43 @@ describe('SaveData', () => {
     expect(safeReadJson(storage, 'key', { ok: true })).toEqual({ ok: true })
   })
 
+  it('does not claim persistence when storage is unavailable or read-only', () => {
+    expect(safeWriteJson(null, 'progress', { unlocked: 4 })).toBe(false)
+    expect(safeWriteJson({}, 'progress', { unlocked: 4 })).toBe(false)
+    expect(safeWriteJson({ setItem: null }, 'progress', { unlocked: 4 })).toBe(false)
+  })
+
+  it('round-trips real progress and settings across simulated restarts', () => {
+    const data = new Map()
+    const storage = {
+      getItem(key) { return data.get(key) ?? null },
+      setItem(key, value) { data.set(key, value) },
+    }
+    const progress = normalizeProgress({
+      unlocked: 83,
+      stars: { 1: 3, 42: 2, 83: 1 },
+      bestTimes: { 1: 10.5, 42: 57, 83: 112.25 },
+    }, 100)
+    const settings = normalizeSettings({
+      sound: false,
+      haptics: false,
+      graphics: 'auto',
+      pegMarkers: true,
+    })
+
+    expect(safeWriteJson(storage, 'string-sort-progress-v1', progress)).toBe(true)
+    expect(safeWriteJson(storage, 'string-sort-settings-v1', settings)).toBe(true)
+
+    const reloadedProgress = normalizeProgress(
+      safeReadJson(storage, 'string-sort-progress-v1', {}), 100,
+    )
+    const reloadedSettings = normalizeSettings(
+      safeReadJson(storage, 'string-sort-settings-v1', {}),
+    )
+    expect(reloadedProgress).toEqual(progress)
+    expect(reloadedSettings).toEqual(settings)
+  })
+
   it('returns false instead of crashing when storage writes fail', () => {
     const storage = {
       setItem: vi.fn(() => {
