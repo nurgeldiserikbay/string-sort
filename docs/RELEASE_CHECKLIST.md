@@ -16,6 +16,7 @@ These should all be green on the release commit:
 - real-UI phone + 7-inch tablet + 10-inch tablet screenshot capture;
 - screenshot dimension/package verification;
 - Android API 36 verification;
+- Android manifest automatic backup disabled for local progress (`android:allowBackup="false"`);
 - Android lint;
 - debug APK build;
 - unsigned production AAB Gradle bundle smoke test;
