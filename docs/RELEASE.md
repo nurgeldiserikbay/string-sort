@@ -1,6 +1,6 @@
 # Android release
 
-The normal CI workflow builds a debug APK on every pull request and publishes it as a downloadable artifact.
+The normal CI workflow builds a debug APK on every pull request and publishes it as a downloadable artifact. It also builds an **unsigned production AAB** as a Gradle smoke test, but deliberately does not upload that unsigned bundle. Only the manually signed release workflow can produce a Play Console upload candidate.
 
 The project now uses Capacitor 8 and CI explicitly verifies:
 
