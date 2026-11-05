@@ -53,7 +53,7 @@ Never commit these values or the keystore itself.
 
 ## 4. Choose release version
 
-GitHub → Actions → **Android Release AAB** → Run workflow.
+GitHub → Actions → **Android Release AAB** → Run workflow. Select the **main** branch: the signing job refuses to run from feature branches. Release jobs are serialized rather than cancelling an earlier signing job. The workflow's 90-minute limit guards against an indefinitely hung release.
 
 The workflow asks for:
 
