@@ -29,7 +29,9 @@ String Sort stores:
 
 This information is used only to restore the player's progress and preferences.
 
-Removing the application or clearing its application storage may remove this local progress.
+The Android manifest opts out of Android's automatic app-data backup (`android:allowBackup="false"`). This helps avoid unintended cloud backups of locally stored gameplay data; device manufacturer transfer behavior can still vary by Android version and device.
+
+Removing the application or clearing its application storage may remove this local progress. Players should not assume progress will transfer to a new phone.
 
 ## Children
 
