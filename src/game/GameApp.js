@@ -8,17 +8,19 @@ import { createBannerSafeSlot } from './MonetizationLayout.js'
 import { normalizeProgress, normalizeSettings, safeReadJson, safeWriteJson } from './SaveData.js'
 import { APP_VERSION, privacySummary } from './AppInfo.js'
 import { uiIcon } from '../ui/icons.js'
+import { artIcon } from '../ui/artIcons.js'
 import { installMenuPreview } from '../ui/MenuPreview.js'
+import logoUrl from '../assets/logo.webp'
 
 const SAVE_KEY = 'string-sort-progress-v1'
 const SETTINGS_KEY = 'string-sort-settings-v1'
 
 const LEVEL_CHAPTERS = [
-  { title: 'First Knots', subtitle: 'Learn the empty-socket rhythm', start: 1, end: 20 },
-  { title: 'Twist Lab', subtitle: 'More ropes, tighter turns', start: 21, end: 40 },
-  { title: 'Tangle Garden', subtitle: 'Dense colorful bundles', start: 41, end: 60 },
-  { title: 'Knot Works', subtitle: 'Double wraps and longer routes', start: 61, end: 80 },
-  { title: 'Master Board', subtitle: 'The hardest tangles', start: 81, end: 100 },
+  { title: 'First Knots', subtitle: 'Learn the empty-socket rhythm', start: 1, end: 20, icon: 'knot' },
+  { title: 'Twist Lab', subtitle: 'More ropes, tighter turns', start: 21, end: 40, icon: 'twist' },
+  { title: 'Tangle Garden', subtitle: 'Dense colorful bundles', start: 41, end: 60, icon: 'garden' },
+  { title: 'Knot Works', subtitle: 'Tighter physical ties and longer routes', start: 61, end: 80, icon: 'weave' },
+  { title: 'Master Board', subtitle: 'The hardest tangles', start: 81, end: 100, icon: 'crown' },
 ]
 
 function formatTime(seconds) {
@@ -28,18 +30,19 @@ function formatTime(seconds) {
   return `${minutes}:${secs}`
 }
 
+function starRow(count, className = 'star-row') {
+  return `<span class="${className}">${Array.from(
+    { length: 3 },
+    (_, index) => uiIcon(
+      'star',
+      `ui-svg star-icon ${index < count ? 'is-earned' : 'is-empty'}`,
+    ),
+  ).join('')}</span>`
+}
+
 function safeHaptic(enabled, style = ImpactStyle.Light) {
   if (!enabled) return
   Haptics.impact({ style }).catch(() => {})
-}
-
-function renderStars(count, total = 3, className = 'rating-star') {
-  return Array.from({ length: total }, (_, index) => (
-    uiIcon(
-      index < count ? 'star' : 'starOutline',
-      `ui-svg ${className} ${index < count ? 'is-filled' : 'is-empty'}`,
-    )
-  )).join('')
 }
 
 export class GameApp {
@@ -175,16 +178,15 @@ export class GameApp {
       <main class="screen menu-screen">
         <div class="topbar">
           <button class="icon-button soft-icon" data-action="settings" aria-label="Settings">
-            ${uiIcon('settings')}
+            ${artIcon('settings')}
           </button>
-          <div class="coin-pill">${uiIcon('star', 'ui-svg coin-star')}<b>${totalStars}</b></div>
+          <div class="coin-pill">${artIcon('star', 'art-svg coin-star')}<b>${totalStars}</b></div>
         </div>
 
         <section class="hero-card">
-          <div class="logo logo-polished">
-            <span>STRING</span>
-            <strong>SORT</strong>
-          </div>
+          <h1 class="logo logo-polished">
+            <img src="${logoUrl}" alt="String Sort" width="900" height="460" draggable="false">
+          </h1>
           <p class="menu-tagline">Untangle · Sort · Feel Good</p>
 
           <div class="mini-board video-board-preview" aria-hidden="true">
@@ -199,15 +201,15 @@ export class GameApp {
 
           <div class="menu-action-grid">
             <button class="menu-action-card" data-action="levels">
-              <span class="menu-action-icon levels-icon">${uiIcon('levels')}</span>
+              <span class="menu-action-icon levels-icon">${artIcon('levels')}</span>
               <b>Levels</b>
             </button>
             <button class="menu-action-card" data-action="settings">
-              <span class="menu-action-icon settings-icon">${uiIcon('settings')}</span>
+              <span class="menu-action-icon settings-icon">${artIcon('settings')}</span>
               <b>Settings</b>
             </button>
             <button class="menu-action-card" data-action="how-to-play">
-              <span class="menu-action-icon hint-icon">${uiIcon('hint')}</span>
+              <span class="menu-action-icon hint-icon">${artIcon('hint')}</span>
               <b>How to Play</b>
             </button>
           </div>
@@ -274,7 +276,7 @@ export class GameApp {
             <i class="preview-dot dot-d"></i>
           </span>
           ${unlocked ? '' : `<span class="level-lock-badge">${uiIcon('lock', 'ui-svg level-lock-svg')}</span>`}
-          <span class="level-stars">${renderStars(stars, 3, 'level-star')}</span>
+          ${starRow(stars, 'level-stars')}
         </button>
       `
     }).join('')
@@ -288,7 +290,10 @@ export class GameApp {
           ${unlocked ? '' : 'disabled'}
           aria-label="${item.title}${unlocked ? '' : ', locked'}"
         >
-          <span>${index + 1}</span>
+          <span class="chapter-tab-icon chapter-icon-${index}">
+            ${uiIcon(item.icon)}
+            <small>${index + 1}</small>
+          </span>
           <b>${item.title}</b>
         </button>
       `
@@ -302,13 +307,13 @@ export class GameApp {
             <h1>Levels</h1>
             <p>${chapter.subtitle}</p>
           </div>
-          <div class="coin-pill">${uiIcon('star', 'ui-svg coin-star')}<b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
+          <div class="coin-pill">${artIcon('star', 'art-svg coin-star')}<b>${Object.values(this.progress.stars).reduce((a,b)=>a+b,0)}</b></div>
         </header>
 
         <nav class="chapter-tabs" aria-label="Level chapters">${tabs}</nav>
 
         <section class="chapter-banner chapter-tone-${this.levelChapter}">
-          <span class="chapter-number">Chapter ${this.levelChapter + 1}</span>
+          <span class="chapter-banner-icon">${uiIcon(chapter.icon)}</span>
           <div>
             <h2>${chapter.title}</h2>
             <p>Levels ${chapter.start}–${chapter.end}</p>
@@ -349,43 +354,67 @@ export class GameApp {
     this.isCompleting = false
     this.screen = 'game'
 
+    const levelProgressPercent = Math.round(
+      (this.levelNumber / TOTAL_LEVELS) * 100,
+    )
+    const bestTime = this.progress.bestTimes[this.levelNumber]
+    const bestTimeLabel = bestTime ? formatTime(bestTime) : '--'
+    const totalStars = Object.values(this.progress.stars).reduce(
+      (sum, value) => sum + value,
+      0,
+    )
+
     this.shell(`
       <main class="screen game-screen">
-        <header class="game-header">
+        <header class="game-header game-header-premium">
           <button class="icon-button soft-icon" data-action="pause" aria-label="Pause">${uiIcon('pause')}</button>
-          <div class="level-pill">Level ${this.levelNumber}</div>
-          <div class="timer-pill compact-timer">${uiIcon('timer')} <strong data-timer>00:00</strong></div>
+          <div class="level-pill level-progress-card">
+            <span>Level ${this.levelNumber} of ${TOTAL_LEVELS}</span>
+            <i class="level-progress-track" aria-hidden="true">
+              <i style="width: ${levelProgressPercent}%"></i>
+            </i>
+          </div>
+          <div class="coin-pill game-star-pill" aria-label="${totalStars} stars">
+            ${artIcon('star', 'art-svg coin-star')}
+            <strong>${totalStars}</strong>
+          </div>
         </header>
 
-        <div class="game-objective">Untie all the knots</div>
+        <div class="game-objective objective-pill">Untie all the knots</div>
         ${this.level.tutorial ? `<div class="tutorial-chip" data-tutorial>${this.level.tutorial}</div>` : ''}
 
-        <section class="board-wrap board-wrap-video">
+        <section class="board-wrap board-wrap-video board-wrap-premium">
           <canvas id="game-board" aria-label="String Sort game board"></canvas>
         </section>
 
-        <div class="status-row video-status">
-          <div>
-            <span class="status-icon">${uiIcon('moves')}</span>
-            <span>Moves</span>
+        <div class="status-row video-status premium-status">
+          <div class="game-stat-card moves-stat">
+            <span class="status-icon">${artIcon('moves')}</span>
+            <span class="game-stat-copy">
+              <span>Moves</span>
+              <small>Best ${bestTimeLabel}</small>
+            </span>
             <strong data-moves>0</strong>
           </div>
-          <div data-crossing-card>
-            <span class="status-icon">${uiIcon('crossings')}</span>
-            <span>Knots</span>
+          <div class="game-stat-card knots-stat" data-crossing-card>
+            <span class="status-icon">${artIcon('knot')}</span>
+            <span class="game-stat-copy">
+              <span>Knots remaining</span>
+              <small>Clear every crossing</small>
+            </span>
             <strong data-crossings>${getCrossingCount(this.order)}</strong>
           </div>
         </div>
 
-        <nav class="game-actions video-actions">
+        <nav class="game-actions video-actions premium-actions">
           <button class="round-action hint" data-action="hint">
-            <span>${uiIcon('hint')}</span><b>Hint</b>
+            <span>${artIcon('hint')}</span><b>Hint</b>
           </button>
-          <button class="round-action undo" data-action="undo">
-            <span>${uiIcon('undo')}</span><b>Undo</b>
+          <button class="round-action undo" data-action="undo" disabled aria-label="Undo last move">
+            <span>${artIcon('undo')}</span><b>Undo</b>
           </button>
           <button class="round-action restart" data-action="restart">
-            <span>${uiIcon('restart')}</span><b>Restart</b>
+            <span>${artIcon('restart')}</span><b>Restart</b>
           </button>
         </nav>
 
@@ -470,8 +499,10 @@ export class GameApp {
   updateHud() {
     const moves = this.root.querySelector('[data-moves]')
     const crossings = this.root.querySelector('[data-crossings]')
+    const undoButton = this.root.querySelector('[data-action="undo"]')
     if (moves) moves.textContent = this.moves
     if (crossings) crossings.textContent = getCrossingCount(this.order)
+    if (undoButton) undoButton.disabled = this.history.length === 0
   }
 
   showCrossingFeedback(previousCrossings, currentCrossings) {
@@ -518,25 +549,30 @@ export class GameApp {
   }
 
   startTimer() {
+    clearInterval(this.timerRaf)
     this.timerStartedAt = performance.now() - this.elapsed * 1000
+    // A coarse tick is enough for a seconds counter; a per-frame loop kept the
+    // main thread busy next to the board render.
     const tick = () => {
       if (this.screen !== 'game') return
       this.elapsed = (performance.now() - this.timerStartedAt) / 1000
       const el = this.root.querySelector('[data-timer]')
       if (el) el.textContent = formatTime(this.elapsed)
-      this.timerRaf = requestAnimationFrame(tick)
     }
-    this.timerRaf = requestAnimationFrame(tick)
+    this.timerRaf = setInterval(tick, 250)
   }
 
   stopTimer() {
-    cancelAnimationFrame(this.timerRaf)
+    if (this.screen === 'game' && this.timerStartedAt != null) {
+      this.elapsed = (performance.now() - this.timerStartedAt) / 1000
+    }
+    clearInterval(this.timerRaf)
   }
 
   showPause() {
     if (this.screen !== 'game') return
-    this.screen = 'pause'
     this.stopTimer()
+    this.screen = 'pause'
     this.board?.cancelDrag?.()
     this.board?.stop()
     clearTimeout(this.completionTimer)
@@ -545,12 +581,18 @@ export class GameApp {
     const overlay = document.createElement('div')
     overlay.className = 'modal-layer'
     overlay.innerHTML = `
-      <section class="modal-card">
+      <section class="modal-card pause-card">
         <button class="modal-close" data-action="resume" aria-label="Resume">${uiIcon('close')}</button>
         <h2>Paused</h2>
-        <button class="primary-button" data-action="resume">${uiIcon('play')} Resume</button>
-        <button class="modal-option" data-action="restart">${uiIcon('restart')} Restart</button>
-        <button class="modal-option" data-action="menu">${uiIcon('home')} Main menu</button>
+        <button class="primary-button pause-primary" data-action="resume">${uiIcon('play')} Resume</button>
+        <button class="modal-option" data-action="restart">
+          <span class="modal-option-icon restart-modal-icon">${uiIcon('restart')}</span>
+          <span>Restart</span>
+        </button>
+        <button class="modal-option" data-action="menu">
+          <span class="modal-option-icon home-modal-icon">${uiIcon('home')}</span>
+          <span>Main menu</span>
+        </button>
       </section>
     `
     this.pauseOverlay = overlay
@@ -613,7 +655,8 @@ export class GameApp {
     overlay.innerHTML = `
       <div class="confetti" aria-hidden="true"></div>
       <section class="complete-card">
-        <div class="stars">${renderStars(stars, 3, 'result-star')}</div>
+        <div class="complete-trophy">${uiIcon('trophy')}</div>
+        ${starRow(stars, 'stars')}
         <div class="ribbon">Great!</div>
         <h2>Level ${this.levelNumber} Complete!</h2>
         <p>${formatTime(this.elapsed)} · ${this.moves} moves</p>
@@ -642,22 +685,22 @@ export class GameApp {
         <h2>How to Play</h2>
         <div class="how-to-steps">
           <div>
-            <span class="how-step-icon">${uiIcon('moves')}</span>
+            <span class="how-step-icon">${artIcon('moves')}</span>
             <b>Move one peg</b>
             <p>Drag a colored peg into the single empty socket.</p>
           </div>
           <div>
-            <span class="how-step-icon">${uiIcon('crossings')}</span>
+            <span class="how-step-icon">${artIcon('knot')}</span>
             <b>Untie the ropes</b>
             <p>The old peg position becomes the next empty socket.</p>
           </div>
           <div>
-            <span class="how-step-icon">${uiIcon('levels')}</span>
+            <span class="how-step-icon">${uiIcon('check')}</span>
             <b>Release every knot</b>
             <p>Move the free peg until every physical knot releases.</p>
           </div>
         </div>
-        <button class="primary-button" data-action="close">${uiIcon('play')} Got it</button>
+        <button class="primary-button" data-action="close">${uiIcon('check')} Got it</button>
       </section>
     `
     this.root.appendChild(overlay)
@@ -701,11 +744,15 @@ export class GameApp {
           </div>
           <div>
             <span class="setting-label"><span class="setting-icon info-setting">${uiIcon('info')}</span><span>About</span></span>
-            <button class="setting-toggle neutral-toggle setting-action" data-action="about">${uiIcon('info')} Open</button>
+            <button class="setting-toggle neutral-toggle setting-action" data-action="about">
+              <span>Open</span>${uiIcon('forward', 'ui-svg setting-chevron')}
+            </button>
           </div>
           <div>
             <span class="setting-label"><span class="setting-icon reset-setting">${uiIcon('reset')}</span><span>Progress</span></span>
-            <button class="setting-toggle danger-toggle setting-action" data-action="reset-progress">${uiIcon('reset')} Reset</button>
+            <button class="setting-toggle danger-toggle setting-action" data-action="reset-progress">
+              ${uiIcon('reset')}<span>Reset</span>
+            </button>
           </div>
         </section>
       </main>
@@ -750,9 +797,17 @@ export class GameApp {
         <h2>String Sort</h2>
         <p class="version-label">Version ${APP_VERSION}</p>
         <div class="privacy-summary">
-          ${privacySummary().map((line) => `<p>• ${line}</p>`).join('')}
+          ${privacySummary().map((line) => `
+            <p>
+              ${uiIcon('check', 'ui-svg privacy-check')}
+              <span>${line}</span>
+            </p>
+          `).join('')}
         </div>
-        <button class="modal-option" data-action="privacy">${uiIcon('shield')} Privacy details</button>
+        <button class="modal-option" data-action="privacy">
+          <span class="modal-option-icon privacy-modal-icon">${uiIcon('privacy')}</span>
+          <span>Privacy details</span>
+        </button>
         <button class="primary-button" data-action="close">${uiIcon('check')} Done</button>
       </section>
     `
@@ -775,7 +830,10 @@ export class GameApp {
       <section class="modal-card">
         <h2>Reset progress?</h2>
         <p class="modal-copy">Stars, best times and unlocked levels on this device will be cleared.</p>
-        <button class="modal-option danger-option" data-action="confirm">${uiIcon('reset')} Reset progress</button>
+        <button class="modal-option danger-option" data-action="confirm">
+          <span class="modal-option-icon reset-modal-icon">${uiIcon('reset')}</span>
+          <span>Reset progress</span>
+        </button>
         <button class="primary-button" data-action="cancel">${uiIcon('check')} Keep progress</button>
       </section>
     `

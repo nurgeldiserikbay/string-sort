@@ -26,7 +26,9 @@ export class RopePhysics {
     gravity = 22,
     ambientMotion = 1.2,
     constraintIterations = 8,
+    bendStiffness = 0,
   } = {}) {
+    this.bendStiffness = bendStiffness
     this.damping = damping
     this.gravity = gravity
     this.ambientMotion = ambientMotion
@@ -34,12 +36,14 @@ export class RopePhysics {
     this.ropes = new Map()
     this.lastTime = 0
     this.contacts = []
+    this.motion = Infinity
   }
 
   clear() {
     this.ropes.clear()
     this.lastTime = 0
     this.contacts = []
+    this.motion = Infinity
   }
 
   removeMissing(validIds) {
@@ -59,7 +63,9 @@ export class RopePhysics {
     const nx = -dy * inv
     const ny = dx * inv
     const direction = id % 2 === 0 ? 1 : -1
-    const bend = Math.min(44, chord * 0.13) * direction
+    // Keep the idle rope shape broad and readable. Large seeded bends and
+    // secondary waves made the rope look like it was already vibrating.
+    const bend = Math.min(30, chord * 0.085) * direction
     const phase = (id * 1.61803398875) % (Math.PI * 2)
 
     const points = Array.from({ length: segmentCount + 1 }, (_, index) => {
@@ -69,7 +75,7 @@ export class RopePhysics {
       const secondaryArc = (
         Math.sin(t * Math.PI * 2 + phase)
         * envelope
-        * Math.min(12, Math.abs(bend) * 0.28)
+        * Math.min(4.5, Math.abs(bend) * 0.14)
       )
       const arc = mainArc + secondaryArc
 
@@ -147,40 +153,12 @@ export class RopePhysics {
       const ropeB = this.ropes.get(knot.bId)
       if (!ropeA || !ropeB) continue
 
+      // Prime only the actual contact particles. Neighboring rope points
+      // are left to the distance solver so the rope approaches the knot
+      // naturally instead of forming artificial loops around a synthetic
+      // shoulder shape.
       place(ropeA, knot.aIndex, knot.x, knot.y)
       place(ropeB, knot.bIndex, knot.x, knot.y)
-
-      const shoulder = 8
-      const angle = knot.twistAngle ?? 0
-      const ax = Math.cos(angle)
-      const ay = Math.sin(angle)
-      const bx = -ay
-      const by = ax
-
-      place(
-        ropeA,
-        knot.aIndex - 1,
-        knot.x - ax * shoulder,
-        knot.y - ay * shoulder,
-      )
-      place(
-        ropeA,
-        knot.aIndex + 1,
-        knot.x + ax * shoulder,
-        knot.y + ay * shoulder,
-      )
-      place(
-        ropeB,
-        knot.bIndex - 1,
-        knot.x - bx * shoulder,
-        knot.y - by * shoulder,
-      )
-      place(
-        ropeB,
-        knot.bIndex + 1,
-        knot.x + bx * shoulder,
-        knot.y + by * shoulder,
-      )
     }
 
     for (let iteration = 0; iteration < Math.max(4, this.constraintIterations); iteration++) {
@@ -204,12 +182,15 @@ export class RopePhysics {
     const frameSeconds = Math.min(1 / 30, Math.max(1 / 120, (now - this.lastTime) / 1000 || 1 / 60))
     this.lastTime = now
 
-    const substeps = frameSeconds > 1 / 50 ? 2 : 1
+    // One step per frame: doubling the work on slow frames made a slow
+    // device slower still. frameSeconds is already clamped to 1/30.
+    const substeps = 1
     const dt = frameSeconds / substeps
+    this.motion = 0
 
     for (let step = 0; step < substeps; step++) {
       for (const rope of this.ropes.values()) {
-        rope.segmentLength = lerp(rope.segmentLength, rope.targetSegmentLength, 0.09)
+        rope.segmentLength = lerp(rope.segmentLength, rope.targetSegmentLength, 0.075)
         this.integrate(rope, dt, now)
       }
 
@@ -217,6 +198,7 @@ export class RopePhysics {
         for (const rope of this.ropes.values()) {
           this.pinEndpoints(rope)
           this.solveDistanceConstraints(rope)
+          this.solveBending(rope)
         }
 
         this.solveKnotConstraints(knots)
@@ -259,6 +241,7 @@ export class RopePhysics {
 
       point.oldX = point.x
       point.oldY = point.y
+      this.motion = Math.max(this.motion, Math.abs(velocityX) + Math.abs(velocityY))
 
       const weight = Math.sin((index / rope.segmentCount) * Math.PI)
       point.x += velocityX + wind * weight * dtSquared
@@ -283,6 +266,9 @@ export class RopePhysics {
       const dx = b.x - a.x
       const dy = b.y - a.y
       const current = Math.max(EPSILON, Math.hypot(dx, dy))
+      // Rope resists stretching, not compression: pushing particles apart made
+      // the spare length buckle into S-waves around every knot.
+      if (current <= rope.segmentLength) continue
       const error = (current - rope.segmentLength) / current
 
       const aWeight = a.pinned ? 0 : 1
@@ -301,6 +287,20 @@ export class RopePhysics {
         b.x -= correctionX * (bWeight / totalWeight)
         b.y -= correctionY * (bWeight / totalWeight)
       }
+    }
+  }
+
+  // Real cord resists sharp bends. Without this the knot anchors pulled single
+  // particles into zigzags and tiny curls, like a bead chain rather than a rope.
+  solveBending(rope, stiffness = this.bendStiffness) {
+    const points = rope.points
+    for (let index = 1; index < points.length - 1; index++) {
+      const point = points[index]
+      if (point.pinned) continue
+      const prev = points[index - 1]
+      const next = points[index + 1]
+      point.x += ((prev.x + next.x) / 2 - point.x) * stiffness
+      point.y += ((prev.y + next.y) / 2 - point.y) * stiffness
     }
   }
 
@@ -328,7 +328,10 @@ export class RopePhysics {
 
       const midpointX = (a.x + b.x) / 2
       const midpointY = (a.y + b.y) / 2
-      const anchorStrength = knot.anchorStrength ?? 0.72
+      // Keep the two rope particles visibly tied to the stable knot anchor.
+      // A weak anchor lets every crossing collapse back toward the shared
+      // rope midpoint, which recreates the unreadable center bundle.
+      const anchorStrength = 0.62
       const targetX = midpointX + (knot.x - midpointX) * anchorStrength
       const targetY = midpointY + (knot.y - midpointY) * anchorStrength
       const stiffness = knot.stiffness ?? 0.18
@@ -337,46 +340,7 @@ export class RopePhysics {
       movePoint(a, targetX, targetY, stiffness, drag)
       movePoint(b, targetX, targetY, stiffness, drag)
 
-      const aPrev = ropeA.points[knot.aIndex - 1]
-      const aNext = ropeA.points[knot.aIndex + 1]
-      const bPrev = ropeB.points[knot.bIndex - 1]
-      const bNext = ropeB.points[knot.bIndex + 1]
-      const shoulderStrength = stiffness * 0.34
-      const shoulder = 9
-      const angle = knot.twistAngle ?? 0
-      const ax = Math.cos(angle)
-      const ay = Math.sin(angle)
-      const bx = -ay
-      const by = ax
 
-      movePoint(
-        aPrev,
-        targetX - ax * shoulder,
-        targetY - ay * shoulder,
-        shoulderStrength,
-        drag,
-      )
-      movePoint(
-        aNext,
-        targetX + ax * shoulder,
-        targetY + ay * shoulder,
-        shoulderStrength,
-        drag,
-      )
-      movePoint(
-        bPrev,
-        targetX - bx * shoulder,
-        targetY - by * shoulder,
-        shoulderStrength,
-        drag,
-      )
-      movePoint(
-        bNext,
-        targetX + bx * shoulder,
-        targetY + by * shoulder,
-        shoulderStrength,
-        drag,
-      )
     }
   }
 
@@ -435,6 +399,11 @@ export class RopePhysics {
       dampPoint(ropeB.points[contact.bSegment])
       dampPoint(ropeB.points[contact.bSegment + 1])
     }
+  }
+
+  // Largest per-frame particle movement in the last update, in CSS pixels.
+  getMotion() {
+    return this.motion
   }
 
   getContacts() {

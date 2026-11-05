@@ -25,7 +25,7 @@ npm run build
 - Layered cord rendering with highlights, shadows and moving fiber detail
 - Draggable rope endpoints with tactile follow-through
 - 100 deterministic launch levels, including 8 handcrafted onboarding levels, with automated solvability checks
-- Persistent knot-graph win condition with physical double/triple-wrap presentation
+- Persistent knot-graph win condition with one stable physical contact per logical knot
 - Hint, Undo and Restart
 - Timer, move counter and 1–3 star result
 - Saved progression plus sound, haptics, graphics and accessibility settings

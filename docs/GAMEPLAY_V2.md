@@ -27,7 +27,7 @@ The paired particles:
 - have additional local drag/friction;
 - keep a stable crossing angle;
 - pull nearby rope particles into a small crossed shape instead of collapsing into one point;
-- uses one clear physical contact per logical knot, avoiding ambiguous multi-wrap piles while still coupling the two ropes physically.
+- uses one stable contact per logical knot, seeded from the real geometric chord intersection so dense boards stay readable instead of collapsing into synthetic loops.
 
 This means dragging one peg visibly pulls the other rope(s) that are bound into the same tangle. When a logical knot is removed, its physical constraint disappears and the involved ropes relax naturally.
 
@@ -41,14 +41,13 @@ This means dragging one peg visibly pulls the other rope(s) that are bound into 
 
 ## Visual target
 
-The board should read as a physical tangle without collapsing into a central spaghetti ball:
+The center of the board should look like a compact physical bundle:
 - thick glossy cords;
 - soft cast shadows;
-- one clear local over/under contact per logical knot;
-- no detached decorative crossing capsules or fake knot dots;
-- stable contact locations while the player is not dragging;
-- very slow bounded contact sliding only when a bound rope is actively pulled;
-- procedural knot density capped so difficult boards stay readable;
+- no artificial "capsule" redraw at crossings;
+- seamless local over/under passes drawn from the rope's actual particle curve;
+- short, stable over/under crossings around real knot contacts;
+- no animated dashed seam;
 - ropes already appear tangled when the level opens.
 
 The board should stay visually simple:
@@ -64,8 +63,8 @@ Early levels teach one knot and the single empty-socket rule.
 
 Later levels progressively add:
 - more ropes, capped at nine to stay close to the readable physical-puzzle reference;
-- more active logical knots, but with a hard launch readability cap;
-- connected knot graphs without forcing every contact into the board center;
+- more active logical knots;
+- denser central knot graphs;
 - longer legal solution paths.
 
 The launch set remains deterministic and automatically checked for solvability.
@@ -91,11 +90,10 @@ Later levels are ranked by the actual knot graph:
 
 ## Sliding contact model
 
-Physical knot centers are readability anchors. They:
-- are distributed away from a tiny central pile;
-- remain fixed while the player is not interacting;
-- may slide only a small capped distance when one of their ropes is actively pulled;
-- remain on interior rope particles away from endpoints;
+Physical knot centers are not nailed to fixed coordinates. They:
+- spread apart inside the inner board so dense levels do not collapse into one pixel cluster;
+- follow the rope bundle when the player pulls it;
+- slowly slide along interior rope particles under tension while remaining away from endpoints;
 - disappear as one-shot release events when the logical knot is actually removed.
 
 A knot release drives a small visual burst, stronger haptic feedback, and a short positive sound cue.

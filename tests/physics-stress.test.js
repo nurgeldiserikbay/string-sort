@@ -67,7 +67,10 @@ describe('dense tangle physics stress gate', () => {
     }
 
     sync()
-    tangle.update(level.order, geometry)
+    const sockets = level.order.map((_, index) => (
+      socketPosition(index, level.order.length, geometry)
+    ))
+    tangle.update(level.order, geometry, sockets)
     let knots = tangle.buildConstraints(segmentCounts)
     physics.primeKnotLayout(knots)
 
@@ -80,7 +83,7 @@ describe('dense tangle physics stress gate', () => {
       }
 
       sync(movingPoint)
-      tangle.followPhysics(physics, geometry)
+      tangle.followPhysics(physics, geometry, { activeRopeId: 0 })
       knots = tangle.buildConstraints(segmentCounts)
 
       physics.update(frame * 16.67, {

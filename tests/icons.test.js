@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { uiIcon } from '../src/ui/icons.js'
+import { hasUiIcon, uiIcon } from '../src/ui/icons.js'
 
 describe('uiIcon', () => {
   it('renders the polished gameplay icon set as accessible decorative SVG', () => {
@@ -7,7 +7,6 @@ describe('uiIcon', () => {
       'play',
       'levels',
       'star',
-      'starOutline',
       'settings',
       'hint',
       'undo',
@@ -15,6 +14,7 @@ describe('uiIcon', () => {
       'pause',
       'home',
       'back',
+      'forward',
       'timer',
       'crossings',
       'moves',
@@ -23,8 +23,14 @@ describe('uiIcon', () => {
       'graphics',
       'markers',
       'info',
-      'shield',
+      'privacy',
       'reset',
+      'knot',
+      'twist',
+      'garden',
+      'weave',
+      'crown',
+      'trophy',
       'close',
     ]) {
       const svg = uiIcon(name)
@@ -32,6 +38,40 @@ describe('uiIcon', () => {
       expect(svg).toContain('aria-hidden="true"')
       expect(svg).toContain('stroke="currentColor"')
       expect(svg).not.toContain('emoji')
+    }
+  })
+
+
+  it('defines every icon used outside the main menu', () => {
+    for (const name of [
+      'back',
+      'forward',
+      'pause',
+      'timer',
+      'moves',
+      'crossings',
+      'hint',
+      'undo',
+      'restart',
+      'lock',
+      'knot',
+      'twist',
+      'garden',
+      'weave',
+      'crown',
+      'trophy',
+      'home',
+      'sound',
+      'haptics',
+      'graphics',
+      'markers',
+      'info',
+      'privacy',
+      'reset',
+      'close',
+      'check',
+    ]) {
+      expect(hasUiIcon(name), `${name} should not fall back to help`).toBe(true)
     }
   })
 

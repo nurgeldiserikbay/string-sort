@@ -57,7 +57,7 @@ describe('level geometry', () => {
       getCrossingCount(createLevel(index + 1).order),
     )
 
-    expect(values).toEqual([1, 2, 3, 4, 6, 7, 8, 9])
+    expect(values).toEqual([1, 2, 3, 6, 7, 9, 10, 12])
   })
 
   it('keeps all 100 launch levels valid, non-trivial and solvable', () => {

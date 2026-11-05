@@ -20,6 +20,53 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
 }
 
+function contactTFor(knot, ropeId) {
+  return knot.aId === ropeId ? knot.aT : knot.bT
+}
+
+function setContactT(knot, ropeId, value) {
+  if (knot.aId === ropeId) knot.aT = value
+  if (knot.bId === ropeId) knot.bT = value
+}
+
+function segmentIntersection(a0, a1, b0, b1) {
+  const rX = a1.x - a0.x
+  const rY = a1.y - a0.y
+  const sX = b1.x - b0.x
+  const sY = b1.y - b0.y
+  const denominator = rX * sY - rY * sX
+
+  if (Math.abs(denominator) < 0.00001) return null
+
+  const qX = b0.x - a0.x
+  const qY = b0.y - a0.y
+  const t = (qX * sY - qY * sX) / denominator
+  const u = (qX * rY - qY * rX) / denominator
+
+  if (t <= 0 || t >= 1 || u <= 0 || u >= 1) return null
+
+  return {
+    x: a0.x + rX * t,
+    y: a0.y + rY * t,
+    aT: clamp(t, 0.12, 0.88),
+    bT: clamp(u, 0.12, 0.88),
+  }
+}
+
+function geometricKnot(pair, socketPositions) {
+  if (!socketPositions) return null
+
+  const [a0Index, a1Index] = pair.aPositions ?? []
+  const [b0Index, b1Index] = pair.bPositions ?? []
+  const a0 = socketPositions[a0Index]
+  const a1 = socketPositions[a1Index]
+  const b0 = socketPositions[b0Index]
+  const b1 = socketPositions[b1Index]
+
+  if (!a0 || !a1 || !b0 || !b1) return null
+  return segmentIntersection(a0, a1, b0, b1)
+}
+
 export class RopeTangle {
   constructor(seed = 0x51f15e) {
     this.seed = seed >>> 0
@@ -34,7 +81,7 @@ export class RopeTangle {
     this.released = []
   }
 
-  update(order, geometry) {
+  update(order, geometry, socketPositions = null) {
     const pairs = getKnotPairs(order)
     const previous = this.knotMap
     const nextMap = new Map()
@@ -46,7 +93,7 @@ export class RopeTangle {
       }))
       .sort((a, b) => a.key.localeCompare(b.key))
 
-    const hasNewKnots = sortedPairs.some((pair) => !previous.has(pair.key))
+    let needsCenterRelax = false
     const ropeKnots = new Map()
 
     sortedPairs.forEach((pair, index) => {
@@ -63,8 +110,29 @@ export class RopeTangle {
         index * goldenAngle
         + ((hash & 1023) / 1023) * 0.62
       ) % TAU
-      const radialBand = 0.38 + (((hash >>> 10) & 255) / 255) * 0.22
+      const radialBand = 0.12 + (((hash >>> 10) & 255) / 255) * 0.24
       const radius = geometry.boardRadius * radialBand
+      const geometric = prior ? null : geometricKnot(pair, socketPositions)
+      if (!prior) needsCenterRelax = true
+
+      // Logical chord intersections often land almost on the same center
+      // point. A small deterministic spiral separates those contacts once,
+      // so the player can actually read which ropes are tied together.
+      const density = clamp((sortedPairs.length - 1) / 10, 0, 1)
+      const spiralRadius = geometric
+        ? geometry.boardRadius
+          * (0.018 + density * (0.075 + (index % 5) * 0.024))
+        : 0
+      const spiralAngle = (
+        index * goldenAngle
+        + ((hash >>> 20) & 255) / 255 * 0.55
+      ) % TAU
+      const initialX = geometric
+        ? geometric.x + Math.cos(spiralAngle) * spiralRadius
+        : geometry.cx + Math.cos(angle) * radius
+      const initialY = geometric
+        ? geometric.y + Math.sin(spiralAngle) * spiralRadius
+        : geometry.cy + Math.sin(angle) * radius
 
       const knot = {
         key,
@@ -73,14 +141,19 @@ export class RopeTangle {
         topId: prior?.topId ?? ((hash & 1) ? pair.aId : pair.bId),
         twistAngle: prior?.twistAngle
           ?? (((hash >>> 18) & 1023) / 1023) * Math.PI,
+        // One stable physical contact per logical knot. Multiple artificial
+        // wraps made dense boards collapse into unreadable mini-loops.
         wraps: 1,
-        x: prior?.x ?? geometry.cx + Math.cos(angle) * radius,
-        y: prior?.y ?? geometry.cy + Math.sin(angle) * radius,
-        aT: prior?.aT ?? 0.5,
-        bT: prior?.bT ?? 0.5,
-        stiffness: 0.18,
-        drag: 0.52,
-        anchorStrength: 0.82,
+        x: prior?.x ?? initialX,
+        y: prior?.y ?? initialY,
+        anchorX: prior?.anchorX ?? initialX,
+        anchorY: prior?.anchorY ?? initialY,
+        aT: prior?.aT ?? geometric?.aT ?? 0.5,
+        bT: prior?.bT ?? geometric?.bT ?? 0.5,
+        stiffness: 0.16,
+        drag: 0.82,
+        seededFromGeometry: Boolean(geometric),
+        wasActive: prior?.wasActive ?? false,
       }
 
       nextMap.set(key, knot)
@@ -93,24 +166,25 @@ export class RopeTangle {
     })
 
     for (const [ropeId, knots] of ropeKnots) {
-      knots.sort((a, b) => {
-        const aa = Math.atan2(a.y - geometry.cy, a.x - geometry.cx)
-        const ba = Math.atan2(b.y - geometry.cy, b.x - geometry.cx)
-        return aa - ba
+      const ordered = [...knots].sort((a, b) => {
+        const delta = contactTFor(a, ropeId) - contactTFor(b, ropeId)
+        return Math.abs(delta) > 0.0001
+          ? delta
+          : a.key.localeCompare(b.key)
       })
 
-      knots.forEach((knot, index) => {
-        // Existing knot contacts keep their rope-relative position.
-        // Reassigning aT/bT every frame made the visible tie point jump
-        // between particles and was the main source of "swimming" knots.
+      ordered.forEach((knot, index) => {
+        // A dense rope can participate in many logical knots. Mapping all
+        // those knots to the same middle particle creates the tiny loops
+        // visible in the old center bundle. Give each contact a distinct,
+        // ordered section of the rope instead.
         if (previous.has(knot.key)) return
 
-        const spread = knots.length <= 1
+        const spread = ordered.length <= 1
           ? 0.5
-          : 0.24 + (index / (knots.length - 1)) * 0.52
+          : 0.2 + (index / (ordered.length - 1)) * 0.6
 
-        if (knot.aId === ropeId) knot.aT = spread
-        if (knot.bId === ropeId) knot.bT = 1 - spread
+        setContactT(knot, ropeId, spread)
       })
     }
 
@@ -133,16 +207,25 @@ export class RopeTangle {
     // Center spreading is layout initialization, not an animation force.
     // Re-running it every frame caused knots to repel one another while
     // physics simultaneously pulled them back, producing visible jitter.
-    if (hasNewKnots && previous.size === 0) this.relaxCenters(geometry)
+    if (needsCenterRelax) this.relaxCenters(geometry)
+
+    for (const knot of this.knots) {
+      if (previous.has(knot.key)) continue
+      knot.anchorX = knot.x
+      knot.anchorY = knot.y
+    }
 
     return this.knots
   }
 
   relaxCenters(geometry) {
-    const maxRadius = geometry.boardRadius * 0.66
-    const minDistance = Math.max(30, geometry.boardRadius * 0.17)
+    // Give every logical contact its own small piece of visual space.
+    // This is intentionally a one-time layout relaxation: it improves
+    // readability without introducing any continuous repulsion/jitter.
+    const maxRadius = geometry.boardRadius * 0.43
+    const minDistance = Math.max(34, geometry.boardRadius * 0.18)
 
-    for (let iteration = 0; iteration < 7; iteration++) {
+    for (let iteration = 0; iteration < 12; iteration++) {
       for (let i = 0; i < this.knots.length; i++) {
         const a = this.knots[i]
 
@@ -161,7 +244,7 @@ export class RopeTangle {
             distance = 1
           }
 
-          const push = (minDistance - distance) * 0.31
+          const push = (minDistance - distance) * 0.48
           const nx = dx / distance
           const ny = dy / distance
 
@@ -187,8 +270,8 @@ export class RopeTangle {
   }
 
   followPhysics(physics, geometry, { activeRopeId = null } = {}) {
-    const maxRadius = geometry.boardRadius * 0.66
-    const centerDeadZone = Math.max(1.8, geometry.boardRadius * 0.009)
+    const maxRadius = geometry.boardRadius * 0.43
+    const activeLeash = Math.max(5, geometry.boardRadius * 0.028)
 
     const nearestT = (points, x, y, currentT) => {
       const last = points.length - 1
@@ -200,12 +283,10 @@ export class RopeTangle {
       let bestIndex = currentIndex
       let bestScore = currentScore
 
-      // Only search locally around the existing contact. A global nearest
-      // point search can suddenly jump to a different loop of the same rope.
       for (let index = searchStart; index <= searchEnd; index++) {
         const point = points[index]
         const distance = Math.hypot(point.x - x, point.y - y)
-        const travelPenalty = Math.abs(index - currentIndex) * 5.2
+        const travelPenalty = Math.abs(index - currentIndex) * 4.5
         const score = distance + travelPenalty
 
         if (score < bestScore) {
@@ -214,16 +295,9 @@ export class RopeTangle {
         }
       }
 
-      // Hysteresis keeps the contact on its current particle unless moving
-      // to a neighbor is meaningfully better.
-      if (currentScore - bestScore < 4.2) return currentT
-
+      // Do not migrate the visible knot for tiny particle fluctuations.
+      if (currentScore - bestScore < 3.2) return currentT
       return clamp(bestIndex / last, 0.12, 0.88)
-    }
-
-    const slideToward = (current, target, response, maxStep) => {
-      const requested = (target - current) * response
-      return current + clamp(requested, -maxStep, maxStep)
     }
 
     for (const knot of this.knots) {
@@ -231,23 +305,33 @@ export class RopeTangle {
         activeRopeId != null
         && (knot.aId === activeRopeId || knot.bId === activeRopeId)
       )
-      // An untouched knot is a visual anchor. It should not wander while
-      // the ropes settle. Only knots belonging to the actively dragged rope
-      // are allowed to slide, and even then only very slowly.
-      if (!isActivelyPulled) continue
+      const anchorX = knot.anchorX ?? knot.x
+      const anchorY = knot.anchorY ?? knot.y
 
-      const maxCenterStep = Math.max(0.18, geometry.boardRadius * 0.0012)
-      const maxTStep = 0.0007
-      const slideResponse = 0.012
+      if (!isActivelyPulled) {
+        // The knot must be visually readable when the player is not
+        // touching it. Commit the last dragged position once, then freeze
+        // the contact completely instead of letting solver noise move it.
+        if (knot.wasActive) {
+          knot.anchorX = knot.x
+          knot.anchorY = knot.y
+        }
+        knot.wasActive = false
+        continue
+      }
+
+      knot.wasActive = true
+
       const ropeA = physics.getPoints(knot.aId)
       const ropeB = physics.getPoints(knot.bId)
       if (ropeA.length < 5 || ropeB.length < 5) continue
 
       const nextAT = nearestT(ropeA, knot.x, knot.y, knot.aT)
       const nextBT = nearestT(ropeB, knot.x, knot.y, knot.bT)
+      const maxTStep = 0.00024
 
-      knot.aT = slideToward(knot.aT, nextAT, slideResponse, maxTStep)
-      knot.bT = slideToward(knot.bT, nextBT, slideResponse, maxTStep)
+      knot.aT += clamp((nextAT - knot.aT) * 0.006, -maxTStep, maxTStep)
+      knot.bT += clamp((nextBT - knot.bT) * 0.006, -maxTStep, maxTStep)
 
       const aIndex = clamp(
         Math.round((ropeA.length - 1) * knot.aT),
@@ -268,18 +352,29 @@ export class RopeTangle {
       const targetDy = targetY - knot.y
       const targetDistance = Math.hypot(targetDx, targetDy)
 
-      if (targetDistance > centerDeadZone) {
-        const desiredStep = Math.min(
-          maxCenterStep,
-          (targetDistance - centerDeadZone) * 0.02,
-        )
-        knot.x += (targetDx / targetDistance) * desiredStep
-        knot.y += (targetDy / targetDistance) * desiredStep
+      if (targetDistance > 3) {
+        const step = Math.min(0.085, (targetDistance - 3) * 0.009)
+        knot.x += (targetDx / targetDistance) * step
+        knot.y += (targetDy / targetDistance) * step
+      }
+
+      // Even while pulled, a logical knot is tied near one stable place.
+      // The leash gives tactile movement without letting the connection
+      // wander across the whole rope bundle.
+      const leashDx = knot.x - anchorX
+      const leashDy = knot.y - anchorY
+      const leashDistance = Math.hypot(leashDx, leashDy)
+
+      if (leashDistance > activeLeash) {
+        const scale = activeLeash / leashDistance
+        knot.x = anchorX + leashDx * scale
+        knot.y = anchorY + leashDy * scale
       }
 
       const dx = knot.x - geometry.cx
       const dy = knot.y - geometry.cy
       const distance = Math.hypot(dx, dy)
+      const maxRadius = geometry.boardRadius * 0.43
 
       if (distance > maxRadius) {
         const scale = maxRadius / distance
@@ -288,7 +383,6 @@ export class RopeTangle {
       }
     }
   }
-
   getKnots() {
     return this.knots
   }
@@ -305,46 +399,24 @@ export class RopeTangle {
     for (const knot of this.knots) {
       const aCount = segmentCounts.get(knot.aId) ?? 1
       const bCount = segmentCounts.get(knot.bId) ?? 1
-      const wraps = Math.max(1, knot.wraps ?? 1)
-      const spacing = wraps >= 3 ? 9 : 10
-      const nx = -Math.sin(knot.twistAngle ?? 0)
-      const ny = Math.cos(knot.twistAngle ?? 0)
 
-      for (let wrapIndex = 0; wrapIndex < wraps; wrapIndex++) {
-        const centered = wrapIndex - (wraps - 1) / 2
-        const offset = centered * spacing
-        const tOffset = centered * 0.055
-        const alternate = wrapIndex % 2 === 0
-
-        constraints.push({
-          ...knot,
-          key: `${knot.key}#${wrapIndex}`,
-          parentKey: knot.key,
-          centerX: knot.x,
-          centerY: knot.y,
-          wrapIndex,
-          wraps,
-          topId: alternate
-            ? knot.topId
-            : knot.topId === knot.aId
-              ? knot.bId
-              : knot.aId,
-          x: knot.x + nx * offset,
-          y: knot.y + ny * offset,
-          aIndex: clamp(
-            Math.round(aCount * clamp(knot.aT + tOffset, 0.12, 0.88)),
-            2,
-            Math.max(2, aCount - 2),
-          ),
-          bIndex: clamp(
-            Math.round(bCount * clamp(knot.bT - tOffset, 0.12, 0.88)),
-            2,
-            Math.max(2, bCount - 2),
-          ),
-          stiffness: wraps >= 3 ? 0.15 : wraps > 1 ? 0.17 : knot.stiffness,
-          drag: wraps >= 3 ? 0.62 : wraps > 1 ? 0.66 : knot.drag,
-        })
-      }
+      constraints.push({
+        ...knot,
+        key: `${knot.key}#0`,
+        parentKey: knot.key,
+        wrapIndex: 0,
+        wraps: 1,
+        aIndex: clamp(
+          Math.round(aCount * clamp(knot.aT, 0.12, 0.88)),
+          2,
+          Math.max(2, aCount - 2),
+        ),
+        bIndex: clamp(
+          Math.round(bCount * clamp(knot.bT, 0.12, 0.88)),
+          2,
+          Math.max(2, bCount - 2),
+        ),
+      })
     }
 
     return constraints
