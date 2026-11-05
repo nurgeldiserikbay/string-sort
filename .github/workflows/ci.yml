@@ -100,11 +100,25 @@ jobs:
           cd android
           ./gradlew lintDebug assembleDebug --no-daemon
 
+      - name: Record debug APK checksum and source commit
+        run: |
+          set -euo pipefail
+          cd android/app/build/outputs/apk/debug
+          test -s app-debug.apk
+          sha256sum app-debug.apk > app-debug.apk.sha256
+          printf 'source_commit=%s\nworkflow_run=%s\n' \
+            "$(git rev-parse HEAD)" \
+            "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            > build-info.txt
+
       - name: Upload Android debug APK
         uses: actions/upload-artifact@v7
         with:
           name: string-sort-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/debug/app-debug.apk.sha256
+            android/app/build/outputs/apk/debug/build-info.txt
           if-no-files-found: error
 
       # Exercises the same production web payload / Gradle bundle task
