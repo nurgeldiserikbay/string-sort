@@ -51,6 +51,7 @@ Before the first production upload:
 - add the four Android signing secrets documented in `docs/RELEASE.md`;
 - choose a monotonically increasing `versionCode`;
 - choose the final public `versionName`;
+- select the **main** branch for **Android Release AAB**; the workflow must not sign a feature branch;
 - run **Android Release AAB** and download the signed artifact;
 - confirm package name `com.nurgeldiserikbay.stringsort`;
 - provide the public support email in Play Console;
