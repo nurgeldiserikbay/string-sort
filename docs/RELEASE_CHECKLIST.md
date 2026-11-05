@@ -18,7 +18,8 @@ These should all be green on the release commit:
 - Android API 36 verification;
 - Android lint;
 - debug APK build;
-- unsigned production AAB Gradle bundle smoke test (CI only; do not upload unsigned AAB to Play).
+- unsigned production AAB Gradle bundle smoke test;
+- signed production AAB smoke test with a disposable CI-only keystore (neither bundle is uploaded as a Play-ready artifact).
 
 ## Real-device blockers
 
