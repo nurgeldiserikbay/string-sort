@@ -5,8 +5,8 @@ const marker = '// STRING_SORT_RELEASE_SIGNING'
 const versionCode = Number(process.env.RELEASE_VERSION_CODE || '1')
 const versionName = process.env.RELEASE_VERSION_NAME || '0.1.0'
 
-if (!Number.isInteger(versionCode) || versionCode < 1) {
-  throw new Error('RELEASE_VERSION_CODE must be a positive integer')
+if (!Number.isSafeInteger(versionCode) || versionCode < 1 || versionCode > 2100000000) {
+  throw new Error('RELEASE_VERSION_CODE must be an integer from 1 to 2100000000')
 }
 
 if (!/^[0-9]+(?:\.[0-9]+){1,3}(?:[-+][0-9A-Za-z.-]+)?$/.test(versionName)) {
@@ -16,12 +16,19 @@ if (!/^[0-9]+(?:\.[0-9]+){1,3}(?:[-+][0-9A-Za-z.-]+)?$/.test(versionName)) {
 let gradle = readFileSync(gradlePath, 'utf8')
 
 if (gradle.includes(marker)) {
-  process.exit(0)
+  throw new Error('Release signing already configured; use a clean checkout')
+}
+
+// Do not silently leave the default package version in the signed bundle.
+const versionCodeMatches = [...gradle.matchAll(/\bversionCode\s+\d+\b/g)]
+const versionNameMatches = [...gradle.matchAll(/\bversionName\s+["'][^"']+["']/g)]
+if (versionCodeMatches.length !== 1 || versionNameMatches.length !== 1) {
+  throw new Error('Expected exactly one versionCode and versionName in Gradle')
 }
 
 gradle = gradle
-  .replace(/versionCode\s+\d+/, `versionCode ${versionCode}`)
-  .replace(/versionName\s+["'][^"']+["']/, `versionName "${versionName}"`)
+  .replace(/\bversionCode\s+\d+\b/, `versionCode ${versionCode}`)
+  .replace(/\bversionName\s+["'][^"']+["']/, `versionName "${versionName}"`)
 
 if (!gradle.includes('android {')) {
   throw new Error('Could not find android block in generated Gradle file')

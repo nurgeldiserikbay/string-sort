@@ -57,7 +57,7 @@ GitHub → Actions → **Android Release AAB** → Run workflow.
 
 The workflow asks for:
 
-- `version_code` — positive integer. It must increase for every Play Store release.
+- `version_code` — integer from 1 through 2,100,000,000. It must increase for every Play Store release.
 - `version_name` — human-readable version such as `0.1.0`.
 
 Example:
@@ -80,8 +80,8 @@ The workflow:
 
 1. validates signing secrets;
 2. runs automated tests;
-3. builds the Vite application;
-4. generates the Capacitor 8 Android project;
+3. builds the production Vite application;
+4. verifies the already-committed Capacitor 8 Android project;
 5. verifies compile/target SDK 36;
 6. generates Android launcher and splash assets;
 7. applies the selected version code/name;
@@ -102,3 +102,5 @@ Before production release, run through [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.
 - privacy policy and Data safety answers match the exact production SDK set;
 - any future ads/analytics/crash SDKs are reflected in the policy and Play Console declarations;
 - phone/tablet screenshots match the actual released UI.
+
+The version/signing preparation rejects missing or duplicate Gradle version fields and refuses to run twice on the same generated Gradle configuration. Use a fresh CI checkout for each signed AAB attempt. An uploaded AAB must still be validated in Play Console before release.
