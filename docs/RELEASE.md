@@ -79,16 +79,14 @@ version_name: 0.1.1
 The workflow:
 
 1. validates signing secrets;
-2. runs automated tests;
-3. builds the production Vite application;
-4. verifies the already-committed Capacitor 8 Android project;
-5. verifies compile/target SDK 36;
-6. generates Android launcher and splash assets;
-7. applies the selected version code/name;
-8. restores the keystore only inside the temporary CI runner;
-9. injects release signing;
-10. runs `bundleRelease`;
-11. uploads the signed AAB as a workflow artifact.
+2. restores the upload keystore with restrictive file permissions and checks the selected key alias;
+3. runs automated tests and builds the production Vite application;
+4. verifies the already-committed Capacitor 8 Android project and compile/target SDK 36;
+5. generates Android launcher and splash assets;
+6. applies the selected version code/name and injects release signing;
+7. runs `bundleRelease`;
+8. verifies the resulting AAB has a valid JAR signature before uploading it as an artifact;
+9. deletes the temporary keystore even if the job fails.
 
 ## 6. Play Store
 
@@ -104,3 +102,5 @@ Before production release, run through [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.
 - phone/tablet screenshots match the actual released UI.
 
 The version/signing preparation rejects missing or duplicate Gradle version fields and refuses to run twice on the same generated Gradle configuration. Use a fresh CI checkout for each signed AAB attempt. An uploaded AAB must still be validated in Play Console before release.
+
+**Important:** CI's signature check confirms the bundle is signed, but it does not prove that Google Play accepts the upload key, the release version is unused, or the app functions correctly on a physical device. Keep Issue #9 open until those external checks pass.
