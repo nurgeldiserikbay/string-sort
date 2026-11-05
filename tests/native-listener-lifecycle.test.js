@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { back, appState } = vi.hoisted(() => ({
   back: { resolve: null, install: vi.fn() },
@@ -39,6 +39,8 @@ function mockApp() {
 }
 
 describe('native listener lifecycle', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
   beforeEach(() => {
     vi.clearAllMocks()
     const backPending = deferred()
@@ -47,8 +49,10 @@ describe('native listener lifecycle', () => {
     appState.install.mockReturnValue(statePending.promise)
     back.resolve = backPending.resolve
     appState.resolve = statePending.resolve
-    vi.spyOn(document, 'addEventListener')
-    vi.spyOn(document, 'removeEventListener')
+    vi.stubGlobal('document', {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })
   })
 
   it('removes delayed listener handles when unmounted before registration finishes', async () => {
