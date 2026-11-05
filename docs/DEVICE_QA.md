@@ -1,6 +1,6 @@
 # Device QA checklist
 
-This checklist is for the final physical-device pass before publishing String Sort.
+This checklist is for the final physical-device pass before publishing String Sort. Record each device's test results, evidence and reviewer decision in [DEVICE_QA_REPORT_TEMPLATE.md](DEVICE_QA_REPORT_TEMPLATE.md).
 
 ## Recommended device coverage
 
