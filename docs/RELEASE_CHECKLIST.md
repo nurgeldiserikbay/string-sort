@@ -23,6 +23,9 @@ These should all be green on the release commit:
 
 ## Real-device blockers
 
+For every tested device, attach a completed [physical Android QA evidence report](DEVICE_QA_REPORT_TEMPLATE.md). CI passing does not mark a physical-device test as passed.
+
+
 Install the latest debug APK and verify:
 
 - one-empty-socket rule is obvious within the first level;
