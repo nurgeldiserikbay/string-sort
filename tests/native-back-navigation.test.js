@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../src/game/NativeNavigation.js', () => ({
   installNativeBackHandler: vi.fn(async () => null),
@@ -7,7 +7,7 @@ vi.mock('../src/game/NativeNavigation.js', () => ({
 }))
 
 import { GameApp } from '../src/game/GameApp.js'
-import { exitNativeApp } from '../src/game/NativeNavigation.js'
+import { exitNativeApp, installNativeBackHandler, installNativeAppStateHandler } from '../src/game/NativeNavigation.js'
 
 function mockApp(screen) {
   return {
@@ -47,5 +47,88 @@ describe('Android Back navigation contract', () => {
     for (const action of ['resumeFromPause', 'showPause', 'showMenu', 'showLevelSelect']) {
       expect(app[action]).not.toHaveBeenCalled()
     }
+  })
+})
+
+function deferred() {
+  let resolve
+  const promise = new Promise((done) => { resolve = done })
+  return { promise, resolve }
+}
+
+function bareApp() {
+  const app = Object.create(GameApp.prototype)
+  app.screen = 'game'
+  app.nativeListenerGeneration = 0
+  app.showMenu = vi.fn()
+  app.showPause = vi.fn()
+  app.handleNativeBack = vi.fn()
+  app.stopTimer = vi.fn()
+  app.menuPreviewCleanup = null
+  app.board = null
+  app.onVisibilityChange = vi.fn()
+  app.backButtonHandle = null
+  app.appStateHandle = null
+  return app
+}
+
+describe('native listener lifecycle', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('removes native listeners if their installation finishes after destroy', async () => {
+    const back = deferred()
+    const state = deferred()
+    const backRemove = vi.fn()
+    const stateRemove = vi.fn()
+    installNativeBackHandler.mockReturnValueOnce(back.promise)
+    installNativeAppStateHandler.mockReturnValueOnce(state.promise)
+    const document = {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }
+    vi.stubGlobal('document', document)
+    const app = bareApp()
+
+    app.mount()
+    expect(document.addEventListener).toHaveBeenCalledWith('visibilitychange', app.onVisibilityChange)
+    app.destroy()
+    expect(document.removeEventListener).toHaveBeenCalledWith('visibilitychange', app.onVisibilityChange)
+
+    back.resolve({ remove: backRemove })
+    state.resolve({ remove: stateRemove })
+    await Promise.all([back.promise, state.promise])
+    await Promise.resolve()
+
+    expect(backRemove).toHaveBeenCalledOnce()
+    expect(stateRemove).toHaveBeenCalledOnce()
+    expect(app.backButtonHandle).toBeNull()
+    expect(app.appStateHandle).toBeNull()
+  })
+
+  it('ignores stale native events after destroy', async () => {
+    let onBack
+    let onState
+    installNativeBackHandler.mockImplementationOnce(async (callback) => {
+      onBack = callback
+      return { remove: vi.fn() }
+    })
+    installNativeAppStateHandler.mockImplementationOnce(async (callback) => {
+      onState = callback
+      return { remove: vi.fn() }
+    })
+    vi.stubGlobal('document', {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })
+    const app = bareApp()
+
+    app.mount()
+    await Promise.resolve()
+    app.destroy()
+    onBack()
+    onState({ isActive: false })
+
+    expect(app.handleNativeBack).not.toHaveBeenCalled()
+    expect(app.showPause).not.toHaveBeenCalled()
   })
 })
