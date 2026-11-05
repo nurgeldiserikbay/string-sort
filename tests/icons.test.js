@@ -78,4 +78,15 @@ describe('uiIcon', () => {
   it('falls back to the help icon for an unknown name', () => {
     expect(uiIcon('missing-icon')).toContain('<circle cx="12" cy="12" r="8.1"/>')
   })
+
+  it('keeps the five chapter icons distinct after the UI conflict resolution', () => {
+    const chapterIcons = ['knot', 'twist', 'garden', 'weave', 'crown']
+      .map((name) => {
+        expect(hasUiIcon(name), name).toBe(true)
+        return uiIcon(name)
+      })
+
+    expect(new Set(chapterIcons).size).toBe(5)
+  })
+
 })
