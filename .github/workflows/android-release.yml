@@ -54,7 +54,16 @@ jobs:
       - name: Restore release keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_FILE"
+        run: |
+          umask 077
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_FILE"
+          test -s "$ANDROID_KEYSTORE_FILE"
+
+      - name: Verify upload signing key alias
+        run: |
+          keytool -list -keystore "$ANDROID_KEYSTORE_FILE" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -alias "$ANDROID_KEY_ALIAS" > /dev/null
 
       - name: Install dependencies
         run: npm install
@@ -97,9 +106,23 @@ jobs:
           cd android
           ./gradlew bundleRelease --no-daemon
 
+      - name: Verify AAB signature
+        run: |
+          set -euo pipefail
+          bundle="android/app/build/outputs/bundle/release/app-release.aab"
+          test -s "$bundle"
+          # jarsigner may exit zero for an unsigned archive. Verify the
+          # explicit success line before exposing the artifact.
+          verification="$(jarsigner -verify "$bundle" 2>&1)"
+          printf '%s\n' "$verification" | grep -Fq 'jar verified.'
+
       - name: Upload signed AAB
         uses: actions/upload-artifact@v7
         with:
           name: string-sort-release-${{ inputs.version_name }}-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+
+      - name: Remove temporary upload keystore
+        if: always()
+        run: rm -f "$ANDROID_KEYSTORE_FILE"
