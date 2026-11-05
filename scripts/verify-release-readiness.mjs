@@ -88,6 +88,18 @@ for (const workflowPath of [
 // requiring keystore secrets or distributing an unsigned release bundle.
 const ciWorkflow = await readFile('.github/workflows/ci.yml', 'utf8')
 for (const required of [
+  'Record debug APK checksum and source commit',
+  'sha256sum app-debug.apk > app-debug.apk.sha256',
+  'git rev-parse HEAD',
+  'app-debug.apk.sha256',
+  'build-info.txt',
+]) {
+  if (!ciWorkflow.includes(required)) {
+    throw new Error(`APK QA traceability gate missing: ${required}`)
+  }
+}
+
+for (const required of [
   'Build production web payload for AAB smoke test',
   'run: npm run build:prod',
   'Assemble unsigned production AAB',
